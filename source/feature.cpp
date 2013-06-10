@@ -4,19 +4,20 @@
 #include <feature.h>
 #include <hypothesis.h>
 
+/* TODO: seperate feature functions
+ * support shared object for feature computation
+ */
+
 double previous_hypotheses_score_sum(const hypothesis* hypo, unsigned int id)
 {
-    auto prev_hypo = hypo->get_previous_hypothese();
     double score = 0.0;
-    unsigned int size;
+    unsigned int size = hypo->previous_hypothesis_number();
 
-    if (prev_hypo == nullptr)
+    if (!size)
         return score;
 
-    size = prev_hypo->size();
-
     for (unsigned int i = 0; i < size; i++) {
-        hypothesis* h = prev_hypo->at(i);
+        hypothesis* h = hypo->get_previous_hypothesis(i);
         const feature* f = h->get_feature(id);
 
         score += f->get_score();

@@ -17,6 +17,10 @@ public:
     static const std::string& get_parameter(const char* param);
 private:
     static std::map<std::string, std::string> param_map;
+    static bool nbest_enable;
+    static unsigned int nbest_number;
+    static double beam_threshold;
+    static unsigned int beam_size;
 };
 
 #endif /* __CONFIG_H__ */

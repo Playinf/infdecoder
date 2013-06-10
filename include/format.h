@@ -9,8 +9,6 @@
 #ifndef __FORMAT_H__
 #define __FORMAT_H__
 
-#include <fstream>
-
 void load_rule_table(void* args);
 void process_input_file(void* args);
 

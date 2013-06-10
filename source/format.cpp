@@ -22,13 +22,13 @@ void parse_nonterminal_string(std::string& str, std::string& name, int& id)
 {
     std::string::size_type pos = str.find('_');
     std::string::size_type end = str.length();
-    
+
     if (pos != name.npos) {
         std::string id_str = str.substr(pos + 1, end - pos - 2);
         id = std::atoi(id_str.c_str());
     } else
         pos = end - 1;
-    
+
     name = str.substr(1, pos - 1);
 }
 
@@ -82,7 +82,7 @@ void insert_rule(rule_tree& rule_table, std::vector<std::string>& source_rule,
         int tgt_id = 0;
         const symbol* src_sym;
         const symbol* tgt_sym = nullptr;
-        
+
         if (is_nonterminal_string(src_name)) {
             parse_nonterminal_string(src_name, src_name, src_id);
             src_terminal = false;
@@ -151,7 +151,7 @@ void load_rule_table(void* args)
 
     while (std::getline(file, line)) {
         line_count++;
-        
+
         vec.clear();
         string_split(line, "|||", vec);
 
@@ -181,7 +181,7 @@ void str2input(std::string& s, std::vector<const symbol*>& input)
 
     string_split(s, " ", temp);
     size = temp.size();
-    
+
     for (unsigned int i = 0; i < size; i++)
         input.push_back(symbol_table::search_symbol(temp[i]));
 }
@@ -200,16 +200,21 @@ void process_input_file(void* args)
     nbest = *(unsigned int*) argv[3];
 
     while (std::getline(input_file, line)) {
-        std::string::size_type pos1 = line.find('>');
-        std::string::size_type pos2 = line.rfind('<');
+        //std::string::size_type pos1 = line.find('>');
+        //std::string::size_type pos2 = line.rfind('<');
 
-        if (pos2 <= pos1 || pos1 == line.npos || pos2 == line.npos) {
-            output_file << line << std::endl;
-            continue;
-        }
+        //if (pos2 <= pos1 || pos1 == line.npos || pos2 == line.npos) {
+            //output_file << line << std::endl;
+            //continue;
+        //}
 
         input.clear();
-        std::string sentence = line.substr(pos1 + 1, pos2 - pos1 - 1);
+        //std::string sentence = line.substr(pos1 + 1, pos2 - pos1 - 1);
+
+        if (line.empty())
+            continue;
+
+        std::string sentence = line;
 
         std::cout << "translating...\n";
         std::cout << sentence << std::endl;
@@ -217,6 +222,25 @@ void process_input_file(void* args)
 
         str2input(sentence, input);
         syntax_analyzer.parse(input);
+
+        std::vector<std::shared_ptr<const trellis_path>> path_list;
+        syntax_analyzer.get_nbest(100, &path_list, true);
+
+        for (unsigned int i = 0; i < path_list.size() && i < 100; i++) {
+            std::shared_ptr<const trellis_path> p = path_list[i];
+            output.clear();
+            p->output(&output);
+
+            std::string translation;
+            unsigned int output_size = output.size();
+
+            for (unsigned int j = 0; j < output_size; j++)
+                translation += *output[j] + " ";
+
+            output_file << translation << "|||" << p->get_total_score() << std::endl;
+        }
+        output_file << std::endl;
+
         hypothesis* hypo = syntax_analyzer.get_hypothesis(0);
         output.clear();
         hypo->output(output);
@@ -224,16 +248,18 @@ void process_input_file(void* args)
         std::string translation;
         unsigned int output_size = output.size();
 
-        for (unsigned int j = 1; j < output_size - 1; j++)
+        for (unsigned int j = 0; j < output_size; j++)
             translation += *output[j] + " ";
 
-        line.replace(pos1 + 2, pos2 - pos1 - 2, translation);
-        output_file << line << std::endl;
-        std::cout << "translation: " << std::endl;
-        std::cout << translation << std::endl;
-        std::cout << "lm score: " << hypo->get_feature(0)->get_score();
-        std::cout << " prefix score: " << hypo->get_heuristic_score();
-        std::cout << std::endl;
+        std::cout << translation << "|||" << hypo->get_total_score() << std::endl;
+
+        //line.replace(pos1 + 2, pos2 - pos1 - 2, translation);
+        //output_file << line << std::endl;
+        //std::cout << "translation: " << std::endl;
+        //std::cout << translation << std::endl;
+        //std::cout << "lm score: " << hypo->get_feature(0)->get_score();
+        //std::cout << " prefix score: " << hypo->get_heuristic_score();
+        //std::cout << std::endl;
 
         /*for (unsigned int i = 0; i < nbest; i++) {
             hypothesis* hypo = syntax_analyzer.get_hypothesis(i);
@@ -263,7 +289,7 @@ void process_input_file(void* args)
 
             output_file << "||| " << hypo->get_total_score() << std::endl;
         }*/
-        
+
         count++;
     }
 }

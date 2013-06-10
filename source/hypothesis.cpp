@@ -2,8 +2,11 @@
 #include <lm.h>
 #include <rule.h>
 #include <model.h>
+#include <config.h>
 #include <utility.h>
 #include <hypothesis.h>
+
+#include <iostream>
 
 hypothesis::hypothesis(rule* r)
 {
@@ -11,7 +14,9 @@ hypothesis::hypothesis(rule* r)
 
     target_rule = r;
     terminal_number = r->get_terminal_num();
+    next_hypothesis = nullptr;
     hypothesis_vector = nullptr;
+    recombined_hypothesis = nullptr;
     prefix.reserve(lm_order - 1);
     suffix.reserve(lm_order - 1);
 }
@@ -20,6 +25,12 @@ hypothesis::~hypothesis()
 {
     if (hypothesis_vector)
         delete hypothesis_vector;
+
+    /* recursively delete recombined hypothesis */
+    if (recombined_hypothesis) {
+        hypothesis* h = recombined_hypothesis;
+        delete h;
+    }
 }
 
 const symbol* hypothesis::get_start_symbol() const
@@ -36,8 +47,6 @@ void hypothesis::push_hypothesis(hypothesis* h)
     terminal_number += h->get_terminal_number();
 }
 
-#include <iostream>
-
 void hypothesis::evaluate_score()
 {
     auto& rule_body = target_rule->get_target_rule_body();
@@ -46,9 +55,9 @@ void hypothesis::evaluate_score()
     unsigned int nonterm_indx = 0;
     unsigned int lm_order = lm::get_language_model_order();
     static int count = 0;
-    
+
     ngram.reserve(2 * terminal_number);
-    
+
     for (unsigned int i = 0; i < rule_body_size; ++i) {
         const symbol* sym = rule_body[i];
 
@@ -64,7 +73,7 @@ void hypothesis::evaluate_score()
 
             for (unsigned int j = 0; j < hypo_prefix_size; ++j)
                 ngram.push_back(hypo_prefix->at(j));
-            
+
             if (hypo_nonterm_num < lm_order)
                 continue;
 
@@ -101,7 +110,7 @@ void hypothesis::evaluate_score()
     calculate_prefix(&prefix, len);
     len = lm_order - 1;
     calculate_suffix(&suffix, len);
-    
+
     for (unsigned int i = 0; i < suffix.size() / 2; i++) {
         const std::string* str1 = suffix[i];
         const std::string* str2 = suffix[suffix.size() - 1 - i];
@@ -200,9 +209,58 @@ void hypothesis::output(std::vector<const std::string*>& s)
     }
 }
 
+/*
+ * TODO:
+ * hypothesis recombination
+ */
 void hypothesis::recombine(hypothesis* hypo)
 {
-    delete hypo;
+    const std::string& nbest = parameter::get_parameter("nbest");
+    double nbest_num = std::stod(nbest);
+
+    if (nbest_num == 1)
+        delete hypo;
+    else {
+        /* merge recombined hypothesis in sorted order
+        hypothesis* prev = this;
+        hypothesis* ptr = hypo;
+
+        if (this->recombined_hypothesis != nullptr && hypo->recombined_hypothesis != nullptr)
+            std::cout << "example" << std::endl;
+
+        while (ptr != nullptr) {
+            hypothesis* curr = prev->recombined_hypothesis;
+            if (curr == nullptr) {
+                prev->recombined_hypothesis = ptr;
+                break;
+            }
+
+            if (curr->get_total_score() < hypo->get_total_score()) {
+                prev->recombined_hypothesis = hypo;
+                ptr = hypo->recombined_hypothesis;
+                hypo->recombined_hypothesis = curr;
+                prev = hypo;
+            } else {
+                prev = curr;
+            }
+        }*/
+        recombined_hypothesis = hypo;
+    }
+}
+
+void hypothesis::set_next_hypothesis(hypothesis* hypo)
+{
+    next_hypothesis = hypo;
+}
+
+const hypothesis* hypothesis::get_next_hypothesis() const
+{
+    return next_hypothesis;
+}
+
+hypothesis* hypothesis::get_recombined_hypothesis() const
+{
+    return recombined_hypothesis;
 }
 
 int hypothesis::compare(const hypothesis* hypo) const
@@ -219,7 +277,7 @@ int hypothesis::compare(const hypothesis* hypo) const
     return result;
 }
 
-void hypothesis::calculate_prefix(std::vector<const std::string*>* out, 
+void hypothesis::calculate_prefix(std::vector<const std::string*>* out,
         size_type& size)
 {
     auto& rule_body = target_rule->get_target_rule_body();
@@ -243,7 +301,7 @@ void hypothesis::calculate_prefix(std::vector<const std::string*>* out,
     }
 }
 
-void hypothesis::calculate_suffix(std::vector<const std::string*>* out, 
+void hypothesis::calculate_suffix(std::vector<const std::string*>* out,
         size_type& size)
 {
     auto& rule_body = target_rule->get_target_rule_body();
@@ -292,9 +350,12 @@ const std::vector<const std::string*>* hypothesis::get_suffix() const
     return &suffix;
 }
 
-const std::vector<hypothesis*>* hypothesis::get_previous_hypothese() const
+hypothesis::size_type hypothesis::previous_hypothesis_number() const
 {
-    return hypothesis_vector;
+    if (hypothesis_vector == nullptr)
+        return 0;
+
+    return hypothesis_vector->size();
 }
 
 const rule* hypothesis::get_rule() const

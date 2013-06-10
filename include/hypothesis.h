@@ -29,6 +29,8 @@ public:
     const symbol* get_start_symbol() const;
     void push_hypothesis(hypothesis* h);
     void recombine(hypothesis* hypo);
+    void set_next_hypothesis(hypothesis* hypo);
+    const hypothesis* get_next_hypothesis() const;
     void evaluate_score();
     double get_score() const;
     double get_heuristic_score() const;
@@ -39,17 +41,20 @@ public:
     const feature* get_feature(unsigned int id);
     const std::vector<const std::string*>* get_prefix() const;
     const std::vector<const std::string*>* get_suffix() const;
-    const std::vector<hypothesis*>* get_previous_hypothese() const;
+    size_type previous_hypothesis_number() const;
     hypothesis* get_previous_hypothesis(unsigned int index) const;
+    hypothesis* get_recombined_hypothesis() const;
     unsigned int get_terminal_number() const;
     const rule* get_rule() const;
 private:
-    void calculate_prefix(std::vector<const std::string*>* out, 
+    void calculate_prefix(std::vector<const std::string*>* out,
         size_type& size);
-    void calculate_suffix(std::vector<const std::string*>* out, 
+    void calculate_suffix(std::vector<const std::string*>* out,
         size_type& size);
 
     rule* target_rule;
+    hypothesis* next_hypothesis;
+    hypothesis* recombined_hypothesis;
     std::pair<size_type, size_type> span;
     std::vector<const std::string*> prefix;
     std::vector<const std::string*> suffix;

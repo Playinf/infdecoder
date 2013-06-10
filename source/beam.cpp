@@ -104,6 +104,14 @@ void beam::sort()
 
         std::sort(list_begin, list_end, hypothesis_less());
     }
+
+    hypothesis* prev = ordered_hypothesis_list[0];
+
+    for (unsigned int i = 1; i < ordered_hypothesis_list.size(); i++) {
+        hypothesis* curr = ordered_hypothesis_list[i];
+        prev->set_next_hypothesis(curr);
+    }
+
     sorted = true;
 }
 

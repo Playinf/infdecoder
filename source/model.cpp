@@ -2,6 +2,10 @@
 #include <utility>
 #include <model.h>
 
+/* TODO:
+ * be careful about static variables they may result in bugs in multi-threaded
+ * environment
+ */
 unsigned int model::feature_id = 0;
 unsigned int model::feature_num = 0;
 std::vector<double> model::lambda;
