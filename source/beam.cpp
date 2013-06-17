@@ -43,6 +43,7 @@ void beam::insert_hypothesis(hypothesis* hypo)
         if (result.second) {
             /* inserted */
             sorted = false;
+
             if (total_score > max_score)
                 max_score = total_score;
 
@@ -105,13 +106,6 @@ void beam::sort()
         std::sort(list_begin, list_end, hypothesis_less());
     }
 
-    hypothesis* prev = ordered_hypothesis_list[0];
-
-    for (unsigned int i = 1; i < ordered_hypothesis_list.size(); i++) {
-        hypothesis* curr = ordered_hypothesis_list[i];
-        prev->set_next_hypothesis(curr);
-    }
-
     sorted = true;
 }
 
@@ -151,27 +145,5 @@ void beam::prune()
                 delete h;
             }
         }
-    }
-}
-
-#include <iostream>
-
-void beam::print_hypothesis()
-{
-    std::vector<const std::string*> str_vec;
-    for (unsigned int i = 0; i < ordered_hypothesis_list.size(); i++) {
-        hypothesis* hypo = ordered_hypothesis_list[i];
-        str_vec.clear();
-        hypo->output(str_vec);
-
-        std::cout << "hypo " << i << ":";
-
-        for (unsigned int j = 0; j < str_vec.size(); j++) {
-            const std::string* str = str_vec[j];
-
-            std::cout << *str << " ";
-        }
-        std::cout << " ||| " << hypo->get_total_score();
-        std::cout << std::endl;
     }
 }

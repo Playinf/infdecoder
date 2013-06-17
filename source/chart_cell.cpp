@@ -117,11 +117,13 @@ void chart_cell::sort()
         s_symbol_beam->sort();
 }
 
+#include <verbose.h>
+
 void chart_cell::print()
 {
     if (x_symbol_beam)
-        x_symbol_beam->print_hypothesis();
+        print_beam(x_symbol_beam);
 
     if (s_symbol_beam)
-        s_symbol_beam->print_hypothesis();
+        print_beam(s_symbol_beam);
 }

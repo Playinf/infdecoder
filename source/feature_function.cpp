@@ -1,4 +1,4 @@
-/* feature.cpp */
+/* feature_function.cpp */
 #include <lm.h>
 #include <rule.h>
 #include <feature.h>

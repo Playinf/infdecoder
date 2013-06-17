@@ -6,15 +6,12 @@
 #include <utility.h>
 #include <hypothesis.h>
 
-#include <iostream>
-
-hypothesis::hypothesis(rule* r)
+hypothesis::hypothesis(const rule* r)
 {
     unsigned int lm_order = lm::get_language_model_order();
 
     target_rule = r;
     terminal_number = r->get_terminal_num();
-    next_hypothesis = nullptr;
     hypothesis_vector = nullptr;
     recombined_hypothesis = nullptr;
     prefix.reserve(lm_order - 1);
@@ -23,11 +20,11 @@ hypothesis::hypothesis(rule* r)
 
 hypothesis::~hypothesis()
 {
-    if (hypothesis_vector)
+    if (hypothesis_vector != nullptr)
         delete hypothesis_vector;
 
     /* recursively delete recombined hypothesis */
-    if (recombined_hypothesis) {
+    if (recombined_hypothesis != nullptr) {
         hypothesis* h = recombined_hypothesis;
         delete h;
     }
@@ -190,7 +187,7 @@ hypothesis* hypothesis::get_previous_hypothesis(unsigned int index) const
     }
 }
 
-void hypothesis::output(std::vector<const std::string*>& s)
+void hypothesis::output(std::vector<const std::string*>& s) const
 {
     auto& rule_body = target_rule->get_target_rule_body();
     unsigned int size = rule_body.size();
@@ -215,47 +212,33 @@ void hypothesis::output(std::vector<const std::string*>& s)
  */
 void hypothesis::recombine(hypothesis* hypo)
 {
+    //delete hypo;
+
+    //return;
+
     const std::string& nbest = parameter::get_parameter("nbest");
     double nbest_num = std::stod(nbest);
 
     if (nbest_num == 1)
         delete hypo;
-    else {
-        /* merge recombined hypothesis in sorted order
-        hypothesis* prev = this;
-        hypothesis* ptr = hypo;
-
-        if (this->recombined_hypothesis != nullptr && hypo->recombined_hypothesis != nullptr)
-            std::cout << "example" << std::endl;
-
-        while (ptr != nullptr) {
-            hypothesis* curr = prev->recombined_hypothesis;
-            if (curr == nullptr) {
-                prev->recombined_hypothesis = ptr;
-                break;
-            }
-
-            if (curr->get_total_score() < hypo->get_total_score()) {
-                prev->recombined_hypothesis = hypo;
-                ptr = hypo->recombined_hypothesis;
-                hypo->recombined_hypothesis = curr;
-                prev = hypo;
-            } else {
-                prev = curr;
-            }
-        }*/
+    else if (recombined_hypothesis == nullptr){
         recombined_hypothesis = hypo;
+    } else {
+        hypothesis* p = this;
+        hypothesis* recombined = p->recombined_hypothesis;
+        double total_score = hypo->get_total_score();
+
+        while (recombined) {
+            if (recombined->get_total_score() < total_score)
+                break;
+            p = recombined;
+            recombined = p->recombined_hypothesis;
+        }
+
+        hypo->recombined_hypothesis = p->recombined_hypothesis;
+        p->recombined_hypothesis = hypo;
+
     }
-}
-
-void hypothesis::set_next_hypothesis(hypothesis* hypo)
-{
-    next_hypothesis = hypo;
-}
-
-const hypothesis* hypothesis::get_next_hypothesis() const
-{
-    return next_hypothesis;
 }
 
 hypothesis* hypothesis::get_recombined_hypothesis() const
@@ -358,14 +341,24 @@ hypothesis::size_type hypothesis::previous_hypothesis_number() const
     return hypothesis_vector->size();
 }
 
+std::vector<hypothesis*>* hypothesis::get_hypothesis_vector() const
+{
+    return hypothesis_vector;
+}
+
 const rule* hypothesis::get_rule() const
 {
     return target_rule;
 }
 
-const feature* hypothesis::get_feature(unsigned int id)
+const feature* hypothesis::get_feature(unsigned int id) const
 {
     return log_linear_model.get_feature(id);
+}
+
+unsigned int hypothesis::get_feature_number() const
+{
+    return log_linear_model.get_feature_num();
 }
 
 unsigned int hypothesis::get_terminal_number() const

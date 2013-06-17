@@ -3,7 +3,7 @@
  *
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __MODEL_H__
@@ -27,14 +27,14 @@ public:
     {
     }
 
-    static void add_feature(std::string& des, feature::feature_function func);
+    static void add_feature(const std::string& des, feature::feature_function func);
 
     static feature::feature_function get_feature_function(unsigned int id)
     {
         return function_vector[id];
     }
 
-    static unsigned int get_feature_id(std::string& des)
+    static unsigned int get_feature_id(const std::string& des)
     {
         return feature_id_map[des];
     }
@@ -52,9 +52,10 @@ public:
         return lambda[id];
     }
 
-    feature* get_feature(unsigned int id)
+    feature* get_feature(unsigned int id) const
     {
-        return &feature_set[id];
+        const feature* fea = &feature_set[id];
+        return const_cast<feature*>(fea);
     }
 
     unsigned int get_feature_num() const

@@ -51,7 +51,7 @@ void string_split(const std::string& s, const std::string& sep,
         vec.push_back(s.substr(start, len));
 }
 
-int string_vector_compare(const std::vector<const std::string*>* s1, 
+int string_vector_compare(const std::vector<const std::string*>* s1,
     const std::vector<const std::string*>* s2)
 {
     unsigned int size1 = s1->size();
@@ -59,11 +59,11 @@ int string_vector_compare(const std::vector<const std::string*>* s1,
     unsigned int size = size1 > size2 ? size2 : size1;
 
     for (unsigned int i = 0; i < size; i++) {
-        const std::string& str1 = *s1->at(i);
-        const std::string& str2 = *s2->at(i);
+        const std::string* str1 = s1->at(i);
+        const std::string* str2 = s2->at(i);
         int result;
 
-        result = str1.compare(str2);
+        result = str1->compare(*str2);
 
         if (result != 0)
             return result;

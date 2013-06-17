@@ -3,7 +3,7 @@
  *
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __FEATURE_H__
@@ -49,11 +49,5 @@ private:
     double score;
     unsigned int id;
 };
-
-double translation_feature_function(const hypothesis* h, unsigned int id);
-double lm_feature_function(const hypothesis* h, unsigned int id);
-double word_penalty_feature_function(const hypothesis* h, unsigned int id);
-double extracted_rule_feature_function(const hypothesis* h, unsigned int id);
-double glue_rule_feature_function(const hypothesis* h, unsigned int id);
 
 #endif /* __FEATURE_H__ */

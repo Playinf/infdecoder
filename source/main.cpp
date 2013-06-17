@@ -11,6 +11,8 @@
 #include <decoder.h>
 #include <utility.h>
 #include <rule_set.h>
+#include <feature_function.h>
+#include <verbose.h>
 
 /* TODO:
  * version 0.1
@@ -107,7 +109,7 @@ void initialize_language_model()
 
 int main(int argc, char** argv)
 {
-    decoder translation_system;
+    decoder* translation_system;
 
     if (argc == 1) {
         parameter::load_configuation_file("config.txt");
@@ -138,8 +140,14 @@ int main(int argc, char** argv)
     initialize_features();
     initialize_parameters();
     initialize_language_model();
-    translation_system.load_rule_table(load_rule_table);
-    translation_system.translate(process_input_file);
+
+    translation_system = new decoder;
+    translation_system->load_rule_table(load_rule_table);
+    translation_system->translate(process_input_file);
+
+    delete translation_system;
+
+    //std::cout << get_statistics("ins_hypo") << std::endl;
 
     /* dispose resources */
     lm::unload();

@@ -20,6 +20,8 @@
 #include <rule_finder.h>
 #include <partial_rule.h>
 
+class derivation;
+
 class parser {
 public:
     typedef unsigned int size_type;
@@ -32,6 +34,7 @@ public:
     void parse(input_type& input);
     hypothesis* get_hypothesis(size_type index);
     void get_nbest(unsigned int num, path_vector* path_list, bool distinct);
+    void find_nbest(unsigned int num, std::vector<derivation*>* vec, bool distinct);
     void clear();
 private:
     void process_unknow_word(const symbol* sym);

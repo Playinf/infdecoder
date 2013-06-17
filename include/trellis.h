@@ -50,11 +50,15 @@ public:
 
     const trellis_node* get_final_node() const;
     const trellis_node* get_deviation_node() const;
+    double get_heuristic_score() const;
+    const std::vector<double>* get_score_vector() const;
     double get_total_score() const;
     void output(std::vector<const std::string*>* sentence) const;
 private:
     trellis_node* final_node;
     trellis_node* deviation_node;
+    std::vector<double> score_vector;
+    double heuristic_score;
     double total_score;
 };
 

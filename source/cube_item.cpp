@@ -42,13 +42,16 @@ cube_item::cube_item(const cube_item& item, unsigned int dim_index)
     }
 }
 
+#include <verbose.h>
+
 cube_item::~cube_item()
 {
     if (hypothesis_position != nullptr)
         delete hypothesis_position;
 
-    if (generated_hypothesis != nullptr)
+    if (generated_hypothesis != nullptr) {
         delete generated_hypothesis;
+    }
 }
 
 double cube_item::get_score() const
@@ -124,7 +127,7 @@ bool cube_item::operator==(const cube_item& item) const
         return true;
     } else if (hypo_dim1 == hypo_dim2)
         return true;
-    
+
     return false;
 }
 

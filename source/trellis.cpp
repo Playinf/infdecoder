@@ -2,6 +2,7 @@
 #include <rule.h>
 #include <trellis.h>
 
+#include <verbose.h>
 #include <iostream>
 
 /* trellis_node */
@@ -79,18 +80,6 @@ void trellis_node::output(std::vector<const std::string*>* sentence) const
     unsigned int size = rule_body.size();
     unsigned int nonterminal_index = 0;
 
-#ifdef __DEBUG__
-    const symbol* start_sym = target_rule->get_start_symbol();
-    std::cout << *start_sym->get_name() << "->";
-
-    for (unsigned int i = 0; i < size; ++i) {
-        const symbol* sym = rule_body[i];
-
-        std::cout << *sym->get_name() << " ";
-    }
-    std::cout << std::endl;
-#endif
-
     for (unsigned int i = 0; i < size; ++i) {
         const symbol* sym = rule_body[i];
 
@@ -141,15 +130,47 @@ void trellis_node::create_children(const trellis_node* root,
 /* trellis_path */
 trellis_path::trellis_path(const hypothesis* hypo)
 {
+    unsigned int feature_num = hypo->get_feature_number();
+
+    total_score = hypo->get_total_score();
+    heuristic_score = hypo->get_heuristic_score();
+    score_vector.reserve(feature_num);
+
+    for (unsigned int i = 0; i < feature_num; i++) {
+        const feature* f = hypo->get_feature(i);
+        score_vector.push_back(f->get_score());
+    }
+
     final_node = new trellis_node(hypo);
     deviation_node = nullptr;
-    total_score = hypo->get_total_score();
 }
 
 trellis_path::trellis_path(const trellis_detour* detour)
 {
-    final_node = new trellis_node(detour, &deviation_node);
+    const trellis_path* basepath = detour->get_base_path();
+    const trellis_node* substituted_node = detour->get_substituted_node();
+    const hypothesis* substituted = substituted_node->get_hypothesis();
+    const hypothesis* replacement = detour->get_replacement_hypothesis();
+    const std::vector<double>* base_score_vector = basepath->get_score_vector();
+    unsigned int size = base_score_vector->size();
+
+    score_vector.reserve(size);
+
+    for (unsigned int i = 0; i < size; i++) {
+        const feature* f1 = substituted->get_feature(i);
+        const feature* f2 = replacement->get_feature(i);
+        double score = base_score_vector->at(i);
+        score += f2->get_score() - f1->get_score();
+        score_vector.push_back(score);
+    }
+
+    double h1 = substituted->get_heuristic_score();
+    double h2 = replacement->get_heuristic_score();
+    heuristic_score = basepath->get_heuristic_score();
+    heuristic_score += h2 - h1;
     total_score = detour->get_total_score();
+
+    final_node = new trellis_node(detour, &deviation_node);
 }
 
 trellis_path::~trellis_path()
@@ -165,6 +186,16 @@ const trellis_node* trellis_path::get_final_node() const
 const trellis_node* trellis_path::get_deviation_node() const
 {
     return deviation_node;
+}
+
+const std::vector<double>* trellis_path::get_score_vector() const
+{
+    return &score_vector;
+}
+
+double trellis_path::get_heuristic_score() const
+{
+    return heuristic_score;
 }
 
 double trellis_path::get_total_score() const

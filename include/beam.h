@@ -3,7 +3,7 @@
  * implementation of beam search
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __BEAM_H__
@@ -56,7 +56,6 @@ public:
     void insert_hypothesis(hypothesis* hypo);
     std::vector<hypothesis*>* get_sorted_hypothesis_list();
     void sort();
-    void print_hypothesis();
 private:
     void prune();
 

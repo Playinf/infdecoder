@@ -3,7 +3,7 @@
  *
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __HYPOTHESIS_H__
@@ -23,26 +23,26 @@ class hypothesis {
 public:
     typedef unsigned int size_type;
 
-    hypothesis(rule* r);
+    hypothesis(const rule* r);
     ~hypothesis();
 
     const symbol* get_start_symbol() const;
     void push_hypothesis(hypothesis* h);
     void recombine(hypothesis* hypo);
-    void set_next_hypothesis(hypothesis* hypo);
-    const hypothesis* get_next_hypothesis() const;
     void evaluate_score();
     double get_score() const;
     double get_heuristic_score() const;
     double get_total_score() const;
     void set_heuristic_score(double score);
-    void output(std::vector<const std::string*>& s);
+    void output(std::vector<const std::string*>& s) const;
     int compare(const hypothesis* hypo) const;
-    const feature* get_feature(unsigned int id);
+    const feature* get_feature(unsigned int id) const;
+    unsigned int get_feature_number() const;
     const std::vector<const std::string*>* get_prefix() const;
     const std::vector<const std::string*>* get_suffix() const;
     size_type previous_hypothesis_number() const;
     hypothesis* get_previous_hypothesis(unsigned int index) const;
+    std::vector<hypothesis*>* get_hypothesis_vector() const;
     hypothesis* get_recombined_hypothesis() const;
     unsigned int get_terminal_number() const;
     const rule* get_rule() const;
@@ -52,8 +52,7 @@ private:
     void calculate_suffix(std::vector<const std::string*>* out,
         size_type& size);
 
-    rule* target_rule;
-    hypothesis* next_hypothesis;
+    const rule* target_rule;
     hypothesis* recombined_hypothesis;
     std::pair<size_type, size_type> span;
     std::vector<const std::string*> prefix;

@@ -7,6 +7,10 @@
 #include <parser.h>
 #include <utility.h>
 #include <rule_tree.h>
+#include <derivation.h>
+#include <feature_function.h>
+
+#include <verbose.h>
 
 inline bool is_nonterminal_string(std::string& str)
 {
@@ -223,11 +227,46 @@ void process_input_file(void* args)
         str2input(sentence, input);
         syntax_analyzer.parse(input);
 
+        hypothesis* hypo = syntax_analyzer.get_hypothesis(0);
+        unsigned int lm_id = model::get_feature_id("language model");
+//        const feature* f = hypo->get_feature(model::get_feature_id("language model"));
+//        std::cout << f->get_score() << std::endl;
+//        std::cout << hypo->get_heuristic_score() << std::endl;
+//        return;
+        //hypothesis_track(hypo);
+
+        /*
+        std::vector<derivation*> vec;
+        syntax_analyzer.find_nbest(100, &vec, true);
+
+        for (unsigned int i = 0; i < vec.size() && i < 100; i++) {
+            derivation* d = vec[i];
+            output.clear();
+            const hypothesis* h = d->get_generated_hypothesis();
+            //hypothesis_track(h);
+            h->output(output);
+
+            std::string translation;
+            unsigned int output_size = output.size();
+
+            for (unsigned int j = 0; j < output_size; j++)
+                translation += *output[j] + " ";
+
+            output_file << translation << "|||" << d->get_score() << std::endl;
+        }
+        output_file << std::endl;
+
+        return;
+        */
+
         std::vector<std::shared_ptr<const trellis_path>> path_list;
         syntax_analyzer.get_nbest(100, &path_list, true);
 
-        for (unsigned int i = 0; i < path_list.size() && i < 100; i++) {
+        for (unsigned int i = 0; i < path_list.size(); i++) {
             std::shared_ptr<const trellis_path> p = path_list[i];
+            const std::vector<double>& score_vector = *p->get_score_vector();
+            double heuristic_score = p->get_heuristic_score();
+            double lm_score = score_vector[lm_id] + heuristic_score;
             output.clear();
             p->output(&output);
 
@@ -237,21 +276,25 @@ void process_input_file(void* args)
             for (unsigned int j = 0; j < output_size; j++)
                 translation += *output[j] + " ";
 
-            output_file << translation << "|||" << p->get_total_score() << std::endl;
+            output_file << translation << "|||";
+            output_file << "lm: " << lm_score << "|||";
+            output_file << p->get_total_score() << std::endl;
         }
         output_file << std::endl;
+        return;
 
-        hypothesis* hypo = syntax_analyzer.get_hypothesis(0);
-        output.clear();
-        hypo->output(output);
-
+        //hypothesis* hypo = syntax_analyzer.get_hypothesis(0);
+        //output.clear();
+        //hypo->output(output);
+/*
         std::string translation;
         unsigned int output_size = output.size();
 
         for (unsigned int j = 0; j < output_size; j++)
             translation += *output[j] + " ";
 
-        std::cout << translation << "|||" << hypo->get_total_score() << std::endl;
+        std::cout << translation << "|||" << hypo->get_total_score() << std::endl;*/
+
 
         //line.replace(pos1 + 2, pos2 - pos1 - 2, translation);
         //output_file << line << std::endl;
@@ -261,7 +304,7 @@ void process_input_file(void* args)
         //std::cout << " prefix score: " << hypo->get_heuristic_score();
         //std::cout << std::endl;
 
-        /*for (unsigned int i = 0; i < nbest; i++) {
+        for (unsigned int i = 0; i < nbest; i++) {
             hypothesis* hypo = syntax_analyzer.get_hypothesis(i);
 
             if (hypo == nullptr)
@@ -269,16 +312,16 @@ void process_input_file(void* args)
 
             output.clear();
             hypo->output(output);
-            output_file << count << " ||| ";
+            //output_file << count << " ||| ";
             std::string translation;
             unsigned int output_size = output.size();
 
-            for (unsigned int j = 1; j < output_size - 1; j++)
+            for (unsigned int j = 0; j < output_size; j++)
                 translation += *output[j] + " ";
             output_file << translation << " ||| ";
             const feature* lm_feature = hypo->get_feature(0);
             const feature* word_feature = hypo->get_feature(1);
-            output_file << "lm: " << lm_feature->get_score() << " ";
+            output_file << "lm: " << lm_feature->get_score() + hypo->get_heuristic_score() << " ";
             output_file << "w: " << word_feature->get_score() << " ";
             output_file << "tm: ";
 
@@ -288,7 +331,7 @@ void process_input_file(void* args)
             }
 
             output_file << "||| " << hypo->get_total_score() << std::endl;
-        }*/
+        }
 
         count++;
     }

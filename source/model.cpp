@@ -12,7 +12,7 @@ std::vector<double> model::lambda;
 std::map<std::string, unsigned int> model::feature_id_map;
 std::vector<feature::feature_function> model::function_vector;
 
-void model::add_feature(std::string& des, feature::feature_function func)
+void model::add_feature(const std::string& des, feature::feature_function func)
 {
     auto result = feature_id_map.insert(std::make_pair(des, feature_id));
 
