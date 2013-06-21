@@ -10,8 +10,6 @@
 #include <derivation.h>
 #include <feature_function.h>
 
-#include <verbose.h>
-
 inline bool is_nonterminal_string(std::string& str)
 {
     std::string::size_type end = str.length() - 1;
@@ -204,16 +202,7 @@ void process_input_file(void* args)
     nbest = *(unsigned int*) argv[3];
 
     while (std::getline(input_file, line)) {
-        //std::string::size_type pos1 = line.find('>');
-        //std::string::size_type pos2 = line.rfind('<');
-
-        //if (pos2 <= pos1 || pos1 == line.npos || pos2 == line.npos) {
-            //output_file << line << std::endl;
-            //continue;
-        //}
-
         input.clear();
-        //std::string sentence = line.substr(pos1 + 1, pos2 - pos1 - 1);
 
         if (line.empty())
             continue;
@@ -229,35 +218,6 @@ void process_input_file(void* args)
 
         hypothesis* hypo = syntax_analyzer.get_hypothesis(0);
         unsigned int lm_id = model::get_feature_id("language model");
-//        const feature* f = hypo->get_feature(model::get_feature_id("language model"));
-//        std::cout << f->get_score() << std::endl;
-//        std::cout << hypo->get_heuristic_score() << std::endl;
-//        return;
-        //hypothesis_track(hypo);
-
-        /*
-        std::vector<derivation*> vec;
-        syntax_analyzer.find_nbest(100, &vec, true);
-
-        for (unsigned int i = 0; i < vec.size() && i < 100; i++) {
-            derivation* d = vec[i];
-            output.clear();
-            const hypothesis* h = d->get_generated_hypothesis();
-            //hypothesis_track(h);
-            h->output(output);
-
-            std::string translation;
-            unsigned int output_size = output.size();
-
-            for (unsigned int j = 0; j < output_size; j++)
-                translation += *output[j] + " ";
-
-            output_file << translation << "|||" << d->get_score() << std::endl;
-        }
-        output_file << std::endl;
-
-        return;
-        */
 
         std::vector<std::shared_ptr<const trellis_path>> path_list;
         syntax_analyzer.get_nbest(100, &path_list, true);

@@ -12,11 +12,10 @@
 #include <utility.h>
 #include <rule_set.h>
 #include <feature_function.h>
-#include <verbose.h>
 
 /* TODO:
  * version 0.1
- * 1. add nbest support
+ * 1. add nbest support (finished)
  * 2. add multi-thread support
  * 3. add dynamic linked feature function
  * 4. add dynamic linked io function
@@ -119,21 +118,14 @@ int main(int argc, char** argv)
     for (int i = 1; i < argc; i++) {
         std::string arg(argv[i]);
 
-        if (arg == "-c" || arg == "--config") {
-            i++;
-            if (i >= argc) {
-                print_help();
-                return 0;
-            }
-
-            parameter::load_configuation_file(argv[i]);
-
+        if (arg == "-h" || arg == "--help") {
+            print_help();
+            return 0;
         } else if (arg == "-v" || arg == "--version") {
             print_version();
             return 0;
         } else {
-            print_help();
-            return 0;
+            parameter::load_configuation_file(argv[i]);
         }
     }
 
@@ -146,8 +138,6 @@ int main(int argc, char** argv)
     translation_system->translate(process_input_file);
 
     delete translation_system;
-
-    //std::cout << get_statistics("ins_hypo") << std::endl;
 
     /* dispose resources */
     lm::unload();

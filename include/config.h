@@ -11,16 +11,23 @@
 
 #include <map>
 
-class parameter {
+class configuration {
 public:
-    static void load_configuation_file(const char* path);
-    static const std::string& get_parameter(const char* param);
+    unsigned int get_pop_limit() const;
+    unsigned int get_span_limit() const;
+    unsigned int get_nbest_number() const;
+    unsigned int get_thread_number() const;
+    unsigned int get_feature_number() const;
+    unsigned int get_weight(unsigned int index) const;
+    double get_beam_threshold(const std::string& nonterminal) const;
+    unsigned int get_beam_size(const std::string& nonterminal) const;
 private:
-    static std::map<std::string, std::string> param_map;
-    static bool nbest_enable;
-    static unsigned int nbest_number;
-    static double beam_threshold;
-    static unsigned int beam_size;
+    configuration();
+    ~configuration();
+
+    static configuration instance;
+
+
 };
 
 #endif /* __CONFIG_H__ */
