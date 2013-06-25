@@ -9,10 +9,10 @@
 #ifndef __STATISTICS_H__
 #define __STATISTICS_H__
 
+#include <map>
 #include <string>
 #include <vector>
 #include <utility>
-#include <unordered_map>
 
 class statistics {
 public:
@@ -27,7 +27,7 @@ private:
     statistics();
 
     static statistics* instance;
-    std::unordered_map<std::string, unsigned int> statistics_map;
+    std::map<std::string, unsigned int> statistics_map;
 };
 
 #endif /* __STATISTICS_H__ */

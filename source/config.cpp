@@ -1,59 +1,109 @@
 /* config.cpp */
 #include <string>
-#include <cstdlib>
+#include <vector>
 #include <fstream>
 #include <iostream>
 #include <config.h>
 #include <utility.h>
+#include <parameter.h>
 
-std::map<std::string, std::string> parameter::param_map;
+/* instance variable */
+configuration configuration::instance;
 
-static void parse_parameter(std::string& line, std::string& name, 
-    std::string& value)
+configuration::configuration()
 {
-    size_t pos1 = line.find("\"", 0);
-    size_t pos2;
-    
-    if (pos1 == line.npos) {
-        std::cout << "bad configuration file" << std::endl;
-        std::exit(-1);
-    }
-
-    pos2 = line.find("\"", pos1 + 1);
-    name = line.substr(pos1 + 1, pos2 - pos1 - 1);
-
-    pos1 = line.find("\"", pos2 + 1);
-    pos2 = line.find("\"", pos1 + 1);
-
-    value = line.substr(pos1 + 1, pos2 - pos1 - 1);
+    parameter_set = new parameter;
 }
 
-void parameter::load_configuation_file(const char* path)
+configuration::~configuration()
 {
-    std::ifstream config_file(path);
-    std::string line;
-    std::string name;
-    std::string value;
-
-    if (config_file.fail()) {
-        std::cout << "cannot open file `" << path << "'" << std::endl;
-        std::exit(-1);
-    }
-
-    while (std::getline(config_file, line)) {
-        if (line.length() == 0 || line[0] == '%')
-            continue;
-
-        parse_parameter(line, name, value);
-        param_map[name] = value;
-    }
-
-    config_file.close();
+    delete parameter_set;
 }
 
-const std::string& parameter::get_parameter(const char* param)
+bool configuration::enable_distinct_nbest() const
 {
-    std::string temp(param);
+    return distinct_nbest != 0;
+}
 
-    return param_map[temp];
+unsigned int configuration::get_pop_limit() const
+{
+    return pop_limit;
+}
+
+unsigned int configuration::get_span_limit() const
+{
+    return span_limit;
+}
+
+unsigned int configuration::get_nbest_number() const
+{
+    return nbest_number;
+}
+
+unsigned int configuration::get_thread_number() const
+{
+    return thread_number;
+}
+
+unsigned int configuration::get_feature_number() const
+{
+    return feature_number;
+}
+
+float configuration::get_weight(unsigned int index) const
+{
+    return weight_vector[index];
+}
+
+float configuration::get_beam_threshold(const std::string& nonterminal) const
+{
+    std::string name = nonterminal + "_beam_threshold";
+    float threshold = parameter_set->get_real_parameter(name);
+
+    if (threshold != 0.0)
+        return threshold;
+
+    return beam_threshold;
+}
+
+unsigned int configuration::get_beam_size(const std::string& nonterminal) const
+{
+    std::string name = nonterminal + "_beam_size";
+    int size = parameter_set->get_integer_parameter(name);
+
+    if (size != 0)
+        return size;
+
+    return beam_size;
+}
+
+void configuration::load_configuration_file(const char* filename)
+{
+    parameter_set->load(filename);
+
+    beam_size = parameter_set->get_integer_parameter("beam_size");
+    pop_limit = parameter_set->get_integer_parameter("pop_limit");
+    span_limit = parameter_set->get_integer_parameter("span_limit");
+    distinct_nbest = parameter_set->get_integer_parameter("distinct_nbest");
+    nbest_number = parameter_set->get_integer_parameter("nbest_number");
+    thread_number = parameter_set->get_integer_parameter("thread_number");
+    feature_number = parameter_set->get_integer_parameter("feature_number");
+    beam_threshold = parameter_set->get_real_parameter("beam_threshold");
+
+    for (unsigned int i = 0; i > feature_number; i++) {
+        std::string name = "weight-" + std::to_string(i);
+        float val = parameter_set->get_real_parameter(name);
+
+        weight_vector.push_back(val);
+    }
+}
+
+void configuration::get_parameter(std::vector<pair_type>& vec)
+{
+    return parameter_set->get_parameter(vec);
+}
+
+configuration* configuration::get_instance()
+{
+    return &instance;
 }

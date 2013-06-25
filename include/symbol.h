@@ -3,7 +3,7 @@
  *
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __SYMBOL_H__
@@ -11,6 +11,7 @@
 
 #include <string>
 #include <unordered_set>
+#include <shared_mutex.h>
 
 enum symbol_type {
     TERMINAL, NONTERMINAL
@@ -37,17 +38,28 @@ private:
 };
 
 struct symbol_hash {
-    size_t operator()(const symbol& sym) const;
-    size_t operator()(const symbol* sym) const;
+    std::size_t operator()(const symbol& sym) const;
+};
+
+struct symbol_equal {
+    std::size_t operator()(const symbol& s1, const symbol& s2) const;
 };
 
 class symbol_table {
 public:
-    static const symbol* search_symbol(std::string& s);
-    static const symbol* search_symbol(std::string& s, bool terminal);
+    ~symbol_table();
+
+    unsigned int size() const;
+    const symbol* search_symbol(const std::string& s);
+    const symbol* search_symbol(const std::string& s, bool terminal);
+    static symbol_table* get_instance();
 private:
-    static std::unordered_set<symbol, symbol_hash> symbol_set;
-    static std::unordered_set<std::string> string_set;
+    symbol_table();
+
+    shared_mutex mutex;
+    std::unordered_set<std::string> string_set;
+    std::unordered_set<symbol, symbol_hash, symbol_equal> symbol_set;
+    static symbol_table instance;
 };
 
-#endif
+#endif /* __SYMBOL_H__ */

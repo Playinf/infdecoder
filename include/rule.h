@@ -3,7 +3,7 @@
  *
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __RULE_H__
@@ -23,7 +23,7 @@ public:
     rule(size_type size)
     {
         start_symbol = nullptr;
-        score = 0.0;
+        score = 0.0f;
         reorder = false;
         target_terminal_num = 0;
         target_rule_body.reserve(size);
@@ -69,7 +69,7 @@ public:
 
     void evaluate_score();
 
-    double get_score() const
+    float get_score() const
     {
         return score;
     }
@@ -104,13 +104,13 @@ public:
     }
 
 private:
-    double score;
+    float score;
     bool reorder;
     const symbol* start_symbol;
     std::vector<feature> feature_set;
     std::vector<const symbol*> target_rule_body;
     unsigned int target_terminal_num;
-    static std::vector<double> lambda;
+    static std::vector<float> lambda;
 };
 
 struct rule_less {

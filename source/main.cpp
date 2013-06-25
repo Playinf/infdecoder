@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdlib>
 #include <fstream>
+#include <utility>
 #include <iostream>
 #include <lm.h>
 #include <model.h>
@@ -62,6 +63,21 @@ void initialize_features()
     model::add_feature(glue_rule, glue_rule_feature_function);
 }
 
+void print_parameters()
+{
+    configuration* system_configuration;
+    std::vector<std::pair<std::string, std::string>> vec;
+
+    system_configuration = configuration::get_instance();
+    system_configuration->get_parameter(vec);
+
+    for (unsigned int i = 0; i < vec.size(); i++) {
+        auto& value = vec[i];
+        std::cout << value.first << ": ";
+        std::cout << value.second << std::endl;
+    }
+}
+
 void initialize_parameters()
 {
     int feature_num;
@@ -109,9 +125,12 @@ void initialize_language_model()
 int main(int argc, char** argv)
 {
     decoder* translation_system;
+    configuration* system_configuration;
+
+    system_configuration = configuration::get_instance();
 
     if (argc == 1) {
-        parameter::load_configuation_file("config.txt");
+        system_configuration->load_configuation_file("config.txt");
     }
 
     // loading parameter
@@ -125,7 +144,7 @@ int main(int argc, char** argv)
             print_version();
             return 0;
         } else {
-            parameter::load_configuation_file(argv[i]);
+            system_configuration->load_configuation_file(argv[i]);
         }
     }
 

@@ -60,10 +60,8 @@ static void lazy_next(std::shared_ptr<const trellis_path> basepath,
 
     if (recombined_hypo != nullptr) {
         queue->push(new trellis_detour(basepath, node, recombined_hypo));
-        //recombined_hypo = recombined_hypo->get_recombined_hypothesis();
     }
 
-    /* recursively create deviant paths for child nodes */
     unsigned int child_num = node->get_children_num();
 
     for (unsigned int i = 0; i < child_num; i++) {
@@ -234,8 +232,8 @@ void parser::get_nbest(unsigned int num, path_vector* path_list, bool distinct)
     std::unordered_set<output_type, output_hash, output_equal> output_set;
 
     while (!detour_queue.empty() && count < num) {
-        std::auto_ptr<const trellis_detour> detour(detour_queue.top());
-        std::shared_ptr<trellis_path> path(new trellis_path(detour.get()));
+        const trellis_detour* detour = detour_queue.top();
+        std::shared_ptr<trellis_path> path(new trellis_path(detour));
 
         detour_queue.pop();
 
@@ -252,11 +250,13 @@ void parser::get_nbest(unsigned int num, path_vector* path_list, bool distinct)
         }
 
         lazy_next(path, path->get_deviation_node(), &detour_queue);
+        delete detour;
     }
 
     while (!detour_queue.empty()) {
-        std::auto_ptr<const trellis_detour> detour(detour_queue.top());
+        const trellis_detour* detour = detour_queue.top();
         detour_queue.pop();
+        delete detour;
     }
 }
 

@@ -77,11 +77,11 @@ int string_vector_compare(const std::vector<const std::string*>* s1,
     return 0;
 }
 
-std::string&& string_trim(const std::string& str)
+void string_trim(const std::string& str, std::string& ret)
 {
-    size_t str_size = str.size();
-    size_t pos1 = str.find_first_not_of(' ');
-    size_t pos2 = str.find_last_not_of(' ');
+    std::string::size_type str_size = str.size();
+    std::string::size_type pos1 = str.find_first_not_of(' ');
+    std::string::size_type pos2 = str.find_last_not_of(' ');
 
-    return str.substr(pos1, pos2);
+    ret = str.substr(pos1, pos2 - pos1 + 1);
 }

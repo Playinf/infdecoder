@@ -1,8 +1,8 @@
 /*
  * rule_tree.h
- * 
+ *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __RULE_TREE_H__
@@ -24,7 +24,7 @@ class rt_node {
 public:
     typedef std::vector<const rule*> vector_type;
     typedef std::unordered_set<rt_node, rt_node_hash> set_type;
-    
+
     rt_node();
     rt_node(const symbol* sym);
     ~rt_node();
@@ -59,7 +59,7 @@ public:
     rule_tree();
     ~rule_tree();
 
-    const node_type* get_root() const;    
+    const node_type* get_root() const;
     rt_node* insert_node(rt_node* parent, const symbol* sym);
     rt_node* find_child(const rt_node* parent, const symbol* sym);
     void insert_rule(rt_node* node, rule* r);

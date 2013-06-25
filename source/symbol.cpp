@@ -1,13 +1,16 @@
-#include <symbol.h>
+/* symbol.cpp */
+#include <string>
 #include <functional>
+#include <unordered_set>
+#include <symbol.h>
 
-std::unordered_set<symbol, symbol_hash> symbol_table::symbol_set;
-std::unordered_set<std::string> symbol_table::string_set;
+/* static symbol table instance */
+symbol_table symbol_table::instance;
 
 symbol::symbol()
 {
     name = nullptr;
-    type = static_cast<symbol_type>(0);
+    type = TERMINAL;
 }
 
 symbol::symbol(const std::string& name, bool terminal)
@@ -28,7 +31,7 @@ symbol::symbol(const std::string& name, symbol_type type)
 
 symbol::~symbol()
 {
-    // do nothing
+    /* do nothing */
 }
 
 const std::string* symbol::get_name() const
@@ -60,40 +63,65 @@ bool symbol::operator==(const symbol& sym) const
     return false;
 }
 
-size_t symbol_hash::operator()(const symbol& sym) const
+std::size_t symbol_hash::operator()(const symbol& sym) const
 {
-    unsigned long long address = (unsigned long long) sym.get_name();
+    std::hash<std::string> hasher;
 
-    return std::hash<unsigned long long>()(address);
+    return hasher(*sym.get_name());
 }
 
-size_t symbol_hash::operator()(const symbol* sym) const
+std::size_t symbol_equal::operator()(const symbol& s1, const symbol& s2) const
 {
-    if (sym == nullptr)
-        return 0;
+    const std::string& str1 = *s1.get_name();
+    const std::string& str2 = *s2.get_name();
 
-    return operator()(*sym);
+    if (str1 != str2)
+        return false;
+
+    return s1.get_type() == s2.get_type();
 }
 
-const symbol* symbol_table::search_symbol(std::string& s)
+symbol_table::symbol_table()
 {
-    auto string_iterator = string_set.insert(s);
-    const std::string& str = *string_iterator.first;
-
-    symbol sym(str);
-
-    auto result = symbol_set.insert(sym);
-
-    return &(*(result.first));
+    /* do nothing */
 }
 
-const symbol* symbol_table::search_symbol(std::string& s, bool terminal)
+symbol_table::~symbol_table()
 {
-    auto string_iterator = string_set.insert(s);
-    const std::string& str = *string_iterator.first;
-    symbol sym(str, terminal);
+    /* do nothing */
+}
 
-    auto result = symbol_set.insert(sym);
+unsigned int symbol_table::size() const
+{
+    return symbol_set.size();
+}
 
-    return &(*(result.first));
+const symbol* symbol_table::search_symbol(const std::string& s)
+{
+    return search_symbol(s, true);
+}
+
+const symbol* symbol_table::search_symbol(const std::string& s, bool terminal)
+{
+    symbol sym(s, terminal);
+    mutex.lock_shared();
+    auto iter = symbol_set.find(sym);
+    mutex.unlock_shared();
+
+    if (iter != symbol_set.end())
+        return &(*iter);
+
+    /* not in the symbol set */
+    mutex.lock();
+    auto r1 = string_set.insert(s);
+    symbol tmp(*r1.first, terminal);
+    auto r2 = symbol_set.insert(tmp);
+    mutex.unlock();
+
+    return &(*r2.first);
+}
+
+symbol_table* symbol_table::get_instance()
+{
+    return &instance;
 }

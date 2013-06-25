@@ -18,6 +18,6 @@ void string_split(const std::string& s, const std::string& sep,
     std::vector<std::string>& vec);
 int string_vector_compare(const std::vector<const std::string*>* s1,
     const std::vector<const std::string*>* s2);
-std::string&& string_trim(const std::string& str);
+void string_trim(const std::string& str, std::string& ret);
 
 #endif /* __UTILITY_H__ */
