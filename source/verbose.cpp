@@ -59,6 +59,18 @@ void print_rule(const rule* r)
     std::cout << std::endl;
 }
 
+void print_symbol(const symbol* s)
+{
+    std::cout << *s->get_name();
+
+    if (s->is_terminal())
+        std::cout << "[TERMINAL]";
+    else
+        std::cout << "[NONTERMINAL]";
+
+    std::cout << std::endl;
+}
+
 void print_hypothesis(const hypothesis* hypo)
 {
     std::vector<const std::string*> out_str;

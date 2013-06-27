@@ -13,10 +13,12 @@
 
 class beam;
 class rule;
+class symbol;
 class hypothesis;
 
 void print_beam(const beam* b);
 void print_rule(const rule* r);
+void print_symbol(const symbol* s);
 void print_hypothesis(const hypothesis* hypo);
 void hypothesis_track(const hypothesis* hypo);
 

@@ -121,9 +121,17 @@ void chart_cell::sort()
 
 void chart_cell::print()
 {
-    if (x_symbol_beam)
+    if (x_symbol_beam) {
+        std::string x("X");
+        const symbol* x_symbol = symbol_table::search_symbol(x);
+        print_symbol(x_symbol);
         print_beam(x_symbol_beam);
+    }
 
-    if (s_symbol_beam)
+    if (s_symbol_beam) {
+        std::string s("S");
+        const symbol* s_symbol = symbol_table::search_symbol(s);
+        print_symbol(s_symbol);
         print_beam(s_symbol_beam);
+    }
 }

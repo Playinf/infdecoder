@@ -142,7 +142,7 @@ int main(int argc, char** argv)
     initialize_language_model();
 
     translation_system = new decoder;
-    translation_system->load_rule_table(load_rule_table);
+    translation_system->load_rule_table(load_moses_rule_table);
     translation_system->translate(process_input_file);
 
     delete translation_system;

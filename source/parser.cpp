@@ -10,6 +10,8 @@
 #include <trellis.h>
 #include <feature_function.h>
 
+#include <iostream>
+
 typedef std::priority_queue<trellis_detour*, std::vector<trellis_detour*>,
     trellis_detour_less> queue_type;
 typedef std::vector<const std::string*> output_type;
