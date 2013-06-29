@@ -3,7 +3,7 @@
  *
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __CHART_CELL_H__
@@ -11,10 +11,11 @@
 
 #include <vector>
 #include <utility>
-#include <beam.h>
-#include <symbol.h>
-#include <rule_set.h>
-#include <hypothesis.h>
+
+class beam;
+class symbol;
+class rule_set;
+class hypothesis;
 
 class chart_cell {
 public:
@@ -30,8 +31,7 @@ public:
     void print();
 private:
     std::vector<const symbol*> symbol_set;
-    beam* x_symbol_beam;
-    beam* s_symbol_beam;
+    std::map<const symbol*, beam*> nonterminal_beam_set;
 };
 
 #endif /* __CHART_CELL_H__ */

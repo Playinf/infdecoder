@@ -5,10 +5,10 @@
 #include <algorithm>
 #include <beam.h>
 
-beam::beam(size_type histogram, double threshold)
+beam::beam(size_type histogram, float threshold)
 {
     sorted = false;
-    max_score = -1000000.0;
+    max_score = -1000000.0f;
     beam_size = histogram;
     this->threshold = threshold;
     ordered_hypothesis_list.reserve(beam_size);
@@ -30,7 +30,7 @@ beam::~beam()
 
 void beam::insert_hypothesis(hypothesis* hypo)
 {
-    double total_score = hypo->get_total_score();
+    float total_score = hypo->get_total_score();
     size_type size = hypothesis_set.size();
 
     // threshold pruning
@@ -52,8 +52,8 @@ void beam::insert_hypothesis(hypothesis* hypo)
         } else {
             /* recombining hypothesis */
             hypothesis* h = *result.first;
-            double s1 = h->get_total_score();
-            double s2 = total_score;
+            float s1 = h->get_total_score();
+            float s2 = total_score;
 
             if (s1 > s2)
                 h->recombine(hypo);
@@ -116,7 +116,7 @@ void beam::prune()
     if (size <= beam_size)
         return;
 
-    std::priority_queue<double> queue;
+    std::priority_queue<float> queue;
     auto iter = hypothesis_set.begin();
     auto end = hypothesis_set.end();
 
@@ -128,13 +128,13 @@ void beam::prune()
     for (unsigned int i = 1; i < beam_size; i++)
         queue.pop();
 
-    double s = queue.top();
+    float s = queue.top();
     bool last_found = false;
     iter = hypothesis_set.begin();
 
     while (iter != end) {
         hypothesis* h = *iter;
-        double h_score = h->get_total_score();
+        float h_score = h->get_total_score();
         auto iter_remove = iter++;
 
         if (h_score <= s) {

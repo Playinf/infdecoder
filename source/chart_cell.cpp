@@ -1,9 +1,11 @@
 /* chart_cell.cpp */
 #include <string>
-#include <cstdlib>
+#include <beam.h>
 #include <cube.h>
-#include <config.h>
+#include <symbol.h>
+#include <rule_set.h>
 #include <chart_cell.h>
+#include <hypothesis.h>
 
 chart_cell::chart_cell()
 {

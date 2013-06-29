@@ -70,6 +70,13 @@ std::size_t symbol_hash::operator()(const symbol& sym) const
     return hasher(*sym.get_name());
 }
 
+std::size_t symbol_address_hash::operator()(const symbol* sym) const
+{
+    std::hash<const symbol*> hasher;
+
+    return hasher(sym);
+}
+
 std::size_t symbol_equal::operator()(const symbol& s1, const symbol& s2) const
 {
     const std::string& str1 = *s1.get_name();

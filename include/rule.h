@@ -13,8 +13,9 @@
 #include <vector>
 #include <utility>
 #include <lm.h>
-#include <symbol.h>
 #include <feature.h>
+
+class symbol;
 
 class rule {
 public:

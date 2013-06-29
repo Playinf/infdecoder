@@ -13,14 +13,13 @@
 
 class beam;
 class rule;
+class symbol;
 class hypothesis;
 
 void print_beam(const beam* b);
 void print_rule(const rule* r);
-void print_hypothesis(const hypothesis* hypo);
-void hypothesis_track(const hypothesis* hypo);
-
-void add_statistics(const std::string& field, unsigned int val = 1);
-unsigned int get_statistics(const std::string& field);
+void print_symbol(const symbol* s);
+void print_hypothesis(const hypothesis* h);
+void hypothesis_track(const hypothesis* h);
 
 #endif /* __VERBOSE_H__ */

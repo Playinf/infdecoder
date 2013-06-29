@@ -1,13 +1,14 @@
 /* rule_tree.cpp */
-#include <rule_tree.h>
 #include <string>
 #include <algorithm>
+#include <symbol.h>
+#include <rule_tree.h>
 
 unsigned int rt_node::rule_limit;
 
 size_t rt_node_hash::operator()(const rt_node& node) const
 {
-    symbol_hash hasher;
+    symbol_address_hash hasher;
 
     return hasher(node.get_symbol());
 }
@@ -98,7 +99,7 @@ bool rt_node::is_leaf() const
 }
 
 bool rt_node::operator==(const rt_node& node) const
-{   
+{
     if (link[0] == node.link[0] && link[1] == node.link[1])
         return true;
 
@@ -164,7 +165,7 @@ rt_node* rule_tree::insert_node(rt_node* parent, const symbol* sym)
     return result.first;
 }
 
-rt_node* rule_tree::find_child(const rt_node* parent, const symbol* sym) 
+rt_node* rule_tree::find_child(const rt_node* parent, const symbol* sym)
 {
     return parent->find_child(sym);
 }

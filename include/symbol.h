@@ -41,6 +41,10 @@ struct symbol_hash {
     std::size_t operator()(const symbol& sym) const;
 };
 
+struct symbol_address_hash {
+    std::size_t operator()(const symbol* sym) const;
+};
+
 struct symbol_equal {
     std::size_t operator()(const symbol& s1, const symbol& s2) const;
 };

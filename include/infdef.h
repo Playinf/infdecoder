@@ -3,7 +3,7 @@
  * common definitions
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __INFDEF__

@@ -3,14 +3,13 @@
  *
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __CHART_H__
 #define __CHART_H__
 
-#include <infdef.h>
-#include <chart_cell.h>
+class chart_cell;
 
 class chart {
 public:

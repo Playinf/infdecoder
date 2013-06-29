@@ -49,10 +49,10 @@ public:
     typedef unsigned int size_type;
     typedef std::set<hypothesis*, hypothesis_compare> set_type;
 
-    beam(size_type histogram, double threshold);
+    beam(size_type histogram, float threshold);
     ~beam();
 
-    void set_parameter(size_type histogram, double threshold);
+    void set_parameter(size_type histogram, float threshold);
     void insert_hypothesis(hypothesis* hypo);
     std::vector<hypothesis*>* get_sorted_hypothesis_list();
     void sort();
@@ -60,8 +60,8 @@ private:
     void prune();
 
     bool sorted;
-    double max_score;
-    double threshold;
+    float max_score;
+    float threshold;
     size_type beam_size;
     set_type hypothesis_set;
     std::vector<hypothesis*> ordered_hypothesis_list;

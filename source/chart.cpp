@@ -1,5 +1,6 @@
 /* chart.cpp */
 #include <chart.h>
+#include <chart_cell.h>
 
 chart::chart(size_type len)
 {

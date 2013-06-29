@@ -1,9 +1,6 @@
 /* lm.cpp */
 #include <lm.h>
 
-void* lm::model;
-unsigned int lm::order;
-
 void lm::ngram_probability(const std::vector<const std::string*>& str,
         double& full, double& ngram)
 {

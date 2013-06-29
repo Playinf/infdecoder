@@ -6,32 +6,6 @@
 #include <verbose.h>
 #include <hypothesis.h>
 
-static unsigned int gen_hypo_count;
-static unsigned int del_hypo_count;
-static unsigned int ins_hypo_count;
-
-void add_statistics(const std::string& field, unsigned int val)
-{
-    if (field == "gen_hypo")
-        gen_hypo_count += val;
-    else if (field == "del_hypo")
-        del_hypo_count += val;
-    else if (field == "ins_hypo")
-        ins_hypo_count += val;
-}
-
-unsigned int get_statistics(const std::string& field)
-{
-    if (field == "gen_hypo")
-        return gen_hypo_count;
-    else if (field == "del_hypo")
-        return del_hypo_count;
-    else if (field == "ins_hypo")
-        return ins_hypo_count;
-    else
-        return 0;
-}
-
 void print_beam(const beam* b)
 {
     beam* beam_stack = const_cast<beam*>(b);
@@ -40,7 +14,6 @@ void print_beam(const beam* b)
 
     for (unsigned int i = 0; i < ordered_hypothesis_list->size(); i++) {
         hypothesis* hypo = ordered_hypothesis_list->at(i);
-
         print_hypothesis(hypo);
     }
 }
@@ -50,13 +23,23 @@ void print_rule(const rule* r)
     const symbol* lhs = r->get_start_symbol();
     const std::vector<const symbol*>& rhs = r->get_target_rule_body();
 
-    std::cout << *lhs->get_name() << " -> ";
+    print_symbol(lhs);
+    std::cout << " -> ";
 
     for (unsigned int i = 0; i < rhs.size(); i++) {
         const symbol* sym = rhs[i];
-        std::cout << *sym->get_name() << " ";
+        print_symbol(sym);
+        std::cout << " ";
     }
     std::cout << std::endl;
+}
+
+void print_symbol(const symbol* s)
+{
+    std::cout << *s->get_name();
+
+    if (s->is_nonterminal())
+        std::cout << "[NONTERMINAL]";
 }
 
 void print_hypothesis(const hypothesis* hypo)

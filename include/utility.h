@@ -3,7 +3,7 @@
  * utility functions
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __UTILITY_H__
