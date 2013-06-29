@@ -84,6 +84,7 @@ void initialize_parameters()
     }
 
     model::set_weight(lambda);
+    model::set_lm_lambda(lambda[0]);
     value = parameter::get_parameter("rule-beam-size");
     rt_node::set_rule_limit(std::atoi(value.c_str()));
 }

@@ -8,6 +8,9 @@
  * support shared object for feature computation
  */
 
+ /* log10(exp(-1)) */
+ static const double alpha = -0.4342944819032518276511289189166;
+
 double previous_hypotheses_score_sum(const hypothesis* hypo, unsigned int id)
 {
     double score = 0.0;
@@ -117,7 +120,7 @@ double lm_feature_function(const hypothesis* hypo, unsigned int id)
 double word_penalty_feature_function(const hypothesis* hypo, unsigned int id)
 {
     // log10(exp(-1))
-    const double penalty = -0.4342944819032518276511289189166;
+    const double penalty = -1;
     unsigned int terminal_num = hypo->get_terminal_number();
 
     return terminal_num * penalty;
@@ -127,7 +130,7 @@ double extracted_rule_feature_function(const hypothesis* hypo, unsigned int id)
 {
     const rule* r = hypo->get_rule();
     // log10(exp(-1))
-    const double penalty = -0.4342944819032518276511289189166;
+    const double penalty = -1;
     const symbol* sym = r->get_start_symbol();
     double score = penalty;
     double prev_score = previous_hypotheses_score_sum(hypo, id);
@@ -141,7 +144,7 @@ double glue_rule_feature_function(const hypothesis* hypo, unsigned int id)
 {
     const rule* r = hypo->get_rule();
     // log10(exp(-1))
-    const double penalty = -0.4342944819032518276511289189166;
+    const double penalty = -1;
     const symbol* sym = r->get_start_symbol();
     double score = penalty;
     double prev_score = previous_hypotheses_score_sum(hypo, id);

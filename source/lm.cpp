@@ -3,6 +3,8 @@
 
 void* lm::model;
 unsigned int lm::order;
+/* ln(10) */
+static const double factor = 2.302585092994;
 
 void lm::ngram_probability(const std::vector<const std::string*>& str,
         double& full, double& ngram)
@@ -34,6 +36,9 @@ void lm::ngram_probability(const std::vector<const std::string*>& str,
         context += " ";
         context_len += 1;
     }
+
+    full *= factor;
+    ngram *= factor;
 }
 
 double lm::word_probability(const std::string& word)
@@ -41,5 +46,5 @@ double lm::word_probability(const std::string& word)
     if (word == "<s>")
         return 0.0;
 
-    return sriWordProb(model, word.c_str(), "");
+    return factor * sriWordProb(model, word.c_str(), "");
 }

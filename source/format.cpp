@@ -1,4 +1,5 @@
 /* format.cpp */
+#include <cmath>
 #include <string>
 #include <utility>
 #include <fstream>
@@ -87,7 +88,7 @@ void parse_moses_rule_feature(std::string& str, std::vector<double>& feature)
     size = feature_str.size();
 
     for (unsigned int i = 0; i < size - 1; i++)
-        feature.push_back(std::atof(feature_str[i].c_str()));
+        feature.push_back(std::log(std::stod(feature_str[i])));
 }
 
 void parse_moses_alignment(std::string& str, std::vector<std::pair<int, int>>& align)
@@ -492,7 +493,7 @@ void process_input_file(void* args)
                 translation += *output[j] + " ";
 
             output_file << translation << "||| ";
-            output_file << "lm: " << score_vector[0] << " ";
+            output_file << "lm: " << score_vector[0] + heuristic_score << " ";
             output_file << "tm: ";
 
             for (unsigned int j = 2; j < 8; j++) {

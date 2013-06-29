@@ -164,7 +164,7 @@ double hypothesis::get_heuristic_score() const
 
 double hypothesis::get_total_score() const
 {
-    return score + heuristic_score;
+    return score + log_linear_model.get_lm_lambda() * heuristic_score;
 }
 
 hypothesis* hypothesis::get_previous_hypothesis(unsigned int index) const

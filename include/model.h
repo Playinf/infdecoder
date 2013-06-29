@@ -73,9 +73,20 @@ public:
         return score;
     }
 
+    static double get_lm_lambda()
+    {
+        return lm_lambda;
+    }
+
+    static void set_lm_lambda(double weight)
+    {
+        lm_lambda = weight;
+    }
+
 private:
     std::vector<feature> feature_set;
     static std::vector<double> lambda;
+    static double lm_lambda;
     static unsigned int feature_id;
     static unsigned int feature_num;
     static std::map<std::string, unsigned int> feature_id_map;
