@@ -11,6 +11,7 @@
 
 #include <string>
 #include <unordered_set>
+#include <functional.h>
 #include <shared_mutex.h>
 
 enum symbol_type {
@@ -26,27 +27,16 @@ public:
     symbol(const std::string& name, symbol_type type);
     ~symbol();
 
+    symbol& operator=(const symbol& sym) = delete;
+
     const std::string* get_name() const;
     symbol_type get_type() const;
     bool is_terminal() const;
     bool is_nonterminal() const;
     bool operator==(const symbol& sym) const;
 private:
-    void operator=(const symbol& sym);
     const std::string* name;
     symbol_type type;
-};
-
-struct symbol_hash {
-    std::size_t operator()(const symbol& sym) const;
-};
-
-struct symbol_address_hash {
-    std::size_t operator()(const symbol* sym) const;
-};
-
-struct symbol_equal {
-    std::size_t operator()(const symbol& s1, const symbol& s2) const;
 };
 
 class symbol_table {

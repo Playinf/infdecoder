@@ -100,48 +100,12 @@ void hypothesis::evaluate_score()
         }
     }
 
-    //++count;
-    //std::cout << "count: " << count << "\n";
-    /*
-    unsigned int len = lm_order - 1;
-    calculate_prefix(&prefix, len);
-    len = lm_order - 1;
-    calculate_suffix(&suffix, len);
-
-    for (unsigned int i = 0; i < suffix.size() / 2; i++) {
-        const std::string* str1 = suffix[i];
-        const std::string* str2 = suffix[suffix.size() - 1 - i];
-
-        suffix[i] = str2;
-        suffix[suffix.size() - 1 - i] = str1;
-    }*/
-
-    /*
-    std::cout << "prefix: ";
-    for (unsigned int i = 0; i < prefix.size(); i++)
-        std::cout << *prefix[i] << " ";
-    std::cout << std::endl;
-
-    std::cout << "suffix: ";
-    for (unsigned int i = 0; i < suffix.size(); i++)
-        std::cout << *suffix[i] << " ";
-    std::cout << std::endl;*/
-
-    //double temp = 0.0;
-    //heuristic_score = 0.0;
-    //lm::ngram_probability(prefix, heuristic_score, temp);
-
     unsigned int size = log_linear_model.get_feature_num();
 
     for (unsigned int i = 0; i < size; ++i) {
         feature* fea = log_linear_model.get_feature(i);
         fea->evaluate(this);
     }
-
-    //std::cout << heuristic_score;
-
-    //std::cout << "lm: " << log_linear_model.get_feature(0)->get_score() << std::endl;
-    //std::cout << "prefix: " << heuristic_score << std::endl;
 
     score = log_linear_model.get_score();
 }
@@ -206,16 +170,8 @@ void hypothesis::output(std::vector<const std::string*>& s) const
     }
 }
 
-/*
- * TODO:
- * hypothesis recombination
- */
 void hypothesis::recombine(hypothesis* hypo)
 {
-    //delete hypo;
-
-    //return;
-
     const std::string& nbest = parameter::get_parameter("nbest");
     double nbest_num = std::stod(nbest);
 

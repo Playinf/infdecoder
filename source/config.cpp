@@ -12,7 +12,7 @@ configuration configuration::instance;
 
 configuration::configuration()
 {
-    parameter_set = new parameter;
+    parameter_set = new parameter();
 }
 
 configuration::~configuration()

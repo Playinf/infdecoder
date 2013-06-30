@@ -23,6 +23,14 @@ static const unsigned int DEFAULT_DISTINCT_NBEST = 0;
 static const unsigned int DEFAULT_NBEST_NUMBER = 1;
 static const unsigned int DEFAULT_THREAD_NUMBER = 1;
 
+/*
+enum token_type {
+    LEFT_BRACKET, RIGHT_BRACKET, LEFT_BRACE, RIGHT_BRACE,
+    QUOTE, COMMA, SEMICOLON, PERIOD,
+    STRING, INTEGER, REAL, ARRAY
+};
+*/
+
 enum parameter_type {
     STRING, INTEGER, REAL, ARRAY
 };

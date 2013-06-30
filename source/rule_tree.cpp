@@ -4,25 +4,26 @@
 #include <symbol.h>
 #include <rule_tree.h>
 
-unsigned int rt_node::rule_limit;
-
-size_t rt_node_hash::operator()(const rt_node& node) const
-{
-    symbol_address_hash hasher;
-
-    return hasher(node.get_symbol());
-}
-
 rt_node::rt_node()
 {
-    link = nullptr;
+    link[0] = nullptr;
+    link[1] = nullptr;
     rule_vector = nullptr;
     child_nodes = nullptr;
 }
 
 rt_node::rt_node(const symbol* sym)
 {
-    link = sym;
+    link[0] = sym;
+    link[1] = nullptr;
+    rule_vector = nullptr;
+    child_nodes = nullptr;
+}
+
+rt_node::rt_node(const symbol* src, const symbol* tgt)
+{
+    link[0] = src;
+    link[1] = tgt;
     rule_vector = nullptr;
     child_nodes = nullptr;
 }
@@ -40,11 +41,6 @@ rt_node::~rt_node()
 
     if (child_nodes != nullptr)
         delete child_nodes;
-}
-
-void rt_node::set_rule_limit(unsigned int limit)
-{
-    rule_limit = limit;
 }
 
 void rt_node::insert_rule(const rule* r)
@@ -83,9 +79,9 @@ rt_node* rt_node::find_child(const symbol* sym) const
     return nullptr;
 }
 
-const symbol* rt_node::get_symbol() const
+const symbol* rt_node::get_symbol(int index) const
 {
-    return link;
+    return link[index];
 }
 
 const rt_node::vector_type* rt_node::get_rules() const
@@ -106,13 +102,13 @@ bool rt_node::operator==(const rt_node& node) const
     return false;
 }
 
-void rt_node::sort(rt_node* node)
+void rt_node::sort(rt_node* node, unsigned int limit)
 {
     auto rules = node->rule_vector;
     auto child = node->child_nodes;
 
     if (rules != nullptr && rules->size() > 1)
-        node->sort();
+        node->sort(limit);
 
     if (child == nullptr)
         return;
@@ -123,20 +119,20 @@ void rt_node::sort(rt_node* node)
 
     while (iter != end) {
         rt_node* n = const_cast<rt_node*>(&(*iter));
-        sort(n);
+        sort(n, limit);
         ++iter;
     }
 }
 
-void rt_node::sort()
+void rt_node::sort(unsigned int limit)
 {
     auto begin = rule_vector->begin();
     auto end = rule_vector->end();
 
     std::sort(begin, end, rule_less());
 
-    if (rule_vector->size() > rule_limit)
-        rule_vector->resize(rule_limit);
+    if (rule_vector->size() > limit)
+        rule_vector->resize(limit);
 }
 
 rule_tree::rule_tree()
@@ -178,5 +174,5 @@ void rule_tree::insert_rule(rt_node* node, rule* r)
 
 void rule_tree::sort()
 {
-    rt_node::sort(&root);
+    rt_node::sort(&root, 20);
 }

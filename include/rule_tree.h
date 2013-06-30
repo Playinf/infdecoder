@@ -13,13 +13,9 @@
 #include <utility>
 #include <unordered_set>
 #include <rule.h>
-#include <symbol.h>
+#include <functional.h>
 
-class rt_node;
-
-struct rt_node_hash {
-    size_t operator()(const rt_node& node) const;
-};
+class symbol;
 
 class rt_node {
 public:
@@ -28,28 +24,27 @@ public:
 
     rt_node();
     rt_node(const symbol* sym);
+    rt_node(const symbol* src, const symbol* tgt);
     ~rt_node();
 
-    const symbol* get_symbol() const;
+    rt_node& operator=(const rt_node& n) = delete;
+
+    const symbol* get_source_symbol() const;
+    const symbol* get_target_symbol() const;
+    const symbol* get_symbol(int index) const;
     const vector_type* get_rules() const;
     bool is_leaf() const;
     bool operator==(const rt_node& node) const;
-
-    static void set_rule_limit(unsigned int limit);
-private:
-    friend class rule_tree;
-
     void insert_rule(const rule* r);
     std::pair<rt_node*, bool> insert_child(const symbol* sym);
     rt_node* find_child(const symbol* sym) const;
-
-    static void sort(rt_node* node);
-    void sort();
-
-    const symbol* link;
+    rt_node* find_child(const symbol* src, const symbol* tgt);
+    static void sort(rt_node* node, unsigned limit);
+    void sort(unsigned int limit);
+private:
+    const symbol* link[2];
     vector_type* rule_vector;
     set_type* child_nodes;
-    static unsigned int rule_limit;
 };
 
 class rule_tree {
@@ -60,8 +55,12 @@ public:
     rule_tree();
     ~rule_tree();
 
+    rule_tree(const rule_tree& t) = delete;
+    rule_tree& operator=(const rule_tree& t) = delete;
+
     const node_type* get_root() const;
     rt_node* insert_node(rt_node* parent, const symbol* sym);
+    rt_node* insert_node(rt_node* parent, const symbol* src, const symbol* tgt);
     rt_node* find_child(const rt_node* parent, const symbol* sym);
     void insert_rule(rt_node* node, rule* r);
     void sort();

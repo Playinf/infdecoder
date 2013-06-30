@@ -11,114 +11,38 @@
 
 #include <map>
 #include <vector>
-#include <utility>
-#include <lm.h>
 #include <feature.h>
 
 class symbol;
+class language_model;
 
 class rule {
 public:
     typedef unsigned int size_type;
+    typedef std::vector<float> weight_vector;
 
-    rule(size_type size)
-    {
-        start_symbol = nullptr;
-        score = 0.0f;
-        reorder = false;
-        target_terminal_num = 0;
-        target_rule_body.reserve(size);
-    }
+    rule(size_type size);
+    ~rule();
 
-    ~rule()
-    {
-        // do nothing
-    }
+    rule(const rule& r) = delete;
+    rule& operator=(const rule& r) = delete;
 
-    void add_symbol(const symbol* sym)
-    {
-        target_rule_body.push_back(sym);
-
-        if (sym->is_terminal())
-            target_terminal_num++;
-    }
-
-    void set_order(bool reorder)
-    {
-        this->reorder = reorder;
-    }
-
-    void set_start_symbol(const symbol* sym)
-    {
-        start_symbol = sym;
-    }
-
-    const symbol* get_start_symbol() const
-    {
-        return start_symbol;
-    }
-
-    size_type get_terminal_num() const
-    {
-        return target_terminal_num;
-    }
-
-    bool reorder_nonterminal() const
-    {
-        return reorder;
-    }
-
-    void evaluate_score();
-
-    float get_score() const
-    {
-        return score;
-    }
-
-    const std::vector<const symbol*>& get_target_rule_body() const
-    {
-        return target_rule_body;
-    }
-
-    const feature* get_feature(unsigned int id) const
-    {
-        unsigned int size = feature_set.size();
-
-        for (unsigned int i = 0; i < size; i++) {
-            const feature& f = feature_set[i];
-
-            if (f.get_id() == id)
-                return &f;
-        }
-
-        return nullptr;
-    }
-
-    void add_feature(feature* fea)
-    {
-        feature_set.push_back(*fea);
-    }
-
-    static void push_weight(double weight)
-    {
-        lambda.push_back(weight);
-    }
-
+    const symbol* get_start_symbol(int index) const;
+    size_type get_terminal_number() const;
+    const std::vector<const symbol*>& get_target_rule_body() const;
+    const feature* get_feature(unsigned int id) const;
+    void set_start_symbol(const symbol* src, const symbol* tgt);
+    void add_symbol(const symbol* sym);
+    void add_feature(feature* fea);
+    float get_score() const;
+    void evaluate_score(const language_model* lm, const weight_vector& weight);
 private:
     float score;
-    bool reorder;
-    const symbol* start_symbol;
+    const symbol* start_symbol[2];
     std::vector<feature> feature_set;
     std::vector<const symbol*> target_rule_body;
-    unsigned int target_terminal_num;
-    static std::vector<float> lambda;
-};
-
-struct rule_less {
-    bool operator()(const rule* r1, const rule* r2) const
-    {
-        return r1->get_score() > r2->get_score();
-    }
+    unsigned int* nonterminal_map;
+    unsigned int target_terminal_number;
 };
 
 #endif /* __RULE_H__ */

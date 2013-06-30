@@ -10,7 +10,6 @@
 #define __FEATURE_H__
 
 #include <string>
-#include <functional>
 
 class hypothesis;
 
