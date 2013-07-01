@@ -127,7 +127,7 @@ void insert_rule(rule_tree& rule_table, std::vector<std::string>& source_rule,
     std::string rev_trans_des = "reverse translation probablity";
     std::string lex_des = "lexical weight";
     std::string rev_lex_des = "reverse lexical weight";
-    std::string word_des = "word_penalty";
+    std::string word_des = "word penalty";
     unsigned int trans_id = model::get_feature_id(trans_des);
     unsigned int rev_trans_id = model::get_feature_id(rev_trans_des);
     unsigned int lex_id = model::get_feature_id(lex_des);
@@ -217,11 +217,13 @@ void insert_moses_rule(rule_tree& rule_table, std::vector<std::string>& source_r
     unsigned tgt_symbol_num = tgt_size - 1;
     std::string start_symbol_string;
     const symbol* start_symbol;
+    std::string lm_des = "language model";
     std::string trans_des = "translation probablity";
     std::string rev_trans_des = "reverse translation probablity";
     std::string lex_des = "lexical weight";
     std::string rev_lex_des = "reverse lexical weight";
-    std::string word_des = "word_penalty";
+    std::string word_des = "word penalty";
+    unsigned int lm_id = model::get_feature_id(lm_des);
     unsigned int trans_id = model::get_feature_id(trans_des);
     unsigned int rev_trans_id = model::get_feature_id(rev_trans_des);
     unsigned int lex_id = model::get_feature_id(lex_des);
@@ -230,21 +232,6 @@ void insert_moses_rule(rule_tree& rule_table, std::vector<std::string>& source_r
     feature::feature_function func = translation_feature_function;
     int src_nidx = src_size - 1;
     int tgt_nidx = tgt_size - 1;
-    /*
-    std::cout << "SRC_RULE: ";
-    for (unsigned int i = 0; i < source_rule.size(); i++) {
-        std::string& str = source_rule[i];
-        std::cout << str << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "TGT_RULE: ";
-    for (unsigned int i = 0; i < target_rule.size(); i++) {
-        std::string& str = target_rule[i];
-        std::cout << str << " ";
-    }
-    std::cout << std::endl;
-    */
 
     //parse_nonterminal_string(source_rule[src_nidx], start_symbol_string, 0);
     parse_moses_nonterminal_string(target_rule[tgt_nidx], start_symbol_string, 0);
@@ -294,19 +281,20 @@ void insert_moses_rule(rule_tree& rule_table, std::vector<std::string>& source_r
         r->add_symbol(sym);
     }
 
-    feature tmp_feature = feature(trans_id, func, prob[0]);
+    feature tmp_feature = feature(rev_trans_id, func, prob[0]);
     r->add_feature(&tmp_feature);
-    tmp_feature = feature(rev_trans_id, func, prob[1]);
+    tmp_feature = feature(rev_lex_id, func, prob[1]);
     r->add_feature(&tmp_feature);
-    tmp_feature = feature(lex_id, func, prob[2]);
+    tmp_feature = feature(trans_id, func, prob[2]);
     r->add_feature(&tmp_feature);
-    tmp_feature = feature(rev_lex_id, func, prob[3]);
+    tmp_feature = feature(lex_id, func, prob[3]);
     r->add_feature(&tmp_feature);
 
-    rule::push_weight(model::get_weight(trans_id));
+    rule::push_weight(model::get_weight(lm_id));
     rule::push_weight(model::get_weight(rev_trans_id));
-    rule::push_weight(model::get_weight(lex_id));
     rule::push_weight(model::get_weight(rev_lex_id));
+    rule::push_weight(model::get_weight(trans_id));
+    rule::push_weight(model::get_weight(lex_id));
     rule::push_weight(model::get_weight(word_id));
 
     r->evaluate_score();
@@ -333,13 +321,11 @@ void insert_moses_rule(rule_tree& rule_table, std::vector<std::string>& source_r
                 }
             }
         }
-        //std::cout << ind1 << " " << ind2 << std::endl;
+
         if (ind2 < ind1)
             r->set_order(true);
     }
 
-    //print_rule(r);
-    //std::cout << r->reorder_nonterminal() << std::endl;
     rule_table.insert_rule(p, r);
 }
 

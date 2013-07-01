@@ -45,7 +45,7 @@ void print_version()
 void initialize_features()
 {
     std::string lm_des = "language model";
-    std::string word_des = "word_penalty";
+    std::string word_des = "word penalty";
     std::string trans_des = "translation probablity";
     std::string rev_trans_des = "reverse translation probablity";
     std::string lex_des = "lexical weight";
@@ -54,13 +54,13 @@ void initialize_features()
     std::string glue_rule = "glue rules";
 
     model::add_feature(lm_des, lm_feature_function);
-    model::add_feature(word_des, word_penalty_feature_function);
-    model::add_feature(trans_des, translation_feature_function);
     model::add_feature(rev_trans_des, translation_feature_function);
-    model::add_feature(lex_des, translation_feature_function);
     model::add_feature(rev_lex_des, translation_feature_function);
+    model::add_feature(trans_des, translation_feature_function);
+    model::add_feature(lex_des, translation_feature_function);
     model::add_feature(extracted_rule, extracted_rule_feature_function);
     model::add_feature(glue_rule, glue_rule_feature_function);
+    model::add_feature(word_des, word_penalty_feature_function);
 }
 
 void initialize_parameters()
