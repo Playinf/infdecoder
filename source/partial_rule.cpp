@@ -1,4 +1,5 @@
 /* partial_rule.cpp */
+#include <symbol.h>
 #include <partial_rule.h>
 
 partial_rule::partial_rule()

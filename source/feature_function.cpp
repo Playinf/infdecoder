@@ -1,55 +1,29 @@
 /* feature_function.cpp */
-#include <lm.h>
 #include <rule.h>
+#include <model.h>
+#include <config.h>
+#include <symbol.h>
 #include <feature.h>
 #include <hypothesis.h>
+#include <language_model.h>
 
-/* TODO: seperate feature functions
- * support shared object for feature computation
- */
-
-double previous_hypotheses_score_sum(const hypothesis* hypo, unsigned int id)
+float language_model_feature_function(const hypothesis* hypo, unsigned int id)
 {
-    double score = 0.0;
-    unsigned int size = hypo->previous_hypothesis_number();
-
-    if (!size)
-        return score;
-
-    for (unsigned int i = 0; i < size; i++) {
-        hypothesis* h = hypo->get_previous_hypothesis(i);
-        const feature* f = h->get_feature(id);
-
-        score += f->get_score();
-    }
-
-    return score;
-}
-
-double translation_feature_function(const hypothesis* hypo, unsigned int id)
-{
-    const rule* r = hypo->get_rule();
-    const feature* rule_feature = r->get_feature(id);
-    double score = rule_feature->get_score();
-    double prev_score = previous_hypotheses_score_sum(hypo, id);
-
-    return score + prev_score;
-}
-
-double lm_feature_function(const hypothesis* hypo, unsigned int id)
-{
+    float score = 0.0;
+    float prev_score = 0.0;
+    float prefix_score = 0.0;
+    bool calc = false;
+    bool prefix = true;
+    float full = 0.0;
     const rule* r = hypo->get_rule();
     auto& rule_body = r->get_target_rule_body();
     unsigned int rule_body_size = rule_body.size();
-    unsigned int lm_order = lm::get_language_model_order();
+    configuration* config = configuration::get_instance();
+    model* system_model = config->get_model();
+    language_model* lm = system_model->get_language_model_source(id);
+    unsigned int lm_order = lm->get_order();
     unsigned int indx = 0;
     std::vector<const std::string*> ngram;
-    double score = 0.0;
-    double prev_score = 0.0;
-    double prefix_score = 0.0;
-    bool calc = false;
-    bool prefix = true;
-    double full = 0.0;
 
     for (unsigned int i = 0; i < rule_body_size; i++) {
         const symbol* sym = rule_body[i];
@@ -80,9 +54,9 @@ double lm_feature_function(const hypothesis* hypo, unsigned int id)
                     //score = prev_fea->get_score();
                     prefix_score = prev_hypo->get_heuristic_score();
                 } else {
-                    double ngram_score = 0.0;
-                    double full_score = 0.0;
-                    lm::ngram_probability(ngram, full_score, ngram_score);
+                    float ngram_score = 0.0;
+                    float full_score = 0.0;
+                    lm->ngram_probability(ngram, full_score, ngram_score);
 
                     if (prefix)
                         prefix_score = full_score - ngram_score;
@@ -98,9 +72,9 @@ double lm_feature_function(const hypothesis* hypo, unsigned int id)
         }
     }
 
-    double full_score = 0.0;
-    double ngram_score = 0.0;
-    lm::ngram_probability(ngram, full_score, ngram_score);
+    float full_score = 0.0;
+    float ngram_score = 0.0;
+    lm->ngram_probability(ngram, full_score, ngram_score);
 
     if (prefix)
         prefix_score = full_score - ngram_score;
@@ -110,43 +84,39 @@ double lm_feature_function(const hypothesis* hypo, unsigned int id)
     score += prev_score;
     hypothesis* h = const_cast<hypothesis*>(hypo);
     h->set_heuristic_score(prefix_score);
+    h->calculate_prefix_suffix(lm_order);
 
     return score;
 }
 
-double word_penalty_feature_function(const hypothesis* hypo, unsigned int id)
+float translation_model_feature_function(const hypothesis* h, unsigned int id)
 {
-    // log10(exp(-1))
-    const double penalty = -0.4342944819032518276511289189166;
+    float score;
+    const rule* r = h->get_rule();
+    unsigned int size = h->get_previous_hypothesis_number();
+    configuration* config = configuration::get_instance();
+    model* system_model = config->get_model();
+    unsigned int score_id = system_model->get_score_index(id);
+
+    score = r->get_score(score_id);
+
+    if (!size)
+        return score;
+
+    for (unsigned int i = 0; i < size; i++) {
+        hypothesis* hypo = h->get_previous_hypothesis(i);
+        const feature* f = hypo->get_feature(id);
+
+        score += f->get_score();
+    }
+
+    return score;
+}
+
+float word_penalty_feature_function(const hypothesis* hypo, unsigned int id)
+{
+    const float penalty = -1.0f;
     unsigned int terminal_num = hypo->get_terminal_number();
 
     return terminal_num * penalty;
-}
-
-double extracted_rule_feature_function(const hypothesis* hypo, unsigned int id)
-{
-    const rule* r = hypo->get_rule();
-    // log10(exp(-1))
-    const double penalty = -0.4342944819032518276511289189166;
-    const symbol* sym = r->get_start_symbol();
-    double score = penalty;
-    double prev_score = previous_hypotheses_score_sum(hypo, id);
-
-    if (*sym->get_name() == "X")
-        return score + prev_score;
-    return prev_score;
-}
-
-double glue_rule_feature_function(const hypothesis* hypo, unsigned int id)
-{
-    const rule* r = hypo->get_rule();
-    // log10(exp(-1))
-    const double penalty = -0.4342944819032518276511289189166;
-    const symbol* sym = r->get_start_symbol();
-    double score = penalty;
-    double prev_score = previous_hypotheses_score_sum(hypo, id);
-
-    if (*sym->get_name() == "S")
-        return score + prev_score;
-    return prev_score;
 }

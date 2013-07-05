@@ -11,7 +11,6 @@
 
 #include <map>
 #include <vector>
-#include <feature.h>
 
 class symbol;
 class language_model;
@@ -27,19 +26,20 @@ public:
     rule(const rule& r) = delete;
     rule& operator=(const rule& r) = delete;
 
-    const symbol* get_start_symbol(int index) const;
+    float get_total_score() const;
+    float get_score(unsigned int index) const;
+    unsigned int get_feature_number() const;
     size_type get_terminal_number() const;
+    const symbol* get_start_symbol(int index) const;
     const std::vector<const symbol*>& get_target_rule_body() const;
-    const feature* get_feature(unsigned int id) const;
-    void set_start_symbol(const symbol* src, const symbol* tgt);
+
     void add_symbol(const symbol* sym);
-    void add_feature(feature* fea);
-    float get_score() const;
-    void evaluate_score(const language_model* lm, const weight_vector& weight);
+    void set_score(std::vector<float>& vec);
+    void set_start_symbol(const symbol* src, const symbol* tgt);
 private:
-    float score;
+    float* score;
+    unsigned int feature_number;
     const symbol* start_symbol[2];
-    std::vector<feature> feature_set;
     std::vector<const symbol*> target_rule_body;
     unsigned int* nonterminal_map;
     unsigned int target_terminal_number;

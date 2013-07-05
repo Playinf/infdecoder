@@ -4,8 +4,3 @@
 #include <iostream>
 #include <utility.h>
 #include <rule_tree.h>
-
-int main()
-{
-
-}

@@ -1,4 +1,5 @@
 /* rule_finder.cpp */
+#include <chart_cell.h>
 #include <rule_finder.h>
 
 rule_finder::rule_finder(rule_tree* tree)
@@ -11,7 +12,7 @@ rule_finder::rule_finder(rule_tree* tree)
 
 rule_finder::~rule_finder()
 {
-    clear();   
+    clear();
 }
 
 void rule_finder::set_span_limit(size_type limit)
@@ -83,7 +84,7 @@ void rule_finder::find(size_type start, size_type end, rule_set& rules)
                 rule_set->insert_partial_rule(new_rule);
             }
         }
-        
+
         // we do not allow match unary rule here
         if (rule_start == start && end > start)
             rule_end = end - 1;
@@ -94,19 +95,19 @@ void rule_finder::find(size_type start, size_type end, rule_set& rules)
 
         // match a nonterminal symbol
         chart_cell* cell = table->get_cell(rule_start, rule_end);
-        const std::vector<const symbol*>& symbol_set = cell->get_symbol_set();
-        size_type size = symbol_set.size();
+        auto& src_set = cell->get_source_start_symbol_set();
+        auto& tgt_set = cell->get_target_start_symbol_set();
 
-        for (size_type j = 0; j < size; j++) {
-            const symbol* sym = symbol_set[j];
-            
-            rt_node* child = tree->find_child(node, sym);
+        for (const symbol* src_sym : src_set) {
+            for (const symbol* tgt_sym : tgt_set) {
+                rt_node* child = tree->find_child(node, src_sym, tgt_sym);
 
-            if (child != nullptr) {
-                auto hypothesis_list = cell->get_hypothesis_list(sym);
-                partial_rule* new_rule = new partial_rule(child, r, len);
-                new_rule->set_hypothesis_list(hypothesis_list);
-                rule_set->insert_partial_rule(new_rule);
+                if (child != nullptr) {
+                    auto hypothesis_list = cell->get_hypothesis_list(tgt_sym);
+                    partial_rule* new_rule = new partial_rule(child, r, len);
+                    new_rule->set_hypothesis_list(hypothesis_list);
+                    rule_set->insert_partial_rule(new_rule);
+                }
             }
         }
     }

@@ -11,14 +11,18 @@
 
 #include <vector>
 
+class model;
 class parameter;
 
 class configuration {
 public:
     typedef std::pair<std::string, std::string> pair_type;
+    ~configuration();
 
-    static configuration* get_instance();
+    configuration(const configuration& conf) = delete;
+    configuration& operator=(const configuration& conf) = delete;
 
+    model* get_model() const;
     bool enable_distinct_nbest() const;
     unsigned int get_pop_limit() const;
     unsigned int get_span_limit() const;
@@ -28,14 +32,15 @@ public:
     float get_weight(unsigned int index) const;
     float get_beam_threshold(const std::string& nonterminal) const;
     unsigned int get_beam_size(const std::string& nonterminal) const;
-    void load_configuration_file(const char* filename);
-    void get_parameter(std::vector<pair_type>& vec);
+    parameter* get_parameter() const;
+
+    void load_parameter_file(const char* filename);
+
+    static configuration* get_instance();
 private:
     configuration();
-    ~configuration();
 
-    static configuration instance;
-
+    model* system_model;
     parameter* parameter_set;
     unsigned int beam_size;
     unsigned int pop_limit;
@@ -48,6 +53,8 @@ private:
     std::vector<float> weight_vector;
     std::string rule_table_path;
     std::string special_rule_table_path;
+
+    static configuration instance;
 };
 
 #endif /* __CONFIG_H__ */

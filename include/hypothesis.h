@@ -12,12 +12,11 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include <model.h>
+#include <feature.h>
 
 class rule;
 class symbol;
 class feature;
-class model;
 
 class hypothesis {
 public:
@@ -26,26 +25,28 @@ public:
     hypothesis(const rule* r);
     ~hypothesis();
 
-    const symbol* get_start_symbol() const;
-    void push_hypothesis(hypothesis* h);
-    void recombine(hypothesis* hypo);
-    void evaluate_score();
-    double get_score() const;
-    double get_heuristic_score() const;
-    double get_total_score() const;
-    void set_heuristic_score(double score);
-    void output(std::vector<const std::string*>& s) const;
-    int compare(const hypothesis* hypo) const;
-    const feature* get_feature(unsigned int id) const;
+    float get_score() const;
+    float get_heuristic_score() const;
+    float get_total_score() const;
+    const rule* get_rule() const;
+    unsigned int get_terminal_number() const;
     unsigned int get_feature_number() const;
+    const feature* get_feature(unsigned int index) const;
+    const symbol* get_start_symbol(unsigned int index) const;
+    hypothesis* get_recombined_hypothesis() const;
+    size_type get_previous_hypothesis_number() const;
+    std::vector<hypothesis*>* get_hypothesis_vector() const;
+    hypothesis* get_previous_hypothesis(unsigned int index) const;
     const std::vector<const std::string*>* get_prefix() const;
     const std::vector<const std::string*>* get_suffix() const;
-    size_type previous_hypothesis_number() const;
-    hypothesis* get_previous_hypothesis(unsigned int index) const;
-    std::vector<hypothesis*>* get_hypothesis_vector() const;
-    hypothesis* get_recombined_hypothesis() const;
-    unsigned int get_terminal_number() const;
-    const rule* get_rule() const;
+
+    void evaluate_score();
+    void set_heuristic_score(float score);
+    void recombine(hypothesis* hypo);
+    void push_hypothesis(hypothesis* h);
+    void output(std::vector<const std::string*>& s) const;
+    int compare(const hypothesis* hypo) const;
+    void calculate_prefix_suffix(unsigned int order);
 private:
     void calculate_prefix(std::vector<const std::string*>* out,
         size_type& size);
@@ -58,10 +59,10 @@ private:
     std::vector<const std::string*> prefix;
     std::vector<const std::string*> suffix;
     std::vector<hypothesis*>* hypothesis_vector;
+    std::vector<feature> log_linear_model;
     unsigned int terminal_number;
-    model log_linear_model;
-    double score;
-    double heuristic_score;
+    float score;
+    float heuristic_score;
 };
 
 #endif /* __HYPOTHESIS_H__ */

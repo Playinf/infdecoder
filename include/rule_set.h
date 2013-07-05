@@ -3,17 +3,18 @@
  *
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __RULE_SET_H__
 #define __RULE_SET_H__
 
 #include <vector>
-#include <rule.h>
-#include <symbol.h>
-#include <hypothesis.h>
-#include <partial_rule.h>
+
+class rule;
+class symbol;
+class hypothesis;
+class partial_rule;
 
 class rule_list {
 public:
@@ -24,13 +25,14 @@ public:
     rule_list(size_type size = 0);
     ~rule_list();
 
+    std::vector<const rule*>* get_rule_vector() const;
+    hypothesis_list* get_hypothesis_vector(unsigned int pos);
+    size_type get_rule_nonterminal_number() const;
+    const symbol* get_start_symbol() const;
+
     void set_rule_vector(const vector_type* vec);
     void add_hypothese_list(hypothesis_list* list);
-    std::vector<const rule*>* get_rule_vector();
-    hypothesis_list* get_hypothesis_vector(unsigned int pos);
-    size_type get_rule_nonterminal_num() const;
     size_type size() const;
-    const symbol* get_start_symbol() const;
 private:
     std::vector<const rule*>* rule_vector;
     std::vector<hypothesis_list*>* hypothesis_vector;

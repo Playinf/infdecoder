@@ -26,9 +26,10 @@ public:
     trellis_node(const trellis_detour* detour, trellis_node** deviation_node);
     ~trellis_node();
 
+    size_type get_children_num() const;
     const hypothesis* get_hypothesis() const;
     const trellis_node* get_child(size_type index) const;
-    size_type get_children_num() const;
+
     void output(std::vector<const std::string*>* sentence) const;
 private:
     trellis_node(const trellis_node* root, const trellis_node* substituted,
@@ -48,18 +49,20 @@ public:
     trellis_path(const trellis_detour* detour);
     ~trellis_path();
 
+    float get_total_score() const;
+    float get_heuristic_score() const;
     const trellis_node* get_final_node() const;
     const trellis_node* get_deviation_node() const;
-    double get_heuristic_score() const;
-    const std::vector<double>* get_score_vector() const;
-    double get_total_score() const;
+
+    const std::vector<float>* get_score_vector() const;
+
     void output(std::vector<const std::string*>* sentence) const;
 private:
     trellis_node* final_node;
     trellis_node* deviation_node;
-    std::vector<double> score_vector;
-    double heuristic_score;
-    double total_score;
+    std::vector<float> score_vector;
+    float heuristic_score;
+    float total_score;
 };
 
 class trellis_detour {
@@ -68,15 +71,15 @@ public:
         const trellis_node* substituted, const hypothesis* replacement);
     ~trellis_detour();
 
+    float get_total_score() const;
     const trellis_path* get_base_path() const;
     const trellis_node* get_substituted_node() const;
     const hypothesis* get_replacement_hypothesis() const;
-    double get_total_score() const;
 private:
     std::shared_ptr<const trellis_path> base_path;
     const trellis_node* substituted_node;
     const hypothesis* replacement_hypothesis;
-    double total_score;
+    float total_score;
 };
 
 struct trellis_detour_less {

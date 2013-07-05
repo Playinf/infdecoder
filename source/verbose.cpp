@@ -3,6 +3,8 @@
 #include <iostream>
 #include <beam.h>
 #include <rule.h>
+#include <symbol.h>
+#include <rule_set.h>
 #include <verbose.h>
 #include <hypothesis.h>
 
@@ -20,7 +22,8 @@ void print_beam(const beam* b)
 
 void print_rule(const rule* r)
 {
-    const symbol* lhs = r->get_start_symbol();
+    const unsigned int tgt_lhs_idx = 1;
+    const symbol* lhs = r->get_start_symbol(tgt_lhs_idx);
     const std::vector<const symbol*>& rhs = r->get_target_rule_body();
 
     print_symbol(lhs);
@@ -40,6 +43,28 @@ void print_symbol(const symbol* s)
 
     if (s->is_nonterminal())
         std::cout << "[NONTERMINAL]";
+}
+
+void print_rule_set(const rule_set* s)
+{
+    unsigned int size = s->size();
+
+    for (unsigned int i = 0; i < size; i++) {
+        rule_list* l = s->get_rule_list(i);
+
+        print_rule_list(l);
+    }
+}
+
+void print_rule_list(const rule_list* l)
+{
+    auto vec = l->get_rule_vector();
+
+    for (unsigned int i = 0; i < vec->size(); i++) {
+        const rule* r = vec->at(i);
+
+        print_rule(r);
+    }
 }
 
 void print_hypothesis(const hypothesis* hypo)
@@ -64,7 +89,7 @@ void hypothesis_track(const hypothesis* hypo)
     std::cout << "RULE: ";
     print_rule(hypo->get_rule());
 
-    unsigned int size = hypo->previous_hypothesis_number();
+    unsigned int size = hypo->get_previous_hypothesis_number();
 
     for (unsigned int i = 0; i < size; i++) {
         const hypothesis* h = hypo->get_previous_hypothesis(i);

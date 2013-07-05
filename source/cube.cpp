@@ -6,7 +6,7 @@ double cube::margin;
 cube::cube(rule_list* list)
 {
     cube_item* item = new cube_item(list);
-    dimension = list->get_rule_nonterminal_num() + 1;
+    dimension = list->get_rule_nonterminal_number() + 1;
 
     item->generate_hypothesis();
     enumerated_item_set.insert(item);

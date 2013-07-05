@@ -2,6 +2,7 @@
 #include <string>
 #include <beam.h>
 #include <cube.h>
+#include <config.h>
 #include <symbol.h>
 #include <rule_set.h>
 #include <chart_cell.h>
@@ -9,93 +10,90 @@
 
 chart_cell::chart_cell()
 {
-    x_symbol_beam = nullptr;
-    s_symbol_beam = nullptr;
-    symbol_set.reserve(2);
 }
 
 chart_cell::~chart_cell()
 {
-    if (x_symbol_beam) {
-        delete x_symbol_beam;
-    }
-
-    if (s_symbol_beam) {
-        delete s_symbol_beam;
+    for (auto& b : nonterminal_beam_set) {
+        delete b.second;
     }
 }
 
 void chart_cell::add_hypothesis(hypothesis* hypo)
 {
-    const symbol* start_symbol = hypo->get_start_symbol();
-    const std::string& name = *start_symbol->get_name();
-    static auto& x_beam_size_str = parameter::get_parameter("x-beam-size");
-    static auto& s_beam_size_str = parameter::get_parameter("x-beam-size");
-    static auto& x_thres_str = parameter::get_parameter("x-beam-threshold");
-    static auto& s_thres_str = parameter::get_parameter("s-beam-threshold");
-    static unsigned int x_beam_size = std::atoi(x_beam_size_str.c_str());
-    static unsigned int s_beam_size = std::atoi(s_beam_size_str.c_str());
-    static double x_beam_threshold = std::atof(x_thres_str.c_str());
-    static double s_beam_threshold = std::atof(s_thres_str.c_str());
+    const symbol* source_start_symbol = hypo->get_start_symbol(0);
+    const symbol* target_start_symbol = hypo->get_start_symbol(1);
+    auto result = nonterminal_beam_set.find(target_start_symbol);
+    configuration* config = configuration::get_instance();
+    beam* nonterminal_beam;
 
-    if (name == "X") {
-        if (!x_symbol_beam) {
-            symbol_set.push_back(start_symbol);
-            x_symbol_beam = new beam(x_beam_size, x_beam_threshold);
-        }
+    if (result == nonterminal_beam_set.end()) {
+        const std::string& sym_name = *target_start_symbol->get_name();
+        unsigned int beam_size = config->get_beam_size(sym_name);
+        float beam_threshold = config->get_beam_threshold(sym_name);
 
-        x_symbol_beam->insert_hypothesis(hypo);
-    } else if (name == "S") {
-        if (!s_symbol_beam) {
-            symbol_set.push_back(start_symbol);
-            s_symbol_beam = new beam(s_beam_size, s_beam_threshold);
-        }
-
-        s_symbol_beam->insert_hypothesis(hypo);
+        nonterminal_beam = new beam(beam_size, beam_threshold);
+        nonterminal_beam_set[target_start_symbol] = nonterminal_beam;
+    } else {
+        nonterminal_beam = result->second;
     }
+
+    nonterminal_beam->insert_hypothesis(hypo);
+
+    source_start_symbol_set.insert(source_start_symbol);
+    target_start_symbol_set.insert(target_start_symbol);
 
     return;
 }
 
-const std::vector<const symbol*>& chart_cell::get_symbol_set() const
+const chart_cell::symbol_set& chart_cell::get_source_start_symbol_set() const
 {
-    return symbol_set;
+    return source_start_symbol_set;
+}
+
+const chart_cell::symbol_set& chart_cell::get_target_start_symbol_set() const
+{
+    return target_start_symbol_set;
+}
+
+void chart_cell::get_all_hypothesis(hypothesis_list* hypo_list)
+{
+    for (auto& b : nonterminal_beam_set) {
+        beam* nonterm_beam = b.second;
+        auto hlist = nonterm_beam->get_sorted_hypothesis_list();
+
+        if (hlist == nullptr)
+            continue;
+
+        for (unsigned int i = 0; i < hlist->size(); i++) {
+            hypothesis* hypo = hlist->at(i);
+            hypo_list->push_back(hypo);
+        }
+    }
 }
 
 chart_cell::hypothesis_list* chart_cell::get_hypothesis_list(const symbol* lhs)
 {
-    const std::string& name = *lhs->get_name();
-
     if (lhs->is_terminal())
         return nullptr;
 
-    if (name == "X") {
+    auto result = nonterminal_beam_set.find(lhs);
 
-        if (x_symbol_beam == nullptr)
-            return nullptr;
+    if (result == nonterminal_beam_set.end())
+        return nullptr;
 
-        return x_symbol_beam->get_sorted_hypothesis_list();
-    } else if (name == "S") {
+    beam* nonterminal_beam = result->second;
 
-        if (s_symbol_beam == nullptr)
-            return nullptr;
-
-        return s_symbol_beam->get_sorted_hypothesis_list();
-    }
-
-    return nullptr;
+    return nonterminal_beam->get_sorted_hypothesis_list();
 }
 
-void chart_cell::decode(rule_set* s)
+void chart_cell::decode(rule_set* s, unsigned int limit)
 {
     unsigned int size = s->size();
     cube_queue queue;
-    static const std::string* lim_str = &parameter::get_parameter("pop-limit");
-    static unsigned int limit = std::atoi(lim_str->c_str());
 
     for (unsigned int i = 0; i < size; i++) {
         rule_list* list = s->get_rule_list(i);
-        //list->print();
         cube* rule_cube = new cube(list);
 
         queue.insert(rule_cube);
@@ -112,20 +110,7 @@ void chart_cell::decode(rule_set* s)
 
 void chart_cell::sort()
 {
-    if (x_symbol_beam)
-        x_symbol_beam->sort();
-
-    if (s_symbol_beam)
-        s_symbol_beam->sort();
-}
-
-#include <verbose.h>
-
-void chart_cell::print()
-{
-    if (x_symbol_beam)
-        print_beam(x_symbol_beam);
-
-    if (s_symbol_beam)
-        print_beam(s_symbol_beam);
+    for (auto& b : nonterminal_beam_set) {
+        b.second->sort();
+    }
 }

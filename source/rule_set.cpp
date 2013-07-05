@@ -1,7 +1,11 @@
 /* rule_set.cpp */
 #include <limits>
 #include <algorithm>
+#include <rule.h>
+#include <symbol.h>
 #include <rule_set.h>
+#include <hypothesis.h>
+#include <partial_rule.h>
 
 rule_list::rule_list(size_type size)
 {
@@ -24,7 +28,7 @@ void rule_list::add_hypothese_list(hypothesis_list* list)
     hypothesis_vector->push_back(list);
 }
 
-std::vector<const rule*>* rule_list::get_rule_vector()
+std::vector<const rule*>* rule_list::get_rule_vector() const
 {
     return rule_vector;
 }
@@ -34,10 +38,10 @@ rule_list::hypothesis_list* rule_list::get_hypothesis_vector(unsigned int pos)
     return hypothesis_vector->at(pos);
 }
 
-rule_list::size_type rule_list::get_rule_nonterminal_num() const
+rule_list::size_type rule_list::get_rule_nonterminal_number() const
 {
     auto r = rule_vector->at(0);
-    unsigned int terminal_num = r->get_terminal_num();
+    unsigned int terminal_num = r->get_terminal_number();
     unsigned int symbol_num = r->get_target_rule_body().size();
     unsigned int nonterminal_num = symbol_num - terminal_num;
 
@@ -56,8 +60,11 @@ rule_list::size_type rule_list::size() const
 
 const symbol* rule_list::get_start_symbol() const
 {
+    /* target nonterminal */
+    const unsigned int index = 1;
     const rule* r = rule_vector->at(0);
-    return r->get_start_symbol();
+
+    return r->get_start_symbol(index);
 }
 
 rule_set::rule_set()
@@ -73,7 +80,7 @@ void rule_set::add_complete_rule(partial_rule* rule)
 {
     auto& rule_vec = *rule->get_rule();
     auto r = rule_vec[0];
-    unsigned int terminal_num = r->get_terminal_num();
+    unsigned int terminal_num = r->get_terminal_number();
     unsigned int symbol_num = r->get_target_rule_body().size();
     unsigned int nonterminal_num = symbol_num - terminal_num;
     rule_list* list = new rule_list(nonterminal_num);

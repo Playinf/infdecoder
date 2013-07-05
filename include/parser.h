@@ -3,7 +3,7 @@
  * implementation of CYK parser
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __PARSER_H__
@@ -12,15 +12,14 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <rule.h>
-#include <chart.h>
-#include <trellis.h>
-#include <rule_set.h>
-#include <rule_tree.h>
-#include <rule_finder.h>
-#include <partial_rule.h>
 
-class derivation;
+class chart;
+class symbol;
+class rule_set;
+class rule_tree;
+class hypothesis;
+class rule_finder;
+class trellis_path;
 
 class parser {
 public:
@@ -31,14 +30,14 @@ public:
     parser(std::vector<rule_tree*>* tree_vec);
     ~parser();
 
-    void parse(input_type& input);
-    hypothesis* get_hypothesis(size_type index);
+    void get_all_hypothesis(std::vector<hypothesis*>& hypo_vec);
     void get_nbest(unsigned int num, path_vector* path_list, bool distinct);
-    void find_nbest(unsigned int num, std::vector<derivation*>* vec, bool distinct);
+
+    void parse(input_type& input);
     void clear();
 private:
-    void process_unknow_word(const symbol* sym);
     void parser_initialize();
+
     chart* table;
     input_type* input;
     rule_set* applicable_rule_set;

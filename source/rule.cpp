@@ -6,7 +6,8 @@
 
 rule::rule(size_type size)
 {
-    score = 0.0f;
+    score = nullptr;
+    feature_number = 0;
     start_symbol[0] = nullptr;
     start_symbol[1] = nullptr;
     target_terminal_number = 0;
@@ -15,26 +16,17 @@ rule::rule(size_type size)
 
 rule::~rule()
 {
-    // do nothing
+    delete[] score;
 }
 
-void rule::add_symbol(const symbol* sym)
+float rule::get_score(unsigned int index) const
 {
-    target_rule_body.push_back(sym);
-
-    if (sym->is_terminal())
-        target_terminal_number++;
+    return score[index];
 }
 
-void rule::set_start_symbol(const symbol* src, const symbol* tgt)
+unsigned int rule::get_feature_number() const
 {
-    start_symbol[0] = src;
-    start_symbol[1] = tgt;
-}
-
-const symbol* rule::get_start_symbol(int index) const
-{
-    return start_symbol[index];
+    return feature_number;
 }
 
 rule::size_type rule::get_terminal_number() const
@@ -42,9 +34,9 @@ rule::size_type rule::get_terminal_number() const
     return target_terminal_number;
 }
 
-float rule::get_score() const
+const symbol* rule::get_start_symbol(int index) const
 {
-    return score;
+    return start_symbol[index];
 }
 
 const std::vector<const symbol*>& rule::get_target_rule_body() const
@@ -52,25 +44,7 @@ const std::vector<const symbol*>& rule::get_target_rule_body() const
     return target_rule_body;
 }
 
-const feature* rule::get_feature(unsigned int id) const
-{
-    unsigned int size = feature_set.size();
-
-    for (unsigned int i = 0; i < size; i++) {
-        const feature& f = feature_set[i];
-
-        if (f.get_id() == id)
-            return &f;
-    }
-
-    return nullptr;
-}
-
-void rule::add_feature(feature* fea)
-{
-    feature_set.push_back(*fea);
-}
-
+/*
 void rule::evaluate_score(const language_model* lm, const weight_vector& weight)
 {
     unsigned int size = target_rule_body.size();
@@ -93,4 +67,29 @@ void rule::evaluate_score(const language_model* lm, const weight_vector& weight)
     }
 
     score += terminal_num_weight * penalty * target_terminal_number;
+}
+*/
+
+void rule::add_symbol(const symbol* sym)
+{
+    target_rule_body.push_back(sym);
+
+    if (sym->is_terminal())
+        target_terminal_number++;
+}
+
+void rule::set_score(std::vector<float>& vec)
+{
+    feature_number = vec.size();
+
+    score = new float[feature_number];
+
+    for (unsigned int i = 0; i < vec.size(); i++)
+        score[i] = vec[i];
+}
+
+void rule::set_start_symbol(const symbol* src, const symbol* tgt)
+{
+    start_symbol[0] = src;
+    start_symbol[1] = tgt;
 }

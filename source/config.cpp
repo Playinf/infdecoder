@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <model.h>
 #include <config.h>
 #include <utility.h>
 #include <parameter.h>
@@ -12,12 +13,19 @@ configuration configuration::instance;
 
 configuration::configuration()
 {
+    system_model = new model;
     parameter_set = new parameter();
 }
 
 configuration::~configuration()
 {
+    delete system_model;
     delete parameter_set;
+}
+
+model* configuration::get_model() const
+{
+    return system_model;
 }
 
 bool configuration::enable_distinct_nbest() const
@@ -77,7 +85,7 @@ unsigned int configuration::get_beam_size(const std::string& nonterminal) const
     return beam_size;
 }
 
-void configuration::load_configuration_file(const char* filename)
+void configuration::load_parameter_file(const char* filename)
 {
     parameter_set->load(filename);
 
@@ -98,9 +106,9 @@ void configuration::load_configuration_file(const char* filename)
     }
 }
 
-void configuration::get_parameter(std::vector<pair_type>& vec)
+parameter* configuration::get_parameter() const
 {
-    return parameter_set->get_parameter(vec);
+    return parameter_set;
 }
 
 configuration* configuration::get_instance()

@@ -5,7 +5,7 @@
 cube_item::cube_item(rule_list* list)
     : rule_position(list->get_rule_vector(), 0)
 {
-    unsigned num = list->get_rule_nonterminal_num();
+    unsigned num = list->get_rule_nonterminal_number();
     generated_hypothesis = nullptr;
 
     if (num) {

@@ -28,11 +28,11 @@ std::size_t symbol_equal::operator()(const symbol& s1, const symbol& s2) const
 
     return s1.get_type() == s2.get_type();
 }
-
+/*
 bool rule_less::operator()(const rule* r1, const rule* r2) const
 {
     return r1->get_score() > r2->get_score();
-}
+}*/
 
 size_t rt_node_hash::operator()(const rt_node& node) const
 {

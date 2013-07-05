@@ -1,9 +1,8 @@
 /* trellis.cpp */
 #include <rule.h>
+#include <symbol.h>
 #include <trellis.h>
 
-#include <verbose.h>
-#include <iostream>
 
 /* trellis_node */
 trellis_node::trellis_node(const hypothesis* hypo)
@@ -58,6 +57,11 @@ trellis_node::~trellis_node()
     children.clear();
 }
 
+trellis_node::size_type trellis_node::get_children_num() const
+{
+    return children.size();
+}
+
 const hypothesis* trellis_node::get_hypothesis() const
 {
     return hypo;
@@ -66,11 +70,6 @@ const hypothesis* trellis_node::get_hypothesis() const
 const trellis_node* trellis_node::get_child(size_type index) const
 {
     return children[index];
-}
-
-trellis_node::size_type trellis_node::get_children_num() const
-{
-    return children.size();
 }
 
 void trellis_node::output(std::vector<const std::string*>* sentence) const
@@ -96,7 +95,7 @@ void trellis_node::output(std::vector<const std::string*>* sentence) const
 void trellis_node::create_children()
 {
     const std::vector<hypothesis*>* hypo_vec;
-    size_t size = hypo->previous_hypothesis_number();
+    size_t size = hypo->get_previous_hypothesis_number();
 
     if (!size)
         return;
@@ -151,7 +150,7 @@ trellis_path::trellis_path(const trellis_detour* detour)
     const trellis_node* substituted_node = detour->get_substituted_node();
     const hypothesis* substituted = substituted_node->get_hypothesis();
     const hypothesis* replacement = detour->get_replacement_hypothesis();
-    const std::vector<double>* base_score_vector = basepath->get_score_vector();
+    const std::vector<float>* base_score_vector = basepath->get_score_vector();
     unsigned int size = base_score_vector->size();
 
     score_vector.reserve(size);
@@ -159,13 +158,13 @@ trellis_path::trellis_path(const trellis_detour* detour)
     for (unsigned int i = 0; i < size; i++) {
         const feature* f1 = substituted->get_feature(i);
         const feature* f2 = replacement->get_feature(i);
-        double score = base_score_vector->at(i);
+        float score = base_score_vector->at(i);
         score += f2->get_score() - f1->get_score();
         score_vector.push_back(score);
     }
 
-    double h1 = substituted->get_heuristic_score();
-    double h2 = replacement->get_heuristic_score();
+    float h1 = substituted->get_heuristic_score();
+    float h2 = replacement->get_heuristic_score();
     heuristic_score = basepath->get_heuristic_score();
     heuristic_score += h2 - h1;
     total_score = detour->get_total_score();
@@ -178,6 +177,16 @@ trellis_path::~trellis_path()
     delete final_node;
 }
 
+float trellis_path::get_heuristic_score() const
+{
+    return heuristic_score;
+}
+
+float trellis_path::get_total_score() const
+{
+    return total_score;
+}
+
 const trellis_node* trellis_path::get_final_node() const
 {
     return final_node;
@@ -188,19 +197,9 @@ const trellis_node* trellis_path::get_deviation_node() const
     return deviation_node;
 }
 
-const std::vector<double>* trellis_path::get_score_vector() const
+const std::vector<float>* trellis_path::get_score_vector() const
 {
     return &score_vector;
-}
-
-double trellis_path::get_heuristic_score() const
-{
-    return heuristic_score;
-}
-
-double trellis_path::get_total_score() const
-{
-    return total_score;
 }
 
 void trellis_path::output(std::vector<const std::string*>* sentence) const
@@ -241,7 +240,7 @@ const hypothesis* trellis_detour::get_replacement_hypothesis() const
     return replacement_hypothesis;
 }
 
-double trellis_detour::get_total_score() const
+float trellis_detour::get_total_score() const
 {
     return total_score;
 }

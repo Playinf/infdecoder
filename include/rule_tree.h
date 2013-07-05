@@ -19,6 +19,7 @@ class symbol;
 
 class rt_node {
 public:
+    typedef unsigned int size_type;
     typedef std::vector<const rule*> vector_type;
     typedef std::unordered_set<rt_node, rt_node_hash> set_type;
 
@@ -28,19 +29,25 @@ public:
     ~rt_node();
 
     rt_node& operator=(const rt_node& n) = delete;
+    bool operator==(const rt_node& node) const;
 
-    const symbol* get_source_symbol() const;
-    const symbol* get_target_symbol() const;
+    bool is_leaf() const;
+    const symbol* get_symbol() const;
     const symbol* get_symbol(int index) const;
     const vector_type* get_rules() const;
-    bool is_leaf() const;
-    bool operator==(const rt_node& node) const;
-    void insert_rule(const rule* r);
-    std::pair<rt_node*, bool> insert_child(const symbol* sym);
-    rt_node* find_child(const symbol* sym) const;
-    rt_node* find_child(const symbol* src, const symbol* tgt);
-    static void sort(rt_node* node, unsigned limit);
+
+    void sort();
     void sort(unsigned int limit);
+    size_type prune(unsigned int limit);
+    void insert_rule(const rule* r);
+    rt_node* find_child(const symbol* sym) const;
+    rt_node* find_child(const symbol* src, const symbol* tgt) const;
+    std::pair<rt_node*, bool> insert_child(const symbol* sym);
+    std::pair<rt_node*, bool> insert_child(const symbol* s, const symbol* t);
+
+    static void sort(rt_node* node);
+    static void sort(rt_node* node, unsigned int limit);
+    static size_type prune(rt_node* node, unsigned int limit);
 private:
     const symbol* link[2];
     vector_type* rule_vector;
@@ -49,7 +56,7 @@ private:
 
 class rule_tree {
 public:
-    typedef size_t size_type;
+    typedef unsigned int size_type;
     typedef rt_node node_type;
 
     rule_tree();
@@ -58,12 +65,18 @@ public:
     rule_tree(const rule_tree& t) = delete;
     rule_tree& operator=(const rule_tree& t) = delete;
 
+    size_type get_rule_number() const;
+    size_type get_node_number() const;
     const node_type* get_root() const;
+
+    void sort();
+    void sort(unsigned int limit);
+    void prune(unsigned int limit);
     rt_node* insert_node(rt_node* parent, const symbol* sym);
     rt_node* insert_node(rt_node* parent, const symbol* src, const symbol* tgt);
     rt_node* find_child(const rt_node* parent, const symbol* sym);
+    rt_node* find_child(const rt_node* p, const symbol* src, const symbol* tgt);
     void insert_rule(rt_node* node, rule* r);
-    void sort();
 private:
     node_type root;
     size_type node_num;

@@ -30,7 +30,7 @@ struct rule_less {
 };
 
 struct rt_node_hash {
-    size_t operator()(const rt_node& node) const;
+    std::size_t operator()(const rt_node& node) const;
 };
 
 #endif /* __FUNCTIONAL_H__ */

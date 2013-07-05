@@ -6,9 +6,6 @@
 #include <utility.h>
 #include <parameter.h>
 
-#include <iostream>
-#include <typeinfo>
-
 /* beam search */
 static const float DEFAULT_BEAM_THRESHOLD = -10000.0;
 static const unsigned int DEFAULT_BEAM_SIZE = 100;
@@ -22,14 +19,6 @@ static const unsigned int DEFAULT_FEATURE_NUMBER = 8;
 static const unsigned int DEFAULT_DISTINCT_NBEST = 0;
 static const unsigned int DEFAULT_NBEST_NUMBER = 1;
 static const unsigned int DEFAULT_THREAD_NUMBER = 1;
-
-/*
-enum token_type {
-    LEFT_BRACKET, RIGHT_BRACKET, LEFT_BRACE, RIGHT_BRACE,
-    QUOTE, COMMA, SEMICOLON, PERIOD,
-    STRING, INTEGER, REAL, ARRAY
-};
-*/
 
 enum parameter_type {
     STRING, INTEGER, REAL, ARRAY
@@ -69,14 +58,45 @@ parameter::parameter()
     load_default();
 }
 
-parameter::parameter(const char* filename)
-{
-    load_default();
-    load(filename);
-}
-
 parameter::~parameter()
 {
+    /* do nothing */
+}
+
+float parameter::get_real_parameter(const std::string& param)
+{
+    return real_parameter_map[param];
+}
+
+unsigned int parameter::get_integer_parameter(const std::string& param)
+{
+    return integer_parameter_map[param];
+}
+
+const std::string& parameter::get_string_parameter(const std::string& param)
+{
+    return string_parameter_map[param];
+}
+
+void parameter::get_parameter(std::vector<pair_type>& vec) const
+{
+    for (auto& value_pair : string_parameter_map) {
+        std::string name = value_pair.first;
+        std::string value = value_pair.second;
+        vec.push_back(std::make_pair(name, value));
+    }
+
+    for (auto& value_pair : integer_parameter_map) {
+        std::string name = value_pair.first;
+        std::string value = std::to_string(value_pair.second);
+        vec.push_back(std::make_pair(name, value));
+    }
+
+    for (auto& value_pair : real_parameter_map) {
+        std::string name = value_pair.first;
+        std::string value = std::to_string(value_pair.second);
+        vec.push_back(std::make_pair(name, value));
+    }
 }
 
 void parameter::load_default()
@@ -154,38 +174,17 @@ void parameter::load(const char* filename)
     }
 }
 
-float parameter::get_real_parameter(const std::string& param)
+void parameter::add_parameter(const std::string& name, float val)
 {
-    return real_parameter_map[param];
+    real_parameter_map[name] = val;
 }
 
-unsigned int parameter::get_integer_parameter(const std::string& param)
+void parameter::add_parameter(const std::string& name, unsigned int val)
 {
-    return integer_parameter_map[param];
+    integer_parameter_map[name] = val;
 }
 
-const std::string& parameter::get_string_parameter(const std::string& param)
+void parameter::add_parameter(const std::string& name, const std::string& val)
 {
-    return string_parameter_map[param];
-}
-
-void parameter::get_parameter(std::vector<pair_type>& vec)
-{
-    for (auto& value_pair : string_parameter_map) {
-        std::string name = value_pair.first;
-        std::string value = value_pair.second;
-        vec.push_back(std::make_pair(name, value));
-    }
-
-    for (auto& value_pair : integer_parameter_map) {
-        std::string name = value_pair.first;
-        std::string value = std::to_string(value_pair.second);
-        vec.push_back(std::make_pair(name, value));
-    }
-
-    for (auto& value_pair : real_parameter_map) {
-        std::string name = value_pair.first;
-        std::string value = std::to_string(value_pair.second);
-        vec.push_back(std::make_pair(name, value));
-    }
+    string_parameter_map[name] = val;
 }

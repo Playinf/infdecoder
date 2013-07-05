@@ -28,12 +28,12 @@ public:
     ~symbol();
 
     symbol& operator=(const symbol& sym) = delete;
+    bool operator==(const symbol& sym) const;
 
     const std::string* get_name() const;
     symbol_type get_type() const;
     bool is_terminal() const;
     bool is_nonterminal() const;
-    bool operator==(const symbol& sym) const;
 private:
     const std::string* name;
     symbol_type type;

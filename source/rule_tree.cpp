@@ -4,6 +4,8 @@
 #include <symbol.h>
 #include <rule_tree.h>
 
+/* rt_node */
+
 rt_node::rt_node()
 {
     link[0] = nullptr;
@@ -43,25 +45,69 @@ rt_node::~rt_node()
         delete child_nodes;
 }
 
+bool rt_node::operator==(const rt_node& node) const
+{
+    if (link[0] == node.link[0] && link[1] == node.link[1])
+        return true;
+
+    return false;
+}
+
+bool rt_node::is_leaf() const
+{
+    return child_nodes == nullptr;
+}
+
+const symbol* rt_node::get_symbol() const
+{
+    return link[0];
+}
+
+const symbol* rt_node::get_symbol(int index) const
+{
+    return link[index];
+}
+
+const rt_node::vector_type* rt_node::get_rules() const
+{
+    return rule_vector;
+}
+
+void rt_node::sort()
+{
+    auto begin = rule_vector->begin();
+    auto end = rule_vector->end();
+
+    //std::sort(begin, end, rule_less());
+}
+
+void rt_node::sort(unsigned int limit)
+{
+    auto begin = rule_vector->begin();
+    auto end = rule_vector->end();
+
+    /* using partial_sort instead of sort */
+    //std::partial_sort(begin, end, rule_less());
+}
+
+rt_node::size_type rt_node::prune(unsigned int limit)
+{
+    size_type size = rule_vector->size();
+
+    if (size > limit) {
+        rule_vector->resize(limit);
+        size = limit;
+    }
+
+    return size;
+}
+
 void rt_node::insert_rule(const rule* r)
 {
     if (rule_vector == nullptr)
         rule_vector = new std::vector<const rule*>;
 
     rule_vector->push_back(r);
-}
-
-std::pair<rt_node*, bool> rt_node::insert_child(const symbol* sym)
-{
-    rt_node node(sym);
-
-    if (child_nodes == nullptr)
-        child_nodes = new set_type;
-
-    auto result = child_nodes->insert(node);
-    rt_node* node_ptr = const_cast<rt_node*>(&(*result.first));
-
-    return std::pair<rt_node*, bool>(node_ptr, result.second);
 }
 
 rt_node* rt_node::find_child(const symbol* sym) const
@@ -79,27 +125,63 @@ rt_node* rt_node::find_child(const symbol* sym) const
     return nullptr;
 }
 
-const symbol* rt_node::get_symbol(int index) const
+rt_node* rt_node::find_child(const symbol* src, const symbol* tgt) const
 {
-    return link[index];
+    rt_node node(src, tgt);
+
+    if (child_nodes != nullptr) {
+        auto end = child_nodes->end();
+        auto result = child_nodes->find(node);
+
+        if (result != end)
+            return const_cast<rt_node*>(&(*result));
+    }
+
+    return nullptr;
 }
 
-const rt_node::vector_type* rt_node::get_rules() const
+std::pair<rt_node*, bool> rt_node::insert_child(const symbol* sym)
 {
-    return rule_vector;
+    rt_node node(sym);
+
+    if (child_nodes == nullptr)
+        child_nodes = new set_type;
+
+    auto result = child_nodes->insert(node);
+    rt_node* node_ptr = const_cast<rt_node*>(&(*result.first));
+
+    return std::pair<rt_node*, bool>(node_ptr, result.second);
 }
 
-bool rt_node::is_leaf() const
+std::pair<rt_node*, bool> rt_node::insert_child(const symbol* src,
+    const symbol* tgt)
 {
-    return child_nodes == nullptr;
+    rt_node node(src, tgt);
+
+    if (child_nodes == nullptr)
+        child_nodes = new set_type;
+
+    auto result = child_nodes->insert(node);
+    rt_node* node_ptr = const_cast<rt_node*>(&(*result.first));
+
+    return std::pair<rt_node*, bool>(node_ptr, result.second);
 }
 
-bool rt_node::operator==(const rt_node& node) const
+void rt_node::sort(rt_node* node)
 {
-    if (link[0] == node.link[0] && link[1] == node.link[1])
-        return true;
+    auto rules = node->rule_vector;
+    auto child = node->child_nodes;
 
-    return false;
+    if (rules != nullptr && rules->size() > 1)
+        node->sort();
+
+    if (child == nullptr)
+        return;
+
+    for (auto iter = child->begin(); iter != child->end(); ++iter) {
+        rt_node* n = const_cast<rt_node*>(&(*iter));
+        sort(n);
+    }
 }
 
 void rt_node::sort(rt_node* node, unsigned int limit)
@@ -113,27 +195,36 @@ void rt_node::sort(rt_node* node, unsigned int limit)
     if (child == nullptr)
         return;
 
+    for (auto iter = child->begin(); iter != child->end(); ++iter) {
+        rt_node* n = const_cast<rt_node*>(&(*iter));
+        sort(n, limit);
+    }
+}
+
+rt_node::size_type rt_node::prune(rt_node* node, unsigned int limit)
+{
+    size_type num = 0;
+    auto rules = node->rule_vector;
+    auto child = node->child_nodes;
+
+    num += node->prune(limit);
+
+    if (child == nullptr)
+        return num;
+
     auto begin = child->begin();
     auto end = child->end();
     auto iter = begin;
 
-    while (iter != end) {
+    for (auto iter = child->begin(); iter != child->end(); ++iter) {
         rt_node* n = const_cast<rt_node*>(&(*iter));
-        sort(n, limit);
-        ++iter;
+        num += prune(n, limit);
     }
+
+    return num;
 }
 
-void rt_node::sort(unsigned int limit)
-{
-    auto begin = rule_vector->begin();
-    auto end = rule_vector->end();
-
-    std::sort(begin, end, rule_less());
-
-    if (rule_vector->size() > limit)
-        rule_vector->resize(limit);
-}
+/* rule_tree */
 
 rule_tree::rule_tree()
 {
@@ -146,9 +237,40 @@ rule_tree::~rule_tree()
     // do nothing
 }
 
+rule_tree::size_type rule_tree::get_rule_number() const
+{
+    return rule_num;
+}
+
+rule_tree::size_type rule_tree::get_node_number() const
+{
+    return node_num;
+}
+
 const rule_tree::node_type* rule_tree::get_root() const
 {
     return &root;
+}
+
+void rule_tree::sort()
+{
+    rt_node::sort(&root);
+}
+
+void rule_tree::sort(unsigned int limit)
+{
+    if (!limit)
+        rt_node::sort(&root);
+    else
+        rt_node::sort(&root, limit);
+}
+
+void rule_tree::prune(unsigned int limit)
+{
+    if (!limit)
+        return;
+
+    rule_num = rt_node::prune(&root, limit);
 }
 
 rt_node* rule_tree::insert_node(rt_node* parent, const symbol* sym)
@@ -161,18 +283,29 @@ rt_node* rule_tree::insert_node(rt_node* parent, const symbol* sym)
     return result.first;
 }
 
+rt_node* rule_tree::insert_node(rt_node* p, const symbol* src, const symbol* tgt)
+{
+    auto result = p->insert_child(src, tgt);
+
+    if (result.second)
+        node_num += 1;
+
+    return result.first;
+}
+
 rt_node* rule_tree::find_child(const rt_node* parent, const symbol* sym)
 {
     return parent->find_child(sym);
+}
+
+rt_node* rule_tree::find_child(const rt_node* parent, const symbol* src,
+    const symbol* tgt)
+{
+    return parent->find_child(src, tgt);
 }
 
 void rule_tree::insert_rule(rt_node* node, rule* r)
 {
     rule_num += 1;
     return node->insert_rule(r);
-}
-
-void rule_tree::sort()
-{
-    rt_node::sort(&root, 20);
 }

@@ -35,6 +35,16 @@ unsigned int language_model::get_order() const
     return order;
 }
 
+void language_model::set_type(language_model_type type)
+{
+    this->type = type;
+}
+
+language_model_type language_model::get_type() const
+{
+    return type;
+}
+
 void language_model::ngram_probability(const input_type& str, float& full,
     float& ngram) const
 {

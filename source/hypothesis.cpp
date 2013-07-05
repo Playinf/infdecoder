@@ -1,21 +1,25 @@
 /* hypothesis.cpp */
-#include <lm.h>
 #include <rule.h>
 #include <model.h>
 #include <config.h>
+#include <symbol.h>
 #include <utility.h>
 #include <hypothesis.h>
 
 hypothesis::hypothesis(const rule* r)
 {
-    unsigned int lm_order = lm::get_language_model_order();
+    configuration* config = configuration::get_instance();
+    model* system_model = config->get_model();
+    unsigned int feature_number = system_model->get_feature_number();
 
     target_rule = r;
-    terminal_number = r->get_terminal_num();
+    terminal_number = r->get_terminal_number();
     hypothesis_vector = nullptr;
     recombined_hypothesis = nullptr;
-    prefix.reserve(lm_order - 1);
-    suffix.reserve(lm_order - 1);
+    log_linear_model.reserve(feature_number);
+
+    for (unsigned int i = 0; i < feature_number; i++)
+        log_linear_model.push_back(feature(i));
 }
 
 hypothesis::~hypothesis()
@@ -30,9 +34,120 @@ hypothesis::~hypothesis()
     }
 }
 
-const symbol* hypothesis::get_start_symbol() const
+float hypothesis::get_score() const
 {
-    return target_rule->get_start_symbol();
+    return score;
+}
+
+float hypothesis::get_heuristic_score() const
+{
+    return heuristic_score;
+}
+
+float hypothesis::get_total_score() const
+{
+    return score + heuristic_score;
+}
+
+const rule* hypothesis::get_rule() const
+{
+    return target_rule;
+}
+
+unsigned int hypothesis::get_terminal_number() const
+{
+    return terminal_number;
+}
+
+unsigned int hypothesis::get_feature_number() const
+{
+    return log_linear_model.size();
+}
+
+const feature* hypothesis::get_feature(unsigned int index) const
+{
+    return &log_linear_model[index];
+}
+
+const symbol* hypothesis::get_start_symbol(unsigned int index) const
+{
+    return target_rule->get_start_symbol(index);
+}
+
+hypothesis* hypothesis::get_recombined_hypothesis() const
+{
+    return recombined_hypothesis;
+}
+
+hypothesis::size_type hypothesis::get_previous_hypothesis_number() const
+{
+    if (hypothesis_vector == nullptr)
+        return 0;
+
+    return hypothesis_vector->size();
+}
+
+std::vector<hypothesis*>* hypothesis::get_hypothesis_vector() const
+{
+    return hypothesis_vector;
+}
+
+/* TODO: need to fix */
+hypothesis* hypothesis::get_previous_hypothesis(unsigned int index) const
+{
+    if (hypothesis_vector == nullptr)
+        return nullptr;
+
+    return hypothesis_vector->at(index);
+}
+
+const std::vector<const std::string*>* hypothesis::get_prefix() const
+{
+    return &prefix;
+}
+
+const std::vector<const std::string*>* hypothesis::get_suffix() const
+{
+    return &suffix;
+}
+
+void hypothesis::evaluate_score()
+{
+    unsigned int size = log_linear_model.size();
+
+    for (unsigned int i = 0; i < size; ++i) {
+        feature fea = log_linear_model[i];
+        fea.evaluate(this);
+    }
+
+    //score = log_linear_model.get_score();
+}
+
+void hypothesis::set_heuristic_score(float score)
+{
+    heuristic_score = score;
+}
+
+void hypothesis::recombine(hypothesis* hypo)
+{
+    if (recombined_hypothesis == nullptr){
+        recombined_hypothesis = hypo;
+    } else {
+        hypothesis* p = this;
+        hypothesis* recombined = p->recombined_hypothesis;
+        double total_score = hypo->get_total_score();
+
+        while (recombined) {
+            if (recombined->get_total_score() < total_score)
+                break;
+            p = recombined;
+            recombined = p->recombined_hypothesis;
+        }
+
+        hypo->recombined_hypothesis = p->recombined_hypothesis;
+        p->recombined_hypothesis = hypo;
+
+    }
 }
 
 void hypothesis::push_hypothesis(hypothesis* h)
@@ -44,17 +159,50 @@ void hypothesis::push_hypothesis(hypothesis* h)
     terminal_number += h->get_terminal_number();
 }
 
-void hypothesis::evaluate_score()
+void hypothesis::output(std::vector<const std::string*>& s) const
+{
+    auto& rule_body = target_rule->get_target_rule_body();
+    unsigned int size = rule_body.size();
+    unsigned int nonterminal_index = 0;
+
+    for (unsigned int i = 0; i < size; ++i) {
+        const symbol* sym = rule_body[i];
+
+        if (sym->is_terminal())
+            s.push_back(sym->get_name());
+        else {
+            hypothesis *hypo = get_previous_hypothesis(nonterminal_index);
+            ++nonterminal_index;
+            hypo->output(s);
+        }
+    }
+}
+
+int hypothesis::compare(const hypothesis* hypo) const
+{
+    int result;
+
+    result = string_vector_compare(&prefix, hypo->get_prefix());
+
+    if (result != 0)
+        return result;
+
+    result = string_vector_compare(&suffix, hypo->get_suffix());
+
+    return result;
+}
+
+void hypothesis::calculate_prefix_suffix(unsigned int order)
 {
     auto& rule_body = target_rule->get_target_rule_body();
     unsigned int rule_body_size = rule_body.size();
     std::vector<const std::string*> ngram;
     unsigned int nonterm_indx = 0;
-    unsigned int lm_order = lm::get_language_model_order();
-    static int count = 0;
+    unsigned int lm_order = order;
 
     ngram.reserve(2 * terminal_number);
 
+    /* calculate prefix and suffix */
     for (unsigned int i = 0; i < rule_body_size; ++i) {
         const symbol* sym = rule_body[i];
 
@@ -99,121 +247,6 @@ void hypothesis::evaluate_score()
             suffix.push_back(str);
         }
     }
-
-    unsigned int size = log_linear_model.get_feature_num();
-
-    for (unsigned int i = 0; i < size; ++i) {
-        feature* fea = log_linear_model.get_feature(i);
-        fea->evaluate(this);
-    }
-
-    score = log_linear_model.get_score();
-}
-
-double hypothesis::get_score() const
-{
-    return score;
-}
-
-void hypothesis::set_heuristic_score(double score)
-{
-    heuristic_score = score;
-}
-
-
-double hypothesis::get_heuristic_score() const
-{
-    return heuristic_score;
-}
-
-double hypothesis::get_total_score() const
-{
-    return score + heuristic_score;
-}
-
-hypothesis* hypothesis::get_previous_hypothesis(unsigned int index) const
-{
-    bool reorder = target_rule->reorder_nonterminal();
-
-    switch (index) {
-    case 0:
-        if (reorder)
-            return hypothesis_vector->front();
-        else
-            return hypothesis_vector->back();
-    case 1:
-        if (reorder)
-            return hypothesis_vector->back();
-        else
-            return hypothesis_vector->front();
-    default:
-        return nullptr;
-    }
-}
-
-void hypothesis::output(std::vector<const std::string*>& s) const
-{
-    auto& rule_body = target_rule->get_target_rule_body();
-    unsigned int size = rule_body.size();
-    unsigned int nonterminal_index = 0;
-
-    for (unsigned int i = 0; i < size; ++i) {
-        const symbol* sym = rule_body[i];
-
-        if (sym->is_terminal())
-            s.push_back(sym->get_name());
-        else {
-            hypothesis *hypo = get_previous_hypothesis(nonterminal_index);
-            ++nonterminal_index;
-            hypo->output(s);
-        }
-    }
-}
-
-void hypothesis::recombine(hypothesis* hypo)
-{
-    const std::string& nbest = parameter::get_parameter("nbest");
-    double nbest_num = std::stod(nbest);
-
-    if (nbest_num == 1)
-        delete hypo;
-    else if (recombined_hypothesis == nullptr){
-        recombined_hypothesis = hypo;
-    } else {
-        hypothesis* p = this;
-        hypothesis* recombined = p->recombined_hypothesis;
-        double total_score = hypo->get_total_score();
-
-        while (recombined) {
-            if (recombined->get_total_score() < total_score)
-                break;
-            p = recombined;
-            recombined = p->recombined_hypothesis;
-        }
-
-        hypo->recombined_hypothesis = p->recombined_hypothesis;
-        p->recombined_hypothesis = hypo;
-
-    }
-}
-
-hypothesis* hypothesis::get_recombined_hypothesis() const
-{
-    return recombined_hypothesis;
-}
-
-int hypothesis::compare(const hypothesis* hypo) const
-{
-    int result;
-
-    result = string_vector_compare(&prefix, hypo->get_prefix());
-
-    if (result != 0)
-        return result;
-
-    result = string_vector_compare(&suffix, hypo->get_suffix());
-
-    return result;
 }
 
 void hypothesis::calculate_prefix(std::vector<const std::string*>* out,
@@ -258,7 +291,7 @@ void hypothesis::calculate_suffix(std::vector<const std::string*>* out,
 
         size -= count;
     } else {
-        unsigned int nonterminal_num = len - target_rule->get_terminal_num();
+        unsigned int nonterminal_num = len - target_rule->get_terminal_number();
         unsigned int nonterminal_index = nonterminal_num - 1;
         for (size_type i = len - 1; i >= 0; --i) {
             const symbol* sym = rule_body[i];
@@ -277,47 +310,4 @@ void hypothesis::calculate_suffix(std::vector<const std::string*>* out,
                 break;
         }
     }
-}
-
-const std::vector<const std::string*>* hypothesis::get_prefix() const
-{
-    return &prefix;
-}
-
-const std::vector<const std::string*>* hypothesis::get_suffix() const
-{
-    return &suffix;
-}
-
-hypothesis::size_type hypothesis::previous_hypothesis_number() const
-{
-    if (hypothesis_vector == nullptr)
-        return 0;
-
-    return hypothesis_vector->size();
-}
-
-std::vector<hypothesis*>* hypothesis::get_hypothesis_vector() const
-{
-    return hypothesis_vector;
-}
-
-const rule* hypothesis::get_rule() const
-{
-    return target_rule;
-}
-
-const feature* hypothesis::get_feature(unsigned int id) const
-{
-    return log_linear_model.get_feature(id);
-}
-
-unsigned int hypothesis::get_feature_number() const
-{
-    return log_linear_model.get_feature_num();
-}
-
-unsigned int hypothesis::get_terminal_number() const
-{
-    return terminal_number;
 }

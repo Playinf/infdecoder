@@ -11,10 +11,10 @@
 
 class hypothesis;
 
-double translation_feature_function(const hypothesis* h, unsigned int id);
-double lm_feature_function(const hypothesis* h, unsigned int id);
-double word_penalty_feature_function(const hypothesis* h, unsigned int id);
-double extracted_rule_feature_function(const hypothesis* h, unsigned int id);
-double glue_rule_feature_function(const hypothesis* h, unsigned int id);
+typedef float (*feature_function)(const hypothesis* h, unsigned int id);
+
+float language_model_feature_function(const hypothesis* h, unsigned int id);
+float translation_model_feature_function(const hypothesis* h, unsigned int id);
+float word_penalty_feature_function(const hypothesis* h, unsigned int id);
 
 #endif /* __FEATURE_FUNCTION_H__ */
