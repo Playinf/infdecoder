@@ -16,14 +16,18 @@ class rule;
 class symbol;
 class rule_set;
 class rule_list;
+class chart_cell;
 class hypothesis;
+class partial_rule;
 
 void print_beam(const beam* b);
 void print_rule(const rule* r);
 void print_symbol(const symbol* s);
 void print_rule_set(const rule_set* s);
 void print_rule_list(const rule_list* l);
+void print_chart_cell(const chart_cell* c);
 void print_hypothesis(const hypothesis* h);
 void hypothesis_track(const hypothesis* h);
+void print_partial_rule(const partial_rule* r);
 
 #endif /* __VERBOSE_H__ */

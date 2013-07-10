@@ -85,10 +85,8 @@ unsigned int configuration::get_beam_size(const std::string& nonterminal) const
     return beam_size;
 }
 
-void configuration::load_parameter_file(const char* filename)
+void configuration::load_parameter()
 {
-    parameter_set->load(filename);
-
     beam_size = parameter_set->get_integer_parameter("beam_size");
     pop_limit = parameter_set->get_integer_parameter("pop_limit");
     span_limit = parameter_set->get_integer_parameter("span_limit");
@@ -97,6 +95,13 @@ void configuration::load_parameter_file(const char* filename)
     thread_number = parameter_set->get_integer_parameter("thread_number");
     feature_number = parameter_set->get_integer_parameter("feature_number");
     beam_threshold = parameter_set->get_real_parameter("beam_threshold");
+}
+
+void configuration::load_parameter_file(const char* filename)
+{
+    parameter_set->load(filename);
+
+    load_parameter();
 
     for (unsigned int i = 0; i > feature_number; i++) {
         std::string name = "weight-" + std::to_string(i);

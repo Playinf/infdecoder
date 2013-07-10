@@ -65,6 +65,7 @@ public:
     rule_tree(const rule_tree& t) = delete;
     rule_tree& operator=(const rule_tree& t) = delete;
 
+    unsigned int get_id() const;
     size_type get_rule_number() const;
     size_type get_node_number() const;
     const node_type* get_root() const;
@@ -72,6 +73,7 @@ public:
     void sort();
     void sort(unsigned int limit);
     void prune(unsigned int limit);
+    void set_id(unsigned int id);
     rt_node* insert_node(rt_node* parent, const symbol* sym);
     rt_node* insert_node(rt_node* parent, const symbol* src, const symbol* tgt);
     rt_node* find_child(const rt_node* parent, const symbol* sym);
@@ -81,6 +83,7 @@ private:
     node_type root;
     size_type node_num;
     size_type rule_num;
+    unsigned int id;
 };
 
 #endif /* __RULE_TREE_H__ */

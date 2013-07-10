@@ -4,6 +4,7 @@
 #include <rule.h>
 #include <symbol.h>
 #include <rule_set.h>
+#include <rule_tree.h>
 #include <hypothesis.h>
 #include <partial_rule.h>
 
@@ -26,6 +27,13 @@ rule_list::~rule_list()
 void rule_list::add_hypothese_list(hypothesis_list* list)
 {
     hypothesis_vector->push_back(list);
+}
+
+void rule_list::set_hypothesis_list(unsigned int index, hypothesis_list* list)
+{
+    hypothesis_list** data = hypothesis_vector->data();
+
+    data[index] = list;
 }
 
 std::vector<const rule*>* rule_list::get_rule_vector() const
@@ -76,33 +84,9 @@ rule_set::~rule_set()
     clear();
 }
 
-void rule_set::add_complete_rule(partial_rule* rule)
+rule_list* rule_set::get_rule_list(size_type index) const
 {
-    auto& rule_vec = *rule->get_rule();
-    auto r = rule_vec[0];
-    unsigned int terminal_num = r->get_terminal_number();
-    unsigned int symbol_num = r->get_target_rule_body().size();
-    unsigned int nonterminal_num = symbol_num - terminal_num;
-    rule_list* list = new rule_list(nonterminal_num);
-    const partial_rule* p = rule;
-
-    while (nonterminal_num && p) {
-        const symbol* sym = p->get_node()->get_symbol();
-
-        if (sym->is_terminal()) {
-            p = p->get_parent();
-            continue;
-        }
-
-        nonterminal_num--;
-        auto hypo_list = p->get_hypothesis_list();
-
-        list->add_hypothese_list(hypo_list);
-        p = p->get_parent();
-    }
-
-    list->set_rule_vector(&rule_vec);
-    applicable_rule_set.push_back(list);
+    return applicable_rule_set[index];
 }
 
 void rule_set::clear()
@@ -120,7 +104,35 @@ rule_set::size_type rule_set::size() const
     return applicable_rule_set.size();
 }
 
-rule_list* rule_set::get_rule_list(size_type index) const
+void rule_set::add_complete_rule(partial_rule* rule)
 {
-    return applicable_rule_set[index];
+    auto& rule_vec = *rule->get_rule();
+    auto r = rule_vec[0];
+    unsigned int terminal_num = r->get_terminal_number();
+    unsigned int symbol_num = r->get_target_rule_body().size();
+    unsigned int nonterminal_num = symbol_num - terminal_num;
+    rule_list* list = new rule_list(nonterminal_num);
+    const partial_rule* p = rule;
+
+    for (unsigned int i = 0; i < nonterminal_num; i++)
+        list->add_hypothese_list(nullptr);
+
+    while (nonterminal_num && p) {
+        const symbol* sym = p->get_node()->get_symbol();
+
+        if (sym->is_terminal()) {
+            p = p->get_parent();
+            continue;
+        }
+
+        nonterminal_num--;
+        auto hypo_list = p->get_hypothesis_list();
+        unsigned int index = r->get_nonterminal_map(nonterminal_num);
+
+        list->set_hypothesis_list(index, hypo_list);
+        p = p->get_parent();
+    }
+
+    list->set_rule_vector(&rule_vec);
+    applicable_rule_set.push_back(list);
 }

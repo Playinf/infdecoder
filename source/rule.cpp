@@ -7,16 +7,17 @@
 rule::rule(size_type size)
 {
     score = nullptr;
-    feature_number = 0;
     start_symbol[0] = nullptr;
     start_symbol[1] = nullptr;
     target_terminal_number = 0;
+    nonterminal_map = nullptr;
     target_rule_body.reserve(size);
 }
 
 rule::~rule()
 {
     delete[] score;
+    delete nonterminal_map;
 }
 
 float rule::get_score(unsigned int index) const
@@ -24,9 +25,9 @@ float rule::get_score(unsigned int index) const
     return score[index];
 }
 
-unsigned int rule::get_feature_number() const
+unsigned int rule::get_rule_tree_id() const
 {
-    return feature_number;
+    return id;
 }
 
 rule::size_type rule::get_terminal_number() const
@@ -42,6 +43,11 @@ const symbol* rule::get_start_symbol(int index) const
 const std::vector<const symbol*>& rule::get_target_rule_body() const
 {
     return target_rule_body;
+}
+
+unsigned int rule::get_nonterminal_map(unsigned int src) const
+{
+    return nonterminal_map[src];
 }
 
 /*
@@ -80,16 +86,30 @@ void rule::add_symbol(const symbol* sym)
 
 void rule::set_score(std::vector<float>& vec)
 {
-    feature_number = vec.size();
+    unsigned int feature_number = vec.size();
 
     score = new float[feature_number];
 
-    for (unsigned int i = 0; i < vec.size(); i++)
+    for (unsigned int i = 0; i < feature_number; i++)
         score[i] = vec[i];
+}
+
+void rule::add_align(unsigned int src, unsigned int tgt)
+{
+    unsigned int nonterm_num = target_rule_body.size() - target_terminal_number;
+    if (nonterminal_map == nullptr)
+        nonterminal_map = new unsigned int[nonterm_num];
+
+    nonterminal_map[src] = tgt;
 }
 
 void rule::set_start_symbol(const symbol* src, const symbol* tgt)
 {
     start_symbol[0] = src;
     start_symbol[1] = tgt;
+}
+
+void rule::set_rule_tree_id(unsigned int id)
+{
+    this->id = id;
 }

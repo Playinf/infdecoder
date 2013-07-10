@@ -1,6 +1,104 @@
 /* cube_item.cpp */
+#include <rule.h>
 #include <utility.h>
+#include <rule_set.h>
 #include <cube_item.h>
+#include <hypothesis.h>
+
+
+rule_dimension::rule_dimension(std::vector<const rule*>* rules,
+    unsigned int pos)
+{
+    sorted_rule_list = rules;
+    position = pos;
+}
+
+rule_dimension::~rule_dimension()
+{
+    /* do nothing */
+}
+
+bool rule_dimension::operator==(const rule_dimension& dim) const
+{
+    if (sorted_rule_list != dim.sorted_rule_list)
+        return false;
+    else if (position != dim.position)
+        return false;
+
+    return true;
+}
+
+bool rule_dimension::operator!=(const rule_dimension& dim) const
+{
+    return !operator==(dim);
+}
+
+const rule* rule_dimension::get_rule() const
+{
+    return sorted_rule_list->at(position);
+}
+
+bool rule_dimension::has_more_rules() const
+{
+    unsigned int hypo_num = sorted_rule_list->size();
+
+    if (position + 1 < hypo_num)
+        return true;
+
+    return false;
+}
+
+void rule_dimension::next_rule()
+{
+    position += 1;
+}
+
+hypothesis_dimension::hypothesis_dimension(std::vector<hypothesis*>* hypo,
+    unsigned int num)
+{
+    sorted_hypothesis_list = hypo;
+    position = num;
+}
+
+hypothesis_dimension::~hypothesis_dimension()
+{
+    /* do nothing */
+}
+
+bool hypothesis_dimension::operator==(const hypothesis_dimension& dim) const
+{
+    if (sorted_hypothesis_list != dim.sorted_hypothesis_list)
+        return false;
+    else if (position != dim.position)
+        return false;
+
+    return true;
+}
+
+bool hypothesis_dimension::operator!=(const hypothesis_dimension& dim) const
+{
+    return !operator==(dim);
+}
+
+const hypothesis* hypothesis_dimension::get_hypothesis() const
+{
+    return sorted_hypothesis_list->at(position);
+}
+
+bool hypothesis_dimension::has_more_hypothesis() const
+{
+    unsigned int rule_num = sorted_hypothesis_list->size();
+
+    if (position + 1 < rule_num)
+        return true;
+
+    return false;
+}
+
+void hypothesis_dimension::next_hypothesis()
+{
+    position += 1;
+}
 
 cube_item::cube_item(rule_list* list)
     : rule_position(list->get_rule_vector(), 0)
@@ -42,8 +140,6 @@ cube_item::cube_item(const cube_item& item, unsigned int dim_index)
     }
 }
 
-#include <verbose.h>
-
 cube_item::~cube_item()
 {
     if (hypothesis_position != nullptr)
@@ -54,7 +150,7 @@ cube_item::~cube_item()
     }
 }
 
-double cube_item::get_score() const
+float cube_item::get_score() const
 {
     return score;
 }

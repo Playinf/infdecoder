@@ -12,37 +12,9 @@
 #include <set>
 #include <queue>
 #include <vector>
-#include <hypothesis.h>
+#include <functional.h>
 
-struct hypothesis_less {
-    bool operator()(const hypothesis& h1, const hypothesis& h2)
-    {
-        double s1 = h1.get_total_score();
-        double s2 = h2.get_total_score();
-
-        return s1 > s2;
-    }
-
-    bool operator()(const hypothesis* h1, const hypothesis* h2)
-    {
-        double s1 = h1->get_total_score();
-        double s2 = h2->get_total_score();
-
-        return s1 > s2;
-    }
-};
-
-struct hypothesis_compare {
-    bool operator()(const hypothesis* h1, const hypothesis* h2)
-    {
-        int ret = h1->compare(h2);
-
-        if (ret != 0)
-            return ret < 0;
-
-        return false;
-    }
-};
+class hypothesis;
 
 class beam {
 public:
@@ -52,10 +24,14 @@ public:
     beam(size_type histogram, float threshold);
     ~beam();
 
+    beam(const beam& b) = delete;
+    beam& operator=(const beam& b) = delete;
+
+    std::vector<hypothesis*>* get_sorted_hypothesis_list();
+
+    void sort();
     void set_parameter(size_type histogram, float threshold);
     void insert_hypothesis(hypothesis* hypo);
-    std::vector<hypothesis*>* get_sorted_hypothesis_list();
-    void sort();
 private:
     void prune();
 

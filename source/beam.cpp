@@ -4,6 +4,7 @@
 #include <iterator>
 #include <algorithm>
 #include <beam.h>
+#include <hypothesis.h>
 
 beam::beam(size_type histogram, float threshold)
 {
@@ -25,45 +26,6 @@ beam::~beam()
         hypothesis* hypo = *iter;
         delete hypo;
         ++iter;
-    }
-}
-
-void beam::insert_hypothesis(hypothesis* hypo)
-{
-    float total_score = hypo->get_total_score();
-    size_type size = hypothesis_set.size();
-
-    // threshold pruning
-    if (total_score < max_score + threshold) {
-        delete hypo;
-        return;
-    } else {
-        auto result = hypothesis_set.insert(hypo);
-
-        if (result.second) {
-            /* inserted */
-            sorted = false;
-
-            if (total_score > max_score)
-                max_score = total_score;
-
-            if (size + 1 >= 2 * beam_size)
-                prune();
-        } else {
-            /* recombining hypothesis */
-            hypothesis* h = *result.first;
-            float s1 = h->get_total_score();
-            float s2 = total_score;
-
-            if (s1 > s2)
-                h->recombine(hypo);
-            else {
-                hypothesis_set.erase(result.first);
-                hypo->recombine(h);
-                hypothesis_set.insert(hypo);
-                sorted = false;
-            }
-        }
     }
 }
 
@@ -143,6 +105,51 @@ void beam::prune()
             else {
                 hypothesis_set.erase(iter_remove);
                 delete h;
+            }
+        }
+    }
+}
+
+void beam::set_parameter(size_type histogram, float threshold)
+{
+    beam_size = histogram;
+    this->threshold = threshold;
+}
+
+void beam::insert_hypothesis(hypothesis* hypo)
+{
+    float total_score = hypo->get_total_score();
+    size_type size = hypothesis_set.size();
+
+    // threshold pruning
+    if (total_score < max_score + threshold) {
+        delete hypo;
+        return;
+    } else {
+        auto result = hypothesis_set.insert(hypo);
+
+        if (result.second) {
+            /* inserted */
+            sorted = false;
+
+            if (total_score > max_score)
+                max_score = total_score;
+
+            if (size + 1 >= 2 * beam_size)
+                prune();
+        } else {
+            /* recombining hypothesis */
+            hypothesis* h = *result.first;
+            float s1 = h->get_total_score();
+            float s2 = total_score;
+
+            if (s1 > s2)
+                h->recombine(hypo);
+            else {
+                hypothesis_set.erase(result.first);
+                hypo->recombine(h);
+                hypothesis_set.insert(hypo);
+                sorted = false;
             }
         }
     }

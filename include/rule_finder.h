@@ -22,8 +22,9 @@ public:
     rule_finder(rule_tree* tree);
     ~rule_finder();
 
-    void set_span_limit(size_type limit);
     size_type get_span_limit() const;
+
+    void set_span_limit(size_type limit);
     void initialize(input_type* input, chart* table);
     void find(size_type start, size_type end, rule_set& rules);
     void clear();

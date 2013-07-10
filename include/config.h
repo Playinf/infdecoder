@@ -34,6 +34,7 @@ public:
     unsigned int get_beam_size(const std::string& nonterminal) const;
     parameter* get_parameter() const;
 
+    void load_parameter();
     void load_parameter_file(const char* filename);
 
     static configuration* get_instance();

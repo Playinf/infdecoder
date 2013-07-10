@@ -16,13 +16,16 @@ class shared_mutex {
 public:
     shared_mutex();
     ~shared_mutex();
+
+    shared_mutex(const shared_mutex& m) = delete;
+    shared_mutex& operator=(const shared_mutex& m) = delete;
+
     void lock();
     bool try_lock();
     void unlock();
     void lock_shared();
     bool try_lock_shared();
     void unlock_shared();
-
 private:
     std::mutex mut_;
     std::condition_variable gate1_;

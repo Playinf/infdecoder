@@ -9,6 +9,7 @@
 #include <feature.h>
 #include <trellis.h>
 #include <chart_cell.h>
+#include <hypothesis.h>
 #include <rule_finder.h>
 
 #include <iostream>
@@ -156,7 +157,10 @@ void parser::parse(input_type& input)
         for (size_type i = 0; i <= n - len; i++) {
             size_type j = i + len - 1;
 
+            //std::cout << "[" << i << ", " << j << "]" << std::endl;
+
             cell = table->get_cell(i, j);
+            applicable_rule_set->clear();
 
             for (unsigned int k = 0; k < size; k++) {
                 rule_finder* finder = rule_lookup_manager[k];
@@ -165,14 +169,16 @@ void parser::parse(input_type& input)
 
                 if (span_limit && len > span_limit)
                     continue;
-                 */
 
-                applicable_rule_set->clear();
+                std::cout << "rule finder " << k << std::endl;
+                */
                 finder->find(i, j, *applicable_rule_set);
-                print_rule_set(applicable_rule_set);
-                cell->decode(applicable_rule_set, pop_limit);
-                cell->sort();
+
             }
+            //print_rule_set(applicable_rule_set);
+            cell->decode(applicable_rule_set, pop_limit);
+            cell->sort();
+            //print_chart_cell(cell);
         }
     }
 }

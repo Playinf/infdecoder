@@ -12,6 +12,8 @@ hypothesis::hypothesis(const rule* r)
     model* system_model = config->get_model();
     unsigned int feature_number = system_model->get_feature_number();
 
+    score = 0.0f;
+    heuristic_score = 0.0f;
     target_rule = r;
     terminal_number = r->get_terminal_number();
     hypothesis_vector = nullptr;
@@ -92,7 +94,6 @@ std::vector<hypothesis*>* hypothesis::get_hypothesis_vector() const
     return hypothesis_vector;
 }
 
-/* TODO: need to fix */
 hypothesis* hypothesis::get_previous_hypothesis(unsigned int index) const
 {
     if (hypothesis_vector == nullptr)
@@ -116,11 +117,12 @@ void hypothesis::evaluate_score()
     unsigned int size = log_linear_model.size();
 
     for (unsigned int i = 0; i < size; ++i) {
-        feature fea = log_linear_model[i];
+        float weight;
+        feature& fea = log_linear_model[i];
+        weight = fea.get_weight();
         fea.evaluate(this);
+        score += fea.get_score() * weight;
     }
-
-    //score = log_linear_model.get_score();
 }
 
 void hypothesis::set_heuristic_score(float score)
@@ -135,7 +137,7 @@ void hypothesis::recombine(hypothesis* hypo)
     } else {
         hypothesis* p = this;
         hypothesis* recombined = p->recombined_hypothesis;
-        double total_score = hypo->get_total_score();
+        float total_score = hypo->get_total_score();
 
         while (recombined) {
             if (recombined->get_total_score() < total_score)
@@ -157,25 +159,6 @@ void hypothesis::push_hypothesis(hypothesis* h)
 
     hypothesis_vector->push_back(h);
     terminal_number += h->get_terminal_number();
-}
-
-void hypothesis::output(std::vector<const std::string*>& s) const
-{
-    auto& rule_body = target_rule->get_target_rule_body();
-    unsigned int size = rule_body.size();
-    unsigned int nonterminal_index = 0;
-
-    for (unsigned int i = 0; i < size; ++i) {
-        const symbol* sym = rule_body[i];
-
-        if (sym->is_terminal())
-            s.push_back(sym->get_name());
-        else {
-            hypothesis *hypo = get_previous_hypothesis(nonterminal_index);
-            ++nonterminal_index;
-            hypo->output(s);
-        }
-    }
 }
 
 int hypothesis::compare(const hypothesis* hypo) const

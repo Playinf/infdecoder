@@ -42,8 +42,6 @@ void chart_cell::add_hypothesis(hypothesis* hypo)
 
     source_start_symbol_set.insert(source_start_symbol);
     target_start_symbol_set.insert(target_start_symbol);
-
-    return;
 }
 
 const chart_cell::symbol_set& chart_cell::get_source_start_symbol_set() const
@@ -56,16 +54,19 @@ const chart_cell::symbol_set& chart_cell::get_target_start_symbol_set() const
     return target_start_symbol_set;
 }
 
-void chart_cell::get_all_hypothesis(hypothesis_list* hypo_list)
+void chart_cell::get_all_hypothesis(hypothesis_list* hypo_list) const
 {
     for (auto& b : nonterminal_beam_set) {
         beam* nonterm_beam = b.second;
         auto hlist = nonterm_beam->get_sorted_hypothesis_list();
+        unsigned int size;
 
         if (hlist == nullptr)
             continue;
 
-        for (unsigned int i = 0; i < hlist->size(); i++) {
+        size = hlist->size();
+
+        for (unsigned int i = 0; i < size; i++) {
             hypothesis* hypo = hlist->at(i);
             hypo_list->push_back(hypo);
         }

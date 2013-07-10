@@ -25,6 +25,9 @@ public:
     rule_list(size_type size = 0);
     ~rule_list();
 
+    rule_list(const rule_list& r) = delete;
+    rule_list& operator=(const rule_list& r) = delete;
+
     std::vector<const rule*>* get_rule_vector() const;
     hypothesis_list* get_hypothesis_vector(unsigned int pos);
     size_type get_rule_nonterminal_number() const;
@@ -32,6 +35,7 @@ public:
 
     void set_rule_vector(const vector_type* vec);
     void add_hypothese_list(hypothesis_list* list);
+    void set_hypothesis_list(unsigned int index, hypothesis_list* list);
     size_type size() const;
 private:
     std::vector<const rule*>* rule_vector;
@@ -45,10 +49,14 @@ public:
     rule_set();
     ~rule_set();
 
-    void add_complete_rule(partial_rule* rule);
+    rule_set(const rule_set& r) = delete;
+    rule_set& operator=(const rule_set& r) = delete;
+
+    rule_list* get_rule_list(size_type index) const;
+
     void clear();
     size_type size() const;
-    rule_list* get_rule_list(size_type index) const;
+    void add_complete_rule(partial_rule* rule);
 private:
     std::vector<rule_list*> applicable_rule_set;
 };

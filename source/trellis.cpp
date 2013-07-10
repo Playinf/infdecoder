@@ -2,7 +2,7 @@
 #include <rule.h>
 #include <symbol.h>
 #include <trellis.h>
-
+#include <hypothesis.h>
 
 /* trellis_node */
 trellis_node::trellis_node(const hypothesis* hypo)
@@ -17,7 +17,6 @@ trellis_node::trellis_node(const trellis_detour* detour,
     const trellis_path* base_path = detour->get_base_path();
     const trellis_node* final_node = base_path->get_final_node();
     const trellis_node* substituted_node = detour->get_substituted_node();
-    const hypothesis* substituted_hypo = substituted_node->get_hypothesis();
     const hypothesis* replacement_hypo = detour->get_replacement_hypothesis();
 
     if (final_node == substituted_node) {
@@ -79,7 +78,7 @@ void trellis_node::output(std::vector<const std::string*>* sentence) const
     unsigned int size = rule_body.size();
     unsigned int nonterminal_index = 0;
 
-    for (unsigned int i = 0; i < size; ++i) {
+    for (unsigned int i = 0; i < size; i++) {
         const symbol* sym = rule_body[i];
 
         if (sym->is_terminal())
@@ -94,7 +93,6 @@ void trellis_node::output(std::vector<const std::string*>* sentence) const
 
 void trellis_node::create_children()
 {
-    const std::vector<hypothesis*>* hypo_vec;
     size_t size = hypo->get_previous_hypothesis_number();
 
     if (!size)
@@ -212,7 +210,7 @@ trellis_detour::trellis_detour(std::shared_ptr<const trellis_path> base_path,
         const trellis_node* substituted, const hypothesis* replacement)
 {
     const hypothesis* hypo = substituted->get_hypothesis();
-    double diff = hypo->get_total_score() - replacement->get_total_score();
+    float diff = hypo->get_total_score() - replacement->get_total_score();
 
     this->base_path = base_path;
     this->substituted_node = substituted;

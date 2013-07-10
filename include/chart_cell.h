@@ -28,7 +28,7 @@ public:
 
     const symbol_set& get_source_start_symbol_set() const;
     const symbol_set& get_target_start_symbol_set() const;
-    void get_all_hypothesis(hypothesis_list* hypo_list);
+    void get_all_hypothesis(hypothesis_list* hypo_list) const;
     hypothesis_list* get_hypothesis_list(const symbol* start_symbol);
 
     void sort();

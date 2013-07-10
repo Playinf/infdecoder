@@ -26,7 +26,7 @@ public:
     size_type get_feature_number() const;
     float get_weight(unsigned int id) const;
     unsigned int get_feature_id(const std::string& name);
-    unsigned int get_score_index(unsigned int id) const;
+    unsigned int get_score_index(unsigned int tid, unsigned int fid) const;
     language_model* get_language_model_source(unsigned int id) const;
     const std::string& get_feature_name(unsigned int id) const;
     feature_function get_feature_function(unsigned int id) const;
@@ -41,7 +41,7 @@ public:
     void push_weight(std::vector<float>& weight);
     void add_rule_table(rule_tree* table);
     void add_language_model(language_model* lm);
-    void set_score_index(unsigned int id, unsigned index);
+    void set_score_index(unsigned int tid, unsigned int fid, unsigned int idx);
     void set_feature_source(unsigned int id, const language_model* lm);
     void set_feature_function(unsigned int id, feature_function func);
     unsigned int add_feature(const std::string& name, const std::string& des);
@@ -51,6 +51,7 @@ private:
     std::vector<language_model*> language_model_vector;
     std::vector<std::string> feature_name_map;
     std::vector<unsigned int> feature_source_map;
+    std::vector<unsigned int> feature_source_id_map;
     std::vector<std::string> feature_description_map;
     std::map<std::string, unsigned int> feature_id_map;
     std::vector<feature_function> feature_function_vector;

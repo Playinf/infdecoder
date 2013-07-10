@@ -30,6 +30,7 @@ void lexer::process()
     symbol_table* table = symbol_table::get_instance();
     const symbol* bos = table->search_symbol("<s>");
     const symbol* eos = table->search_symbol("</s>");
+    unsigned int size = input->size();
     rt_node* root;
 
     unknow_word_tree = new rule_tree();
@@ -37,15 +38,15 @@ void lexer::process()
 
     sentence.push_back(bos);
 
-    for (unsigned int i = 0; i < input->size(); i++) {
+    for (unsigned int i = 0; i < size; i++) {
         rt_node* p;
         const std::string& s = input->at(i);
         const symbol* sym = table->search_symbol(s);
         rule* r = handler(sym);
 
         sentence.push_back(sym);
-        p = unknow_word_tree->insert_node(root, sym);
-        unknow_word_tree->insert_rule(p, r);
+        //p = unknow_word_tree->insert_node(root, sym);
+        //unknow_word_tree->insert_rule(p, r);
     }
 
     sentence.push_back(eos);

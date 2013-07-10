@@ -25,6 +25,9 @@ public:
     hypothesis(const rule* r);
     ~hypothesis();
 
+    hypothesis(const hypothesis*) = delete;
+    hypothesis& operator=(const hypothesis*) = delete;
+
     float get_score() const;
     float get_heuristic_score() const;
     float get_total_score() const;
@@ -44,7 +47,6 @@ public:
     void set_heuristic_score(float score);
     void recombine(hypothesis* hypo);
     void push_hypothesis(hypothesis* h);
-    void output(std::vector<const std::string*>& s) const;
     int compare(const hypothesis* hypo) const;
     void calculate_prefix_suffix(unsigned int order);
 private:

@@ -12,8 +12,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <hypothesis.h>
 
+class hypothesis;
 class trellis_node;
 class trellis_path;
 class trellis_detour;
@@ -53,7 +53,6 @@ public:
     float get_heuristic_score() const;
     const trellis_node* get_final_node() const;
     const trellis_node* get_deviation_node() const;
-
     const std::vector<float>* get_score_vector() const;
 
     void output(std::vector<const std::string*>* sentence) const;
@@ -80,13 +79,6 @@ private:
     const trellis_node* substituted_node;
     const hypothesis* replacement_hypothesis;
     float total_score;
-};
-
-struct trellis_detour_less {
-    bool operator()(const trellis_detour* d1, const trellis_detour* d2)
-    {
-        return d1->get_total_score() < d2->get_total_score();
-    }
 };
 
 #endif /* __TRELLIS_H__ */

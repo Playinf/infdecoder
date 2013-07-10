@@ -21,6 +21,7 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
     language_model* lm = system_model->get_language_model_source(id);
+    float weight = system_model->get_weight(id);
     unsigned int lm_order = lm->get_order();
     unsigned int indx = 0;
     std::vector<const std::string*> ngram;
@@ -83,7 +84,7 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
 
     score += prev_score;
     hypothesis* h = const_cast<hypothesis*>(hypo);
-    h->set_heuristic_score(prefix_score);
+    h->set_heuristic_score(prefix_score * weight);
     h->calculate_prefix_suffix(lm_order);
 
     return score;
@@ -91,18 +92,23 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
 
 float translation_model_feature_function(const hypothesis* h, unsigned int id)
 {
-    float score;
+    float score = 0.0f;
     const rule* r = h->get_rule();
+    int tid = r->get_rule_tree_id();
     unsigned int size = h->get_previous_hypothesis_number();
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
-    unsigned int score_id = system_model->get_score_index(id);
+    unsigned int score_id = system_model->get_score_index(tid, id);
+    unsigned int not_found = (unsigned int) -1;
 
-    score = r->get_score(score_id);
+    /* get score from rule */
+    if (score_id != not_found)
+        score = r->get_score(score_id);
 
     if (!size)
         return score;
 
+    /* sum score from previous hypotheses */
     for (unsigned int i = 0; i < size; i++) {
         hypothesis* hypo = h->get_previous_hypothesis(i);
         const feature* f = hypo->get_feature(id);

@@ -85,6 +85,9 @@ void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
     unsigned int tgt_size = tgt.size();
     std::string& src_lhs_str = src[src_size - 1];
     std::string& tgt_lhs_str = tgt[tgt_size - 1];
+    std::vector<unsigned int> src_nonterm_map;
+    std::vector<unsigned int> tgt_nonterm_map;
+    unsigned int nonterminal_number = 0;
     symbol_table* table = symbol_table::get_instance();
     const rt_node* root = rule_table.get_root();
     rt_node* p = const_cast<rt_node*>(root);
@@ -108,14 +111,17 @@ void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
             s1 = table->search_symbol(src_nonterminal, false);
             s2 = table->search_symbol(tgt_nonterminal, false);
             p = rule_table.insert_node(p, s1, s2);
+            src_nonterm_map.push_back(++nonterminal_number);
         } else {
             const symbol* s = table->search_symbol(token);
             p = rule_table.insert_node(p, s);
+            src_nonterm_map.push_back(0);
         }
     }
 
     target_rule = new rule(tgt_size - 1);
     target_rule->set_start_symbol(src_lhs_symbol, tgt_lhs_symbol);
+    nonterminal_number = 0;
 
     /* create target side rule */
     for (unsigned int i = 0; i < tgt_size - 1; i++) {
@@ -124,21 +130,23 @@ void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
         std::string tgt_nonterminal;
 
         if (is_nonterminal(token)) {
-            const symbol* s1;
             const symbol* s2;
             parser_nonterminal_map(token, src_nonterminal, tgt_nonterminal);
-            s1 = table->search_symbol(src_nonterminal, false);
             s2 = table->search_symbol(tgt_nonterminal, false);
             target_rule->add_symbol(s2);
+            tgt_nonterm_map.push_back(++nonterminal_number);
         } else {
             const symbol* s = table->search_symbol(token);
             target_rule->add_symbol(s);
+            tgt_nonterm_map.push_back(0);
         }
     }
 
     /* insert scores */
     std::vector<float> score_vec;
-    for (unsigned int i = 0; i < prob.size(); i++) {
+    unsigned int prob_size = prob.size();
+
+    for (unsigned int i = 0; i < prob_size; i++) {
         /* convert to log probability */
         float score = std::log(prob[i]);
         score_vec.push_back(score);
@@ -146,10 +154,21 @@ void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
 
     target_rule->set_score(score_vec);
 
+    unsigned int align_size = align.size();
+
     /* insert alignments */
-    for (unsigned int i = 0; i < align.size(); i++) {
+    for (unsigned int i = 0; i < align_size; i++) {
         std::pair<int, int>& p = align[i];
-        //std::cout << src[p.first] << "-" << tgt[p.second] << " ";
+
+        if (!src_nonterm_map[p.first])
+            continue;
+
+        unsigned int src_idx = src_nonterm_map[p.first] - 1;
+        unsigned int tgt_idx = tgt_nonterm_map[p.second] - 1;
+
+        std::cout << src_idx << ":" << tgt_idx << std::endl;
+
+        target_rule->add_align(src_idx, tgt_idx);
     }
 
     /* debugging output */
@@ -171,7 +190,6 @@ void analyze_moses_rule(std::vector<std::string>& src,
     std::string& src_lhs_str = src[src_size - 1];
     std::string& tgt_lhs_str = tgt[tgt_size - 1];
     symbol_table* table = symbol_table::get_instance();
-    rule* target_rule;
 
     parse_nonterminal(src_lhs_str, src_lhs);
     src_lhs_symbol = table->search_symbol(src_lhs);

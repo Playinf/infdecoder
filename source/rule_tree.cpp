@@ -216,9 +216,10 @@ rt_node::size_type rt_node::prune(rt_node* node, unsigned int limit)
     auto end = child->end();
     auto iter = begin;
 
-    for (auto iter = child->begin(); iter != child->end(); ++iter) {
+    while (iter != end) {
         rt_node* n = const_cast<rt_node*>(&(*iter));
         num += prune(n, limit);
+        ++iter;
     }
 
     return num;
@@ -230,11 +231,12 @@ rule_tree::rule_tree()
 {
     node_num = 0;
     rule_num = 0;
+    id = 0;
 }
 
 rule_tree::~rule_tree()
 {
-    // do nothing
+    /* do nothing */
 }
 
 rule_tree::size_type rule_tree::get_rule_number() const
@@ -250,6 +252,11 @@ rule_tree::size_type rule_tree::get_node_number() const
 const rule_tree::node_type* rule_tree::get_root() const
 {
     return &root;
+}
+
+unsigned int rule_tree::get_id() const
+{
+    return id;
 }
 
 void rule_tree::sort()
@@ -271,6 +278,11 @@ void rule_tree::prune(unsigned int limit)
         return;
 
     rule_num = rt_node::prune(&root, limit);
+}
+
+void rule_tree::set_id(unsigned int id)
+{
+    this->id = id;
 }
 
 rt_node* rule_tree::insert_node(rt_node* parent, const symbol* sym)
@@ -307,5 +319,6 @@ rt_node* rule_tree::find_child(const rt_node* parent, const symbol* src,
 void rule_tree::insert_rule(rt_node* node, rule* r)
 {
     rule_num += 1;
+    r->set_rule_tree_id(id);
     return node->insert_rule(r);
 }

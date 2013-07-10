@@ -5,6 +5,7 @@
 #include <model.h>
 #include <config.h>
 #include <parser.h>
+#include <trellis.h>
 #include <verbose.h>
 #include <utility.h>
 #include <parameter.h>
@@ -36,9 +37,10 @@ void load_parameter()
     configuration* config = configuration::get_instance();
     parameter* param = config->get_parameter();
 
+    config->load_parameter();
     param->add_parameter("rule_table", "rules.txt");
     param->add_parameter("special_rule_table", "glue-grammar");
-    param->add_parameter("lanugage_model", "30K.gz");
+    param->add_parameter("language_model", "30K.gz");
     param->add_parameter("language_model_order", 5u);
 }
 
@@ -55,6 +57,9 @@ void load_model()
     language_model* lm = new language_model();
     rule_tree* table = new rule_tree();
     rule_tree* glue_table = new rule_tree();
+
+    table->set_id(0);
+    glue_table->set_id(1);
 
     lm->set_order(param->get_integer_parameter("language_model_order"));
     lm->load(lm_filename.c_str());
@@ -74,29 +79,39 @@ void load_model()
     system_model->add_rule_table(table);
     id = system_model->add_feature("inverse translation probability", "rule");
     system_model->set_feature_function(id, translation_model_feature_function);
-    system_model->set_score_index(id, 0);
+    system_model->set_score_index(0, id, 0);
     id = system_model->add_feature("inverse lexical weight", "rule");
     system_model->set_feature_function(id, translation_model_feature_function);
-    system_model->set_score_index(id, 1);
+    system_model->set_score_index(0, id, 1);
     id = system_model->add_feature("translation probability", "rule");
     system_model->set_feature_function(id, translation_model_feature_function);
-    system_model->set_score_index(id, 2);
+    system_model->set_score_index(0, id, 2);
     id = system_model->add_feature("inverse lexical weight", "rule");
     system_model->set_feature_function(id, translation_model_feature_function);
-    system_model->set_score_index(id, 3);
+    system_model->set_score_index(0, id, 3);
     id = system_model->add_feature("rule penalty", "rule");
     system_model->set_feature_function(id, translation_model_feature_function);
-    system_model->set_score_index(id, 4);
+    system_model->set_score_index(0, id, 4);
 
     /* glue grammar */
     system_model->add_rule_table(glue_table);
     id = system_model->add_feature("glue rule penalty", "glue grammar");
     system_model->set_feature_function(id, translation_model_feature_function);
-    system_model->set_score_index(id, 0);
+    system_model->set_score_index(1, id, 0);
 
     /* word penalty */
     id = system_model->add_feature("word penalty", "build in word penalty");
     system_model->set_feature_function(id, word_penalty_feature_function);
+
+    /* weight */
+    system_model->push_weight(1.0);
+    system_model->push_weight(1.0);
+    system_model->push_weight(1.0);
+    system_model->push_weight(1.0);
+    system_model->push_weight(1.0);
+    system_model->push_weight(1.0);
+    system_model->push_weight(1.0);
+    system_model->push_weight(1.0);
 }
 
 void print_parameter()
@@ -121,7 +136,8 @@ int main()
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
     lexer lex;
-
+    std::vector<std::shared_ptr<const trellis_path>> path_list;
+    std::vector<const std::string*> output_vec;
 
     load_parameter();
     print_parameter();
@@ -137,11 +153,25 @@ int main()
 
     parser translator(&tree_vec);
     translator.parse(lex.get_output());
-    translator.get_all_hypothesis(hypo_vec);
+    translator.get_nbest(100, &path_list, false);
 
-    for (unsigned int i = 0; i < hypo_vec.size(); i++) {
-        hypothesis* h = hypo_vec[i];
+    for (unsigned int i = 0; i < path_list.size(); i++) {
+        auto& path = path_list[i];
+        output_vec.clear();
+        path->output(&output_vec);
 
-        print_hypothesis(h);
+        for (unsigned int i = 0; i < output_vec.size(); i++) {
+            std::cout << *output_vec[i] << " ";
+        }
+
+        auto score_vec = path->get_score_vector();
+        std::cout << " ||| ";
+        for (unsigned int i = 0; i < score_vec->size(); i++) {
+            std::cout << score_vec->at(i) << " ";
+        }
+
+        std::cout << " ||| " << path->get_total_score();
+        std::cout << " ||| " << path->get_heuristic_score();
+        std::cout << std::endl;
     }
 }

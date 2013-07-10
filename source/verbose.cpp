@@ -4,17 +4,21 @@
 #include <beam.h>
 #include <rule.h>
 #include <symbol.h>
-#include <rule_set.h>
 #include <verbose.h>
+#include <rule_set.h>
+#include <rule_tree.h>
+#include <chart_cell.h>
 #include <hypothesis.h>
+#include <partial_rule.h>
 
 void print_beam(const beam* b)
 {
     beam* beam_stack = const_cast<beam*>(b);
     std::vector<hypothesis*>* ordered_hypothesis_list;
     ordered_hypothesis_list = beam_stack->get_sorted_hypothesis_list();
+    unsigned int size = ordered_hypothesis_list->size();
 
-    for (unsigned int i = 0; i < ordered_hypothesis_list->size(); i++) {
+    for (unsigned int i = 0; i < size; i++) {
         hypothesis* hypo = ordered_hypothesis_list->at(i);
         print_hypothesis(hypo);
     }
@@ -25,11 +29,12 @@ void print_rule(const rule* r)
     const unsigned int tgt_lhs_idx = 1;
     const symbol* lhs = r->get_start_symbol(tgt_lhs_idx);
     const std::vector<const symbol*>& rhs = r->get_target_rule_body();
+    unsigned int size = rhs.size();
 
     print_symbol(lhs);
     std::cout << " -> ";
 
-    for (unsigned int i = 0; i < rhs.size(); i++) {
+    for (unsigned int i = 0; i < size; i++) {
         const symbol* sym = rhs[i];
         print_symbol(sym);
         std::cout << " ";
@@ -59,22 +64,60 @@ void print_rule_set(const rule_set* s)
 void print_rule_list(const rule_list* l)
 {
     auto vec = l->get_rule_vector();
+    unsigned int size = vec->size();
 
-    for (unsigned int i = 0; i < vec->size(); i++) {
+    for (unsigned int i = 0; i < size; i++) {
         const rule* r = vec->at(i);
 
         print_rule(r);
     }
 }
 
+void print_chart_cell(const chart_cell* c)
+{
+    std::vector<hypothesis*> hypo_list;
+    unsigned int size;
+
+    c->get_all_hypothesis(&hypo_list);
+    size = hypo_list.size();
+
+    for (unsigned int i = 0; i < size; i++) {
+        hypothesis* h = hypo_list[i];
+        print_hypothesis(h);
+    }
+}
+
+void print_partial_translation(const hypothesis* hypo)
+{
+    const rule* target_rule = hypo->get_rule();
+    auto& rule_body = target_rule->get_target_rule_body();
+    unsigned int size = rule_body.size();
+    unsigned int nonterminal_index = 0;
+
+    for (unsigned int i = 0; i < size; ++i) {
+        const symbol* sym = rule_body[i];
+
+        if (sym->is_terminal())
+            std::cout << *sym->get_name() << " ";
+        else {
+            hypothesis *h = hypo->get_previous_hypothesis(nonterminal_index);
+            ++nonterminal_index;
+            print_partial_translation(h);
+        }
+    }
+}
+
 void print_hypothesis(const hypothesis* hypo)
 {
-    std::vector<const std::string*> out_str;
+    unsigned int size = hypo->get_feature_number();
 
-    hypo->output(out_str);
+    print_partial_translation(hypo);
 
-    for (unsigned int i = 0; i < out_str.size(); i++) {
-        std::cout << *out_str[i] << " ";
+    std::cout << " ||| ";
+
+    for (unsigned int i = 0; i < size; i++) {
+        const feature* fea = hypo->get_feature(i);
+        std::cout << fea->get_score() << " ";
     }
 
     std::cout << " ||| " << hypo->get_total_score();
@@ -95,4 +138,32 @@ void hypothesis_track(const hypothesis* hypo)
         const hypothesis* h = hypo->get_previous_hypothesis(i);
         hypothesis_track(h);
     }
+}
+
+static void print_partial_rule(const partial_rule* r, bool end)
+{
+    const rt_node* node = r->get_node();
+    const symbol* src_sym = node->get_symbol(0);
+    const symbol* tgt_sym = node->get_symbol(1);
+    const partial_rule* parent_rule = r->get_parent();
+
+    if (parent_rule != nullptr)
+        print_partial_rule(parent_rule, false);
+
+    if (src_sym != nullptr)
+        std::cout << *src_sym->get_name();
+
+    if (tgt_sym != nullptr)
+        std::cout << "-" << *tgt_sym->get_name();
+
+    if (end)
+        std::cout << std::endl;
+    else
+        std::cout << " ";
+}
+
+void print_partial_rule(const partial_rule* r)
+{
+    std::cout << r->get_length() << ":";
+    print_partial_rule(r, true);
 }

@@ -67,13 +67,15 @@ void rule_finder::find(size_type start, size_type end, rule_set& rules)
         unsigned int len = end - start + 1;
         const rt_node* node = r->get_node();
 
-        // already covered
+        /* already covered */
         if (rule_start > end)
             continue;
 
-        // expand rule
+        /*
+         * expand rules
+         */
 
-        // match a terminal symbol
+        /* match a terminal symbol */
         if (rule_start == end) {
             const symbol* sym = input->at(end);
             rt_node* child = tree->find_child(node, sym);
@@ -85,7 +87,7 @@ void rule_finder::find(size_type start, size_type end, rule_set& rules)
             }
         }
 
-        // we do not allow match unary rule here
+        /* we do not allow match unary non-lexical rules here */
         if (rule_start == start && end > start)
             rule_end = end - 1;
         else
@@ -93,7 +95,7 @@ void rule_finder::find(size_type start, size_type end, rule_set& rules)
 
         len = rule_end - start + 1;
 
-        // match a nonterminal symbol
+        /* match a nonterminal symbol */
         chart_cell* cell = table->get_cell(rule_start, rule_end);
         auto& src_set = cell->get_source_start_symbol_set();
         auto& tgt_set = cell->get_target_start_symbol_set();
@@ -112,7 +114,7 @@ void rule_finder::find(size_type start, size_type end, rule_set& rules)
         }
     }
 
-    // insert all applicable rules into parameter rules
+    /* insert all applicable rules into ouput parameter */
     unsigned int position = end - start + 1;
     auto& applicable_rule_list = *rule_set->get_partial_rule_list(position);
     size_type list_size = applicable_rule_list.size();
