@@ -17,6 +17,8 @@
 
 class symbol;
 
+typedef float (*heuristic_function)(const rule* r);
+
 class rt_node {
 public:
     typedef unsigned int size_type;
@@ -36,8 +38,8 @@ public:
     const symbol* get_symbol(int index) const;
     const vector_type* get_rules() const;
 
-    void sort();
-    void sort(unsigned int limit);
+    void sort(heuristic_function func);
+    void sort(heuristic_function func, unsigned int limit);
     size_type prune(unsigned int limit);
     void insert_rule(const rule* r);
     rt_node* find_child(const symbol* sym) const;
@@ -45,8 +47,8 @@ public:
     std::pair<rt_node*, bool> insert_child(const symbol* sym);
     std::pair<rt_node*, bool> insert_child(const symbol* s, const symbol* t);
 
-    static void sort(rt_node* node);
-    static void sort(rt_node* node, unsigned int limit);
+    static void sort(rt_node* n, heuristic_function f);
+    static void sort(rt_node* n, heuristic_function f, unsigned int lim);
     static size_type prune(rt_node* node, unsigned int limit);
 private:
     const symbol* link[2];
@@ -69,11 +71,16 @@ public:
     size_type get_rule_number() const;
     size_type get_node_number() const;
     const node_type* get_root() const;
+    unsigned int get_feature_number() const;
+    unsigned int get_feature_id(unsigned int index) const;
+    float get_score(const rule* r, unsigned int id) const;
 
     void sort();
     void sort(unsigned int limit);
     void prune(unsigned int limit);
     void set_id(unsigned int id);
+    void add_feature(unsigned int id);
+    void set_heuristic_function(heuristic_function func);
     rt_node* insert_node(rt_node* parent, const symbol* sym);
     rt_node* insert_node(rt_node* parent, const symbol* src, const symbol* tgt);
     rt_node* find_child(const rt_node* parent, const symbol* sym);
@@ -81,9 +88,11 @@ public:
     void insert_rule(rt_node* node, rule* r);
 private:
     node_type root;
+    unsigned int id;
     size_type node_num;
     size_type rule_num;
-    unsigned int id;
+    std::vector<unsigned int> feature_vector;
+    heuristic_function rule_heuristic_function;
 };
 
 #endif /* __RULE_TREE_H__ */

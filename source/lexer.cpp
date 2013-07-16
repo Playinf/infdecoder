@@ -45,8 +45,8 @@ void lexer::process()
         rule* r = handler(sym);
 
         sentence.push_back(sym);
-        //p = unknow_word_tree->insert_node(root, sym);
-        //unknow_word_tree->insert_rule(p, r);
+        p = unknow_word_tree->insert_node(root, sym);
+        unknow_word_tree->insert_rule(p, r);
     }
 
     sentence.push_back(eos);

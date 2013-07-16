@@ -4,6 +4,7 @@
 #include <config.h>
 #include <symbol.h>
 #include <feature.h>
+#include <rule_tree.h>
 #include <hypothesis.h>
 #include <language_model.h>
 
@@ -25,6 +26,10 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
     unsigned int lm_order = lm->get_order();
     unsigned int indx = 0;
     std::vector<const std::string*> ngram;
+
+    /* this test should be false */
+    if (lm == nullptr)
+        return 0.0f;
 
     for (unsigned int i = 0; i < rule_body_size; i++) {
         const symbol* sym = rule_body[i];
@@ -52,8 +57,9 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
                 iter_end = hypo_suffix->end();
 
                 if (i == 0 && prev_term_num >= lm_order - 1) {
-                    //score = prev_fea->get_score();
                     prefix_score = prev_hypo->get_heuristic_score();
+                    /* unweighted prefix score */
+                    prefix_score /= weight;
                 } else {
                     float ngram_score = 0.0;
                     float full_score = 0.0;
@@ -94,16 +100,13 @@ float translation_model_feature_function(const hypothesis* h, unsigned int id)
 {
     float score = 0.0f;
     const rule* r = h->get_rule();
-    int tid = r->get_rule_tree_id();
     unsigned int size = h->get_previous_hypothesis_number();
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
-    unsigned int score_id = system_model->get_score_index(tid, id);
-    unsigned int not_found = (unsigned int) -1;
+    unsigned int tree_id = r->get_rule_tree_id();
+    rule_tree* tree = system_model->get_rule_tree(tree_id);
 
-    /* get score from rule */
-    if (score_id != not_found)
-        score = r->get_score(score_id);
+    score = tree->get_score(r, id);
 
     if (!size)
         return score;

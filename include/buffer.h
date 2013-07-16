@@ -3,32 +3,31 @@
  *
  *
  * author: Playinf
- * playinf@stu.xmu.edu.cn
+ * email: playinf@stu.xmu.edu.cn
  *
  */
 #ifndef __BUFFER_H__
 #define __BUFFER_H__
 
-#include <queue>
-#include <vector>
-#include <symbol.h>
-#include <semaphore.h>
-
-class input_buffer {
-public:
-    typedef unsigned int size_type;
-    typedef std::vector<const symbol*> input_type;
-private:
-    std::queue<input_type*> buffer;
-    size_type buffer_size;
-    
-};
+#include <map>
+#include <mutex>
+#include <string>
+#include <ostream>
 
 class output_buffer {
 public:
-    typedef unsigned int size_type;
+    output_buffer(std::ostream* stream);
+    ~output_buffer();
+
+    output_buffer(const output_buffer& buffer) = delete;
+    output_buffer& operator=(const output_buffer& buffer) = delete;
+
+    void write(const std::string& str, unsigned int id);
 private:
-    size_type buffer_type;
+    unsigned int expected_id;
+    std::ostream* output_stream;
+    std::mutex mutual_exclusion;
+    std::map<unsigned int, std::string> output_map;
 };
 
 #endif /* __BUFFER_H__ */

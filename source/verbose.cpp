@@ -30,6 +30,7 @@ void print_rule(const rule* r)
     const symbol* lhs = r->get_start_symbol(tgt_lhs_idx);
     const std::vector<const symbol*>& rhs = r->get_target_rule_body();
     unsigned int size = rhs.size();
+    float score = r->get_heuristic_score();
 
     print_symbol(lhs);
     std::cout << " -> ";
@@ -39,6 +40,9 @@ void print_rule(const rule* r)
         print_symbol(sym);
         std::cout << " ";
     }
+
+    std::cout << " ||| " << score;
+
     std::cout << std::endl;
 }
 
@@ -83,6 +87,7 @@ void print_chart_cell(const chart_cell* c)
 
     for (unsigned int i = 0; i < size; i++) {
         hypothesis* h = hypo_list[i];
+        std::cout << i << " ||| ";
         print_hypothesis(h);
     }
 }
@@ -153,8 +158,12 @@ static void print_partial_rule(const partial_rule* r, bool end)
     if (src_sym != nullptr)
         std::cout << *src_sym->get_name();
 
-    if (tgt_sym != nullptr)
+    if (tgt_sym != nullptr) {
+        auto& span = r->get_span();
         std::cout << "-" << *tgt_sym->get_name();
+        std::cout << "[" << span.first << ", ";
+        std::cout << span.second << "]";
+    }
 
     if (end)
         std::cout << std::endl;

@@ -3,6 +3,11 @@
 
 language_model::language_model()
 {
+    id = 0;
+    order = 0;
+    feature_id = 0;
+    type = SRI;
+    model = nullptr;
 }
 
 language_model::language_model(const char* filename)
@@ -15,6 +20,26 @@ language_model::~language_model()
     unload();
 }
 
+unsigned int language_model::get_id() const
+{
+    return id;
+}
+
+unsigned int language_model::get_order() const
+{
+    return order;
+}
+
+unsigned int language_model::get_feature_id() const
+{
+    return feature_id;
+}
+
+language_model_type language_model::get_type() const
+{
+    return type;
+}
+
 void language_model::load(const char* filename)
 {
     model = sriLoadLM(filename, 1, order, 1, 0);
@@ -25,24 +50,24 @@ void language_model::unload()
     sriUnloadLM(model);
 }
 
+void language_model::set_id(unsigned int id)
+{
+    this->id = id;
+}
+
 void language_model::set_order(unsigned int n)
 {
     order = n;
 }
 
-unsigned int language_model::get_order() const
+void language_model::set_feature(unsigned int id)
 {
-    return order;
+    feature_id = id;
 }
 
 void language_model::set_type(language_model_type type)
 {
     this->type = type;
-}
-
-language_model_type language_model::get_type() const
-{
-    return type;
 }
 
 void language_model::ngram_probability(const input_type& str, float& full,

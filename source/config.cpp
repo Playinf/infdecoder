@@ -85,6 +85,18 @@ unsigned int configuration::get_beam_size(const std::string& nonterminal) const
     return beam_size;
 }
 
+void configuration::load_weight()
+{
+    for (unsigned int i = 0; i < feature_number; i++) {
+        std::string name = "weight_" + std::to_string(i);
+        float val = parameter_set->get_real_parameter(name);
+
+        weight_vector.push_back(val);
+    }
+
+    system_model->push_weight(weight_vector);
+}
+
 void configuration::load_parameter()
 {
     beam_size = parameter_set->get_integer_parameter("beam_size");
@@ -102,18 +114,30 @@ void configuration::load_parameter_file(const char* filename)
     parameter_set->load(filename);
 
     load_parameter();
+    load_weight();
+}
 
-    for (unsigned int i = 0; i > feature_number; i++) {
-        std::string name = "weight-" + std::to_string(i);
-        float val = parameter_set->get_real_parameter(name);
+void configuration::load_parameter_file(const char* filename, loader ploader)
+{
+    ploader(filename);
 
-        weight_vector.push_back(val);
-    }
+    load_parameter();
+    load_weight();
 }
 
 parameter* configuration::get_parameter() const
 {
     return parameter_set;
+}
+
+unknow_word_handler configuration::get_unknow_word_handler() const
+{
+    return handler;
+}
+
+void configuration::set_unknow_word_handler(unknow_word_handler handler)
+{
+    this->handler = handler;
 }
 
 configuration* configuration::get_instance()

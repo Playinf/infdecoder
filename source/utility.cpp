@@ -1,18 +1,7 @@
 /* utility.cpp */
 #include <utility.h>
 
-size_t data_hash(const char* data, size_t len)
-{
-    size_t res = 0;
-    const char* p = data;
-
-    while (len--)
-        res = (res << 1) ^ *p++;
-
-    return res;
-}
-
-size_t sring_hash(const char* str)
+std::size_t sring_hash(const char* str)
 {
     const char *name = str;
     unsigned int h = 0;
@@ -26,6 +15,26 @@ size_t sring_hash(const char* str)
     }
 
     return h;
+}
+
+std::size_t data_hash(const char* data, size_t len)
+{
+    std::size_t res = 0;
+    const char* p = data;
+
+    while (len--)
+        res = (res << 1) ^ *p++;
+
+    return res;
+}
+
+std::size_t hash_combine(std::size_t v1, std::size_t v2)
+{
+    std::size_t val = 0;
+
+    val ^= v2 + 0x9e3779b9 + (v1 << 6) + (v1 >> 2);
+
+    return val;
 }
 
 void string_split(const std::string& s, const std::string& sep,
@@ -82,6 +91,10 @@ void string_trim(const std::string& str, std::string& ret)
     std::string::size_type str_size = str.size();
     std::string::size_type pos1 = str.find_first_not_of(' ');
     std::string::size_type pos2 = str.find_last_not_of(' ');
+    std::string::size_type npos = std::string::npos;
 
-    ret = str.substr(pos1, pos2 - pos1 + 1);
+    if (pos1 == npos || pos2 == npos)
+        ret = str;
+    else
+        ret = str.substr(pos1, pos2 - pos1 + 1);
 }

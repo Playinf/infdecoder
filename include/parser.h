@@ -30,8 +30,12 @@ public:
     parser(std::vector<rule_tree*>* tree_vec);
     ~parser();
 
-    void get_all_hypothesis(std::vector<hypothesis*>& hypo_vec);
-    void get_nbest(unsigned int num, path_vector* path_list, bool distinct);
+    parser(const parser& p) = delete;
+    parser& operator=(const parser& p) = delete;
+
+    hypothesis* get_best_hypothesis() const;
+    void get_all_hypothesis(std::vector<hypothesis*>& hypo_vec) const;
+    void get_nbest(unsigned int num, path_vector* path_list) const;
 
     void parse(input_type& input);
     void clear();

@@ -8,8 +8,10 @@
 
 beam::beam(size_type histogram, float threshold)
 {
+    const float inf = std::numeric_limits<float>::infinity();
+
     sorted = false;
-    max_score = -1000000.0f;
+    max_score = -inf;
     beam_size = histogram;
     this->threshold = threshold;
     ordered_hypothesis_list.reserve(beam_size);

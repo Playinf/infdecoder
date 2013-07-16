@@ -56,12 +56,23 @@ std::vector<hypothesis*>* partial_rule::get_hypothesis_list() const
     return nonterminal_hypothesis_list;
 }
 
+const std::pair<unsigned int, unsigned int>& partial_rule::get_span() const
+{
+    return span;
+}
+
 bool partial_rule::is_expandable() const
 {
     if (node)
         return !node->is_leaf();
 
     return false;
+}
+
+void partial_rule::set_span(unsigned int begin, unsigned int end)
+{
+    span.first = begin;
+    span.second = end;
 }
 
 void partial_rule::set_hypothesis_list(std::vector<hypothesis*>* hlist)

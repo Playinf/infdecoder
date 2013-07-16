@@ -5,7 +5,6 @@
 #include <cube_item.h>
 #include <hypothesis.h>
 
-
 rule_dimension::rule_dimension(std::vector<const rule*>* rules,
     unsigned int pos)
 {
@@ -103,39 +102,47 @@ void hypothesis_dimension::next_hypothesis()
 cube_item::cube_item(rule_list* list)
     : rule_position(list->get_rule_vector(), 0)
 {
-    unsigned num = list->get_rule_nonterminal_number();
+    unsigned int num = list->get_rule_nonterminal_number();
     generated_hypothesis = nullptr;
 
     if (num) {
         hypothesis_position = new std::vector<hypothesis_dimension>;
+        hypothesis_position->reserve(num);
 
         for (unsigned int i = 0; i < num; i++) {
             auto hypo_vec = list->get_hypothesis_vector(i);
             hypothesis_dimension dim(hypo_vec, 0);
             hypothesis_position->push_back(dim);
         }
-    } else
+    } else {
         hypothesis_position = nullptr;
+    }
 }
 
 cube_item::cube_item(const cube_item& item, unsigned int dim_index)
     : rule_position(item.rule_position)
 {
+    const unsigned int rule_dim = 0;
+
     generated_hypothesis = nullptr;
 
-    if (item.hypothesis_position) {
+    if (item.hypothesis_position != nullptr) {
         hypothesis_position = new std::vector<hypothesis_dimension>;
         unsigned int size = item.hypothesis_position->size();
 
+        hypothesis_position->reserve(size);
+
         for (unsigned int i = 0; i < size; i++)
             hypothesis_position->push_back(item.hypothesis_position->at(i));
-    } else
+    } else {
         hypothesis_position = nullptr;
+    }
 
-    if (dim_index == -1)
+    if (dim_index == rule_dim) {
         rule_position.next_rule();
-    else {
-        auto& hypo_pos = hypothesis_position->at(dim_index);
+    } else {
+        unsigned int index = dim_index - 1;
+        auto& hypo_pos = hypothesis_position->at(index);
         hypo_pos.next_hypothesis();
     }
 }
@@ -145,9 +152,8 @@ cube_item::~cube_item()
     if (hypothesis_position != nullptr)
         delete hypothesis_position;
 
-    if (generated_hypothesis != nullptr) {
+    if (generated_hypothesis != nullptr)
         delete generated_hypothesis;
-    }
 }
 
 float cube_item::get_score() const
@@ -240,9 +246,11 @@ unsigned int cube_item::hash() const
         hypothesis_dimension* dim = &hypothesis_position->at(i);
         p = reinterpret_cast<const char*>(dim);
         unsigned int size = sizeof(hypothesis_dimension);
+        unsigned int hash_val = 0;
 
-        hash_code += data_hash(p, size);
+        hash_val = data_hash(p, size);
+        hash_code = hash_combine(hash_code, hash_val);
     }
 
-    return size;
+    return hash_code;
 }

@@ -1,4 +1,4 @@
-/* test_parser.cpp */
+/* test_rule_tree_prune.cpp */
 #include <vector>
 #include <iostream>
 #include <lexer.h>
@@ -16,6 +16,7 @@
 
 void moses_format_loader(void* args);
 rule* create_unknow_word_rule(const symbol* sym);
+float hpb_rule_heuristic_function(const rule* r);
 
 void load_rule_from_file(const char* filename, rule_tree* table)
 {
@@ -37,7 +38,7 @@ void load_parameter()
     configuration* config = configuration::get_instance();
     parameter* param = config->get_parameter();
 
-    param->add_parameter("rule_table", "rules.txt");
+    param->add_parameter("rule_table", "rule-table");
     param->add_parameter("special_rule_table", "glue-grammar");
     param->add_parameter("language_model", "30K.gz");
     param->add_parameter("language_model_order", 5u);
@@ -121,6 +122,12 @@ void load_model()
     system_model->push_weight(1.0);
     system_model->push_weight(1.0);
     system_model->push_weight(1.0);
+
+    /* rule tree pruning */
+    table->set_heuristic_function(hpb_rule_heuristic_function);
+    table->sort(20);
+    table->prune(20);
+    std::cout << "rule number: " << table->get_rule_number() << std::endl;
 }
 
 void print_parameter()
@@ -163,35 +170,4 @@ int main()
     parser translator(&tree_vec);
     translator.parse(lex.get_output());
     translator.get_all_hypothesis(hypo_vec);
-
-    /*
-    for (unsigned int i = 0; i < hypo_vec.size(); i++) {
-        std::cout << i << " ||| ";
-        print_hypothesis(hypo_vec[i]);
-        //hypothesis_track(hypo_vec[i]);
-    }*/
-
-    translator.get_nbest(1000, &path_list, true);
-
-    for (unsigned int i = 0; i < path_list.size(); i++) {
-        auto& path = path_list[i];
-        output_vec.clear();
-        path->output(&output_vec);
-
-        std::cout << i << " ||| ";
-
-        for (unsigned int i = 0; i < output_vec.size(); i++) {
-            std::cout << *output_vec[i] << " ";
-        }
-
-        auto score_vec = path->get_score_vector();
-        std::cout << " ||| ";
-        for (unsigned int i = 0; i < score_vec->size(); i++) {
-            std::cout << score_vec->at(i) << " ";
-        }
-
-        std::cout << " ||| " << path->get_total_score();
-        std::cout << " ||| " << path->get_heuristic_score();
-        std::cout << std::endl;
-    }
 }

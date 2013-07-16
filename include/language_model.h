@@ -28,17 +28,24 @@ public:
     language_model(const language_model& lm) = delete;
     language_model& operator=(const language_model* lm) = delete;
 
+    unsigned int get_id() const;
+    unsigned int get_order() const;
+    unsigned int get_feature_id() const;
+    language_model_type get_type() const;
+
     void load(const char* filename);
     void unload();
+    void set_id(unsigned int id);
     void set_order(unsigned int n);
+    void set_feature(unsigned int id);
     void set_type(language_model_type type);
-    unsigned int get_order() const;
-    language_model_type get_type() const;
     void ngram_probability(const input_type& in, float& s, float& n) const;
     float word_probability(const std::string& word) const;
 private:
     void* model;
+    unsigned int id;
     unsigned int order;
+    unsigned int feature_id;
     language_model_type type;
 };
 

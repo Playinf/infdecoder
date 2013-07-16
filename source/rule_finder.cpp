@@ -1,6 +1,7 @@
 /* rule_finder.cpp */
 #include <chart_cell.h>
 #include <rule_finder.h>
+#include <verbose.h>
 
 rule_finder::rule_finder(rule_tree* tree)
 {
@@ -107,6 +108,7 @@ void rule_finder::find(size_type start, size_type end, rule_set& rules)
                 if (child != nullptr) {
                     auto hypothesis_list = cell->get_hypothesis_list(tgt_sym);
                     partial_rule* new_rule = new partial_rule(child, r, len);
+                    new_rule->set_span(rule_start, rule_end);
                     new_rule->set_hypothesis_list(hypothesis_list);
                     rule_set->insert_partial_rule(new_rule);
                 }
@@ -126,6 +128,7 @@ void rule_finder::find(size_type start, size_type end, rule_set& rules)
         if (applicable_rules == nullptr)
             continue;
 
+        //print_partial_rule(r);
         rules.add_complete_rule(r);
     }
 }

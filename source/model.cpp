@@ -12,11 +12,12 @@ model::model()
 
 model::~model()
 {
-    unsigned int table_num = rule_table_vector.size();
+    unsigned int table_num = rule_tree_vector.size();
     unsigned int lm_num = language_model_vector.size();
+
     /* release memory */
     for (unsigned int i = 0; i < table_num; i++) {
-        rule_tree* t = rule_table_vector[i];
+        rule_tree* t = rule_tree_vector[i];
         delete t;
     }
 
@@ -36,24 +37,15 @@ float model::get_weight(unsigned int id) const
     return lambda[id];
 }
 
-unsigned int model::get_feature_id(const std::string& name)
+unsigned int model::get_feature_id(const std::string& name) const
 {
-    feature_id_map.find(name);
-}
+    auto iter = feature_id_map.find(name);
+    const unsigned int not_found = static_cast<unsigned int>(-1);
 
-unsigned int model::get_score_index(unsigned int tid, unsigned int fid) const
-{
-    if (feature_source_id_map[fid] == tid)
-        return feature_source_map[fid];
+    if (iter == feature_id_map.end())
+        return not_found;
 
-    return -1;
-}
-
-language_model* model::get_language_model_source(unsigned int id) const
-{
-    unsigned int index = feature_source_map[id];
-
-    return language_model_vector[index];
+    return iter->second;
 }
 
 const std::string& model::get_feature_name(unsigned int id) const
@@ -71,9 +63,9 @@ const std::string& model::get_feature_description(unsigned int id) const
     return feature_description_map[id];
 }
 
-model::size_type model::get_rule_table_number() const
+model::size_type model::get_rule_tree_number() const
 {
-    return rule_table_vector.size();
+    return rule_tree_vector.size();
 }
 
 model::size_type model::get_language_model_number() const
@@ -81,14 +73,34 @@ model::size_type model::get_language_model_number() const
     return language_model_vector.size();
 }
 
-rule_tree* model::get_rule_table(size_type index) const
+rule_tree* model::get_rule_tree(size_type index) const
 {
-    return rule_table_vector[index];
+    return rule_tree_vector[index];
+}
+
+rule_tree* model::get_rule_tree_source(unsigned int id) const
+{
+    auto iter = feature_tm_map.find(id);
+
+    if (iter == feature_tm_map.end())
+        return nullptr;
+
+    return iter->second;
 }
 
 language_model* model::get_language_model(size_type index) const
 {
     return language_model_vector[index];
+}
+
+language_model* model::get_language_model_source(unsigned int id) const
+{
+    auto iter = feature_lm_map.find(id);
+
+    if (iter == feature_lm_map.end())
+        return nullptr;
+
+    return iter->second;
 }
 
 void model::push_weight(float weight)
@@ -103,9 +115,9 @@ void model::push_weight(std::vector<float>& weight)
         lambda.push_back(weight[i]);
 }
 
-void model::add_rule_table(rule_tree* table)
+void model::add_rule_table(rule_tree* tree)
 {
-    rule_table_vector.push_back(table);
+    rule_tree_vector.push_back(tree);
 }
 
 void model::add_language_model(language_model* lm)
@@ -113,41 +125,14 @@ void model::add_language_model(language_model* lm)
     language_model_vector.push_back(lm);
 }
 
-void model::set_score_index(unsigned int tid, unsigned int fid,
-    unsigned int index)
+void model::set_feature_source(unsigned int id, rule_tree* tree)
 {
-    unsigned int size = feature_source_map.size();
-
-    if (fid == size) {
-        feature_source_map.push_back(index);
-        feature_source_id_map.push_back(tid);
-    } else if (fid < size) {
-        feature_source_map[fid] = index;
-        feature_source_id_map[fid] = tid;
-    } else
-        throw std::exception();
+    feature_tm_map[id] = tree;
 }
 
-void model::set_feature_source(unsigned int id, const language_model* lm)
+void model::set_feature_source(unsigned int id, language_model* lm)
 {
-    unsigned int index;
-    unsigned int size = feature_source_map.size();
-    unsigned int lm_num = language_model_vector.size();
-
-    for (unsigned int i = 0; i < lm_num; i++) {
-        language_model* lmodel = language_model_vector[i];
-        if (lmodel == lm)
-            index = i;
-    }
-
-    if (id == size) {
-        feature_source_map.push_back(index);
-        feature_source_id_map.push_back(index);
-    } else if (id < size) {
-        feature_source_map[id] = index;
-        feature_source_id_map[id] = index;
-    } else
-        throw std::exception();
+    feature_lm_map[id] = lm;
 }
 
 void model::set_feature_function(unsigned int id, feature_function func)
@@ -171,6 +156,7 @@ unsigned int model::add_feature(const std::string& name, const std::string& des)
 
     feature_name_map.push_back(name);
     feature_description_map.push_back(des);
+    feature_id_map[name] = feature_number;
 
     return feature_number++;
 }

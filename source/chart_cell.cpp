@@ -103,8 +103,8 @@ void chart_cell::decode(rule_set* s, unsigned int limit)
     for (unsigned int i = 0; i < limit; i++) {
         if (queue.empty())
             break;
-        hypothesis* hypo = const_cast<hypothesis*>(queue.pop());
 
+        hypothesis* hypo = const_cast<hypothesis*>(queue.pop());
         add_hypothesis(hypo);
     }
 }

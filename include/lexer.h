@@ -10,12 +10,9 @@
 
 #include <string>
 #include <vector>
+#include <handler.h>
 
-class rule;
-class symbol;
 class rule_tree;
-
-typedef rule* (*unknow_word_handler)(const symbol* word);
 
 class lexer {
 public:

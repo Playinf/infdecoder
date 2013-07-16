@@ -15,7 +15,7 @@ chart::~chart()
 {
     for (size_type i = 0; i < size; i++)
         delete[] table[i];
-    delete table;
+    delete[] table;
 }
 
 chart_cell* chart::get_cell(size_type start_pos, size_type end_pos) const

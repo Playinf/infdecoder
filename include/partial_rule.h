@@ -9,8 +9,9 @@
 #ifndef __PARTIAL_RULE_H__
 #define __PARTIAL_RULE_H__
 
-#include <vector>
 #include <string>
+#include <vector>
+#include <utility>
 
 class rule;
 class rule_tree;
@@ -32,12 +33,15 @@ public:
     const partial_rule* get_parent() const;
     const std::vector<const rule*>* get_rule() const;
     std::vector<hypothesis*>* get_hypothesis_list() const;
+    const std::pair<unsigned int, unsigned int>& get_span() const;
 
     bool is_expandable() const;
+    void set_span(unsigned int begin, unsigned int end);
     void set_hypothesis_list(std::vector<hypothesis*>* hlist);
 private:
     const rt_node* node;
     const partial_rule* parent;
+    std::pair<unsigned int, unsigned int> span;
     std::vector<hypothesis*>* nonterminal_hypothesis_list;
     unsigned int length;
 };

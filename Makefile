@@ -6,13 +6,15 @@ INCDIR = ./include
 SRCDIR = ./source
 LIBDIR = ./lib
 TESTDIR = ./test
+EXTDIR = ./extension/moses
 
-CXX = g++-4.8
-CFLAGS = -Wall -O3 -I $(INCDIR) -std=c++11
+CXX = g++
+CFLAGS = -Wall -O3 -I $(INCDIR) -std=c++0x
 LIBS = $(LIBDIR)/libsrilm.a $(LIBDIR)/lm.a $(LIBDIR)/dstruct.a $(LIBDIR)/misc.a
 LDFLAGS = $(LIBS)
 
 SRC = $(wildcard $(SRCDIR)/*.cpp)
+SRC += $(wildcard $(EXTDIR)/*.cpp)
 OBJ = $(patsubst %.cpp, %.o, $(SRC))
 
 # Compile and Assemble C++ Source Files into Object Files
@@ -27,5 +29,5 @@ $(BIN): $(OBJ)
 
 .PHONY: clean
 clean:
-	 -rm -f $(SRCDIR)/*.o $(BINDIR)/$(BIN)
+	 -rm -f $(SRCDIR)/*.o $(EXTDIR)/*.o $(BINDIR)/$(BIN)
 

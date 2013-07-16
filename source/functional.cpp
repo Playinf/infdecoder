@@ -32,11 +32,12 @@ std::size_t symbol_equal::operator()(const symbol& s1, const symbol& s2) const
 
     return s1.get_type() == s2.get_type();
 }
-/*
+
+/* sort in descending order */
 bool rule_less::operator()(const rule* r1, const rule* r2) const
 {
-    return r1->get_score() > r2->get_score();
-}*/
+    return r1->get_heuristic_score() > r2->get_heuristic_score();
+}
 
 std::size_t rt_node_hash::operator()(const rt_node& node) const
 {
@@ -66,6 +67,7 @@ bool cube_less::operator()(const cube* c1, const cube* c2) const
     return c1->get_best_score() < c2->get_best_score();
 }
 
+/* sort in descending order */
 bool hypothesis_less::operator()(const hypothesis* h1,
     const hypothesis* h2) const
 {

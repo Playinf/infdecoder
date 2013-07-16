@@ -130,6 +130,8 @@ void hypothesis::set_heuristic_score(float score)
     heuristic_score = score;
 }
 
+#include <iostream>
+
 void hypothesis::recombine(hypothesis* hypo)
 {
     if (recombined_hypothesis == nullptr){
@@ -148,7 +150,6 @@ void hypothesis::recombine(hypothesis* hypo)
 
         hypo->recombined_hypothesis = p->recombined_hypothesis;
         p->recombined_hypothesis = hypo;
-
     }
 }
 

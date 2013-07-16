@@ -7,7 +7,8 @@ cube::cube(rule_list* list)
 {
     cube_item* item = new cube_item(list);
     dimension = list->get_rule_nonterminal_number() + 1;
-    margin = -10.0f;
+    /***********************/
+    margin = -1000.0f;
 
     item->generate_hypothesis();
     enumerated_item_set.insert(item);
@@ -55,12 +56,14 @@ void cube::set_margin(float val)
 
 void cube::explore_neighbor(cube_item* item)
 {
-    if (item->has_more_rules())
-        explore_neighbor(item, -1);
+    const unsigned int rule_dim = 0;
 
-    for (unsigned int i = 1; i < dimension; i++)
-        if (item->has_more_hypotheses(i - 1))
-            explore_neighbor(item, i - 1);
+    if (item->has_more_rules())
+        explore_neighbor(item, rule_dim);
+
+    for (unsigned int i = 0; i < dimension - 1; i++)
+        if (item->has_more_hypotheses(i))
+            explore_neighbor(item, i + 1);
 }
 
 void cube::explore_neighbor(cube_item* item, unsigned int dim)

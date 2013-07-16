@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <model.h>
+#include <config.h>
 #include <format.h>
 #include <parser.h>
 #include <symbol.h>
@@ -166,13 +167,8 @@ void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
         unsigned int src_idx = src_nonterm_map[p.first] - 1;
         unsigned int tgt_idx = tgt_nonterm_map[p.second] - 1;
 
-        std::cout << src_idx << ":" << tgt_idx << std::endl;
-
         target_rule->add_align(src_idx, tgt_idx);
     }
-
-    /* debugging output */
-    print_rule(target_rule);
 
     rule_table.insert_rule(p, target_rule);
 }
@@ -295,7 +291,6 @@ void moses_rule_table_loader(std::ifstream& file, rule_tree& table, bool output)
         parse_rule_score(rule_score_str, rule_score);
         parse_alignment(align_str, align_info);
         insert_rule(table, source_rule, target_rule, rule_score, align_info);
-        //analyze_moses_rule(source_rule, target_rule, rule_score, align_info);
 
         if (output && line_count && (line_count % 100000 == 0))
             std::cout << line_count << std::endl;

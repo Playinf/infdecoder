@@ -12,9 +12,6 @@
 #include <hypothesis.h>
 #include <rule_finder.h>
 
-#include <iostream>
-#include <verbose.h>
-
 typedef std::priority_queue<trellis_detour*, std::vector<trellis_detour*>,
     trellis_detour_less> queue_type;
 typedef std::vector<const std::string*> output_type;
@@ -89,12 +86,13 @@ parser::parser(std::vector<rule_tree*>* tree_vec)
         rule_finder* finder = new rule_finder(tree);
         rule_lookup_manager.push_back(finder);
     }
-    /*
-    std::string span_limit = parameter::get_parameter("span-limit");
-    unsigned int limit = std::atoi(span_limit.c_str());
-    rule_lookup_manager[0]->set_span_limit(limit);
-    rule_lookup_manager[1]->set_span_limit(0);
-    */
+
+    configuration* config = configuration::get_instance();
+    unsigned int limit = config->get_span_limit();
+
+    rule_lookup_manager[0]->set_span_limit(1);
+    rule_lookup_manager[1]->set_span_limit(limit);
+    rule_lookup_manager[2]->set_span_limit(0);
 }
 
 parser::~parser()
@@ -122,78 +120,34 @@ void parser::parser_initialize()
     }
 }
 
-void parser::clear()
+hypothesis* parser::get_best_hypothesis() const
 {
-    unsigned int size = rule_lookup_manager.size();
+    std::vector<hypothesis*> hypo_vec;
 
-    for (unsigned int i = 0; i < size; i++) {
-        rule_finder* finder = rule_lookup_manager[i];
-        finder->clear();
-    }
+    get_all_hypothesis(hypo_vec);
 
-    if (table) {
-        delete table;
-        table = nullptr;
-    }
+    if (!hypo_vec.size())
+        return nullptr;
 
-    if (applicable_rule_set) {
-        delete applicable_rule_set;
-        applicable_rule_set = nullptr;
-    }
+    return hypo_vec[0];
 }
 
-void parser::parse(input_type& input)
-{
-    size_type n = input.size();
-    size_type size = rule_lookup_manager.size();
-    chart_cell* cell;
-    unsigned int pop_limit = 100;
-
-    this->input = &input;
-    parser_initialize();
-
-    for (size_type len = 1; len <= n; len++) {
-
-        for (size_type i = 0; i <= n - len; i++) {
-            size_type j = i + len - 1;
-
-            //std::cout << "[" << i << ", " << j << "]" << std::endl;
-
-            cell = table->get_cell(i, j);
-            applicable_rule_set->clear();
-
-            for (unsigned int k = 0; k < size; k++) {
-                rule_finder* finder = rule_lookup_manager[k];
-                /*
-                unsigned int span_limit = finder->get_span_limit();
-
-                if (span_limit && len > span_limit)
-                    continue;
-
-                std::cout << "rule finder " << k << std::endl;
-                */
-                finder->find(i, j, *applicable_rule_set);
-
-            }
-            //print_rule_set(applicable_rule_set);
-            cell->decode(applicable_rule_set, pop_limit);
-            cell->sort();
-            //print_chart_cell(cell);
-        }
-    }
-}
-
-void parser::get_all_hypothesis(std::vector<hypothesis*>& hypo_vec)
+void parser::get_all_hypothesis(std::vector<hypothesis*>& hypo_vec) const
 {
     chart_cell* cell = table->get_cell(0, input->size() - 1);
 
     cell->get_all_hypothesis(&hypo_vec);
 }
 
-void parser::get_nbest(unsigned int num, path_vector* path_list, bool distinct)
+void parser::get_nbest(unsigned int num, path_vector* path_list) const
 {
+    configuration* config;
     std::vector<hypothesis*> hypothesis_list;
     unsigned int count = 0;
+    bool distinct;
+
+    config = configuration::get_instance();
+    distinct = config->enable_distinct_nbest();
 
     if (num == 0)
         return;
@@ -250,5 +204,61 @@ void parser::get_nbest(unsigned int num, path_vector* path_list, bool distinct)
         const trellis_detour* detour = detour_queue.top();
         detour_queue.pop();
         delete detour;
+    }
+}
+
+void parser::parse(input_type& input)
+{
+    chart_cell* cell;
+    size_type n = input.size();
+    size_type size = rule_lookup_manager.size();
+    configuration* config = configuration::get_instance();
+    unsigned int pop_limit = config->get_pop_limit();
+
+    this->input = &input;
+    parser_initialize();
+
+    for (size_type len = 1; len <= n; len++) {
+
+        for (size_type i = 0; i <= n - len; i++) {
+            size_type j = i + len - 1;
+
+            cell = table->get_cell(i, j);
+            applicable_rule_set->clear();
+
+            for (unsigned int k = 0; k < size; k++) {
+                rule_finder* finder = rule_lookup_manager[k];
+                unsigned int span_limit = finder->get_span_limit();
+
+                if (span_limit && len > span_limit)
+                    continue;
+
+                finder->find(i, j, *applicable_rule_set);
+
+            }
+
+            cell->decode(applicable_rule_set, pop_limit);
+            cell->sort();
+        }
+    }
+}
+
+void parser::clear()
+{
+    unsigned int size = rule_lookup_manager.size();
+
+    for (unsigned int i = 0; i < size; i++) {
+        rule_finder* finder = rule_lookup_manager[i];
+        finder->clear();
+    }
+
+    if (table) {
+        delete table;
+        table = nullptr;
+    }
+
+    if (applicable_rule_set) {
+        delete applicable_rule_set;
+        applicable_rule_set = nullptr;
     }
 }

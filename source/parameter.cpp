@@ -7,8 +7,9 @@
 #include <parameter.h>
 
 /* beam search */
+/* moses −11.512925465 */
 static const float DEFAULT_BEAM_THRESHOLD = -10000.0;
-static const unsigned int DEFAULT_BEAM_SIZE = 100;
+static const unsigned int DEFAULT_BEAM_SIZE = 200;
 /* cube pruning */
 static const unsigned int DEFAULT_POP_LIMIT = 1000;
 /* parsing */
