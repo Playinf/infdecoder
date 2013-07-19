@@ -11,6 +11,8 @@
 #include <trellis.h>
 #include <utility.h>
 
+#include <iostream>
+
 task::task()
 {
 }
@@ -28,6 +30,10 @@ void task::run()
 {
     decoder translator;
 
+    std::cout << input << std::endl;
+
+    //return;
+
     translator.process(input);
     hypothesis* best_hypo = translator.get_best_hypothesis();
 
@@ -37,7 +43,6 @@ void task::run()
     std::string hypo_output;
 
     hypothesis_output_handler(best_hypo, hypo_output);
-    hypo_output = hypo_output.substr(4, hypo_output.size() - 9);
     translation_buffer->write(hypo_output, id);
 
     if (nbest_buffer == nullptr)

@@ -339,6 +339,9 @@ void translate_moses_ini(param_map& setting)
     if (w_word.size() == 1) {
         param->add_parameter("weight_7", std::stof(w_word[0]));
     }
+
+    if (setting.find("show-weights") != setting.end())
+        param->add_parameter("show_weights", 1u);
 }
 
 void moses_ini_loader(const char* filename)
@@ -369,6 +372,8 @@ void load_moses_options(int argc, char** argv)
             int index = 0;
             int start_pos = i + 1;
             std::string param(argv[i] + 1);
+
+            pmap[param];
 
             while (start_pos < argc && !is_option(argv[start_pos])) {
                 if (pmap[param].size() > index)

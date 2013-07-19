@@ -25,7 +25,7 @@ OBJ = $(patsubst %.cpp, %.o, $(SRC))
 # Link all Object Files with external Libraries into Binaries
 $(BIN): $(OBJ)
 	echo linking...
-	$(CXX) $(CFLAGS) $(OBJ) $(LDFLAGS) -lz -o $(BINDIR)/$(BIN)
+	$(CXX) $(CFLAGS) $(OBJ) $(LDFLAGS) -lz -lpthread -o $(BINDIR)/$(BIN)
 
 .PHONY: clean
 clean:

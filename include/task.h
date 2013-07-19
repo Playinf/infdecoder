@@ -43,27 +43,6 @@ private:
     nbest_handler nbest_output_handler;
 };
 
-class task_queue {
-public:
-    task_queue();
-    ~task_queue();
-
-    task_queue(const task_queue& q) = delete;
-    task_queue& operator=(const task_queue& q) = delete;
-
-    task* get_task();
-
-    unsigned int size() const;
-    void set_limit(unsigned int limit);
-    void add_task(task* translation_task);
-private:
-    unsigned int limit;
-    std::queue<task*> queue;
-    std::mutex mutual_exclusion;
-    std::condition_variable full;
-    std::condition_variable empty;
-};
-
 class task_manager {
 public:
     explicit task_manager(unsigned int thread_number);
@@ -76,10 +55,17 @@ public:
     unsigned int get_task_number() const;
 
     void stop();
+    void set_limit(unsigned int limit);
     void add_task(task* translation_task);
 private:
+    void execute();
+
     bool stop_flag;
-    task_queue queue;
+    unsigned int limit;
+    std::queue<task*> task_queue;
+    std::mutex mutual_exclusion;
+    std::condition_variable thread_needed;
+    std::condition_variable thread_available;
     unsigned int thread_number;
     std::vector<std::thread*> thread_vector;
 };
