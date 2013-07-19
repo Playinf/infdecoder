@@ -1,4 +1,5 @@
 /* language_model.cpp */
+#include <mutex>
 #include <language_model.h>
 
 language_model::language_model()
@@ -71,8 +72,9 @@ void language_model::set_type(language_model_type type)
 }
 
 void language_model::ngram_probability(const input_type& str, float& full,
-    float& ngram) const
+    float& ngram)
 {
+    std::unique_lock<std::mutex> lock { mutual_exclusion };
     std::string context;
     unsigned int offset = 0;
     unsigned int n = str.size();
@@ -107,9 +109,10 @@ void language_model::ngram_probability(const input_type& str, float& full,
     ngram *= factor;
 }
 
-float language_model::word_probability(const std::string& word) const
+float language_model::word_probability(const std::string& word)
 {
     /* ln(10) */
+    std::unique_lock<std::mutex> lock { mutual_exclusion };
     const float factor = 2.302585093;
 
     if (word == "<s>")

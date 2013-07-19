@@ -46,7 +46,7 @@ unsigned int find_param(const std::string& param, int argc, char** argv)
             if (i + 1 < argc) {
                 return i + 1;
             } else {
-                std::cout << "require a parameter" << std::endl;
+                std::cerr << "require a parameter" << std::endl;
                 std::exit(-1);
             }
         }
@@ -64,7 +64,7 @@ void load_rule_from_file(const char* filename, rule_tree* table)
 
     moses_format_loader((void*) arg_arr);
 
-    std::cout << "loading " << filename << " complete" << std::endl;
+    std::cerr << "loading " << filename << " complete" << std::endl;
 
     delete[] arg_arr;
 }
@@ -88,13 +88,13 @@ void load_moses_model()
     table->set_id(0);
     glue_table->set_id(1);
 
-    std::cout << "loading language model";
+    std::cerr << "loading language model";
     lm->set_order(param->get_integer_parameter("language_model_order"));
     lm->load(lm_filename.c_str());
     lm->set_id(0);
-    std::cout << " complete" << std::endl;
+    std::cerr << " complete" << std::endl;
 
-    std::cout << "loading rule tree" << std::endl;
+    std::cerr << "loading rule tree" << std::endl;
     load_rule_from_file(table_filename.c_str(), table);
     load_rule_from_file(glue_filename.c_str(), glue_table);
 
@@ -146,12 +146,12 @@ void load_moses_model()
     /* rule tree sorting and pruning */
     unsigned int rule_limit = param->get_integer_parameter("rule_limit");
 
-    std::cout << "sorting and pruning rule table";
+    std::cerr << "sorting and pruning rule table";
     table->set_heuristic_function(hpb_rule_heuristic_function);
     table->sort(rule_limit);
     table->prune(rule_limit);
 
-    std::cout << " complete" << std::endl;
+    std::cerr << " complete" << std::endl;
 }
 
 void load_moses_ini(const char* filename, param_map& setting)
@@ -161,7 +161,7 @@ void load_moses_ini(const char* filename, param_map& setting)
     std::ifstream file(filename);
 
     if (file.bad()) {
-        std::cout << "cannot open file " << filename << std::endl;
+        std::cerr << "cannot open file " << filename << std::endl;
         std::exit(-1);
     }
 
@@ -200,7 +200,7 @@ void translate_moses_ini(param_map& setting)
     std::vector<std::string>& table_vec = setting["ttable-file"];
 
     if (table_vec.size() != 2) {
-        std::cout << "do not have enough rule table" << std::endl;
+        std::cerr << "do not have enough rule table" << std::endl;
         std::exit(-1);
     }
 
@@ -218,7 +218,7 @@ void translate_moses_ini(param_map& setting)
     std::vector<std::string>& lm_vec = setting["lmodel-file"];
 
     if (lm_vec.size() != 1) {
-        std::cout << "incorrect number of language model" << std::endl;
+        std::cerr << "incorrect number of language model" << std::endl;
         std::exit(-1);
     }
 
@@ -286,7 +286,7 @@ void translate_moses_ini(param_map& setting)
     std::vector<std::string>& lm_weight = setting["weight-l"];
 
     if (!lm_weight.size()) {
-        std::cout << "no language model weight specified" << std::endl;
+        std::cerr << "no language model weight specified" << std::endl;
         std::exit(-1);
     }
 
@@ -295,8 +295,8 @@ void translate_moses_ini(param_map& setting)
     std::vector<std::string>& tm_weight = setting["weight-t"];
 
     if (tm_weight.size() != 6) {
-        std::cout << "incorrect number of translation model feature weights";
-        std::cout << std::endl;
+        std::cerr << "incorrect number of translation model feature weights";
+        std::cerr << std::endl;
         std::exit(-1);
     }
 
@@ -310,7 +310,7 @@ void translate_moses_ini(param_map& setting)
     std::vector<std::string>& w_weight = setting["weight-w"];
 
     if (!w_weight.size()) {
-        std::cout << "no word penalty weight specified" << std::endl;
+        std::cerr << "no word penalty weight specified" << std::endl;
         std::exit(-1);
     }
 
@@ -361,7 +361,7 @@ void load_moses_options(int argc, char** argv)
     unsigned int index = index1 & index2;
 
     if (index == no_param) {
-        std::cout << "no configuration file" << std::endl;
+        std::cerr << "no configuration file" << std::endl;
         std::exit(-1);
     }
 

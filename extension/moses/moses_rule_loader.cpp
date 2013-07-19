@@ -293,7 +293,7 @@ void moses_rule_table_loader(std::ifstream& file, rule_tree& table, bool output)
         insert_rule(table, source_rule, target_rule, rule_score, align_info);
 
         if (output && line_count && (line_count % 100000 == 0))
-            std::cout << line_count << std::endl;
+            std::cerr << line_count << std::endl;
     }
 }
 
@@ -305,7 +305,7 @@ void moses_format_loader(void* args)
     std::ifstream file(file_name);
 
     if (file.fail()) {
-        std::cout << "FATAL ERROR: cannot open " << file_name << std::endl;
+        std::cerr << "FATAL ERROR: cannot open " << file_name << std::endl;
         exit(-1);
     }
 

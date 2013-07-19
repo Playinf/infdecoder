@@ -3,8 +3,6 @@
 #include <vector>
 #include <task.h>
 
-#include <iostream>
-
 task_manager::task_manager(unsigned int thread_number)
 {
     limit = 0;
@@ -36,6 +34,11 @@ unsigned int task_manager::get_task_number() const
     return task_queue.size();
 }
 
+void task_manager::set_limit(unsigned int limit)
+{
+    this->limit = limit;
+}
+
 void task_manager::stop()
 {
     std::unique_lock<std::mutex> lock { mutual_exclusion };
@@ -49,8 +52,7 @@ void task_manager::stop()
 
     for (unsigned int i = 0; i < thread_number; i++) {
         std::thread* t = thread_vector[i];
-        if (t->joinable())
-            t->join();
+        t->join();
     }
 }
 

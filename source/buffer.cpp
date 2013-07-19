@@ -34,6 +34,7 @@ void output_buffer::write(const std::string& str, unsigned int id)
             break;
 
         *output_stream << iter->second << std::flush;
+        output_map.erase(iter);
         expected_id++;
     }
 }

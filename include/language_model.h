@@ -9,6 +9,7 @@
 #ifndef __LM_H__
 #define __LM_H__
 
+#include <mutex>
 #include <string>
 #include <vector>
 #include <lmsri.h>
@@ -39,14 +40,15 @@ public:
     void set_order(unsigned int n);
     void set_feature(unsigned int id);
     void set_type(language_model_type type);
-    void ngram_probability(const input_type& in, float& s, float& n) const;
-    float word_probability(const std::string& word) const;
+    void ngram_probability(const input_type& in, float& s, float& n);
+    float word_probability(const std::string& word);
 private:
     void* model;
     unsigned int id;
     unsigned int order;
     unsigned int feature_id;
     language_model_type type;
+    std::mutex mutual_exclusion;
 };
 
 #endif /* __LM_H__ */

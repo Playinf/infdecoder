@@ -27,7 +27,7 @@
 /* TODO:
  * version 0.1
  * 1. add nbest support (finished)
- * 2. add multi-thread support
+ * 2. add multi-thread support (finished)
  * 3. add dynamic linked feature function
  * 4. add dynamic linked io function
  */
@@ -67,7 +67,7 @@ void print_parameter()
     param->get_parameter(vec);
 
     for (auto& val : vec) {
-        std::cout << val.first << ":" << val.second << std::endl;
+        std::cerr << val.first << ":" << val.second << std::endl;
     }
 }
 
@@ -174,6 +174,8 @@ void translate()
 
     file.open(input_file_name);
     nbest_file.open(nbest_name);
+
+    manager.set_limit(thread_number);
 
     if (file.fail())
         stream = &std::cin;

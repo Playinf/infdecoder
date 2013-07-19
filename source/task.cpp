@@ -2,6 +2,7 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+#include <sstream>
 #include <condition_variable>
 #include <task.h>
 #include <model.h>
@@ -51,19 +52,20 @@ void task::run()
     std::vector<std::shared_ptr<const trellis_path>> path_list;
     translator.get_nbest_list(path_list);
     unsigned int size = path_list.size();
-    std::string nbest_ouput;
+    std::stringstream out_stream;
 
     for (unsigned int i = 0; i < size; i++) {
         auto& path = path_list[i];
         std::string nbest_str;
-        nbest_str.append(std::to_string(id));
-        nbest_str.append(" ||| ");
+        out_stream << std::to_string(id);
+        out_stream << " ||| ";
         nbest_output_handler(path.get(), nbest_str);
-        nbest_ouput.append(nbest_str);
-        nbest_ouput.append("\n");
+        out_stream << nbest_str << std::endl;
     }
 
-    nbest_buffer->write(nbest_ouput, id);
+    out_stream << std::flush;
+
+    nbest_buffer->write(out_stream.str(), id);
 }
 
 void task::set_id(unsigned int id)
