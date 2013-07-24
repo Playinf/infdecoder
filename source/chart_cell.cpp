@@ -4,9 +4,9 @@
 #include <cube.h>
 #include <config.h>
 #include <symbol.h>
-#include <rule_set.h>
 #include <chart_cell.h>
 #include <hypothesis.h>
+#include <translation_option.h>
 
 chart_cell::chart_cell()
 {
@@ -88,14 +88,14 @@ chart_cell::hypothesis_list* chart_cell::get_hypothesis_list(const symbol* lhs)
     return nonterminal_beam->get_sorted_hypothesis_list();
 }
 
-void chart_cell::decode(rule_set* s, unsigned int limit)
+void chart_cell::decode(translation_option_set* s, unsigned int limit)
 {
     unsigned int size = s->size();
     cube_queue queue;
 
     for (unsigned int i = 0; i < size; i++) {
-        rule_list* list = s->get_rule_list(i);
-        cube* rule_cube = new cube(list);
+        translation_option* option = s->get_translation_option(i);
+        cube* rule_cube = new cube(option);
 
         queue.insert(rule_cube);
     }

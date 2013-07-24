@@ -16,8 +16,8 @@
 
 class beam;
 class symbol;
-class rule_set;
 class hypothesis;
+class translation_option_set;
 
 class chart_cell {
 public:
@@ -33,7 +33,7 @@ public:
 
     void sort();
     void add_hypothesis(hypothesis* hypo);
-    void decode(rule_set* s, unsigned int limit);
+    void decode(translation_option_set* s, unsigned int limit);
 private:
     symbol_set source_start_symbol_set;
     symbol_set target_start_symbol_set;

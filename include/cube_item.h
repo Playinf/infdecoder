@@ -12,8 +12,8 @@
 #include <vector>
 
 class rule;
-class rule_set;
 class hypothesis;
+class translation_option;
 
 class rule_dimension {
 public:
@@ -55,7 +55,7 @@ private:
 
 class cube_item {
 public:
-    cube_item(rule_list* list);
+    cube_item(translation_option* option);
     cube_item(const cube_item& item, unsigned int dim);
     ~cube_item();
 

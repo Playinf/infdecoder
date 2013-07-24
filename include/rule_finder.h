@@ -9,10 +9,10 @@
 #ifndef __RULE_FINDER_H__
 #define __RULE_FINDER_H__
 
-#include <chart.h>
-#include <rule_set.h>
-#include <rule_tree.h>
-#include <partial_rule.h>
+class chart;
+class rule_tree;
+class partial_rule_set;
+class translation_option_set;
 
 class rule_finder {
 public:
@@ -26,7 +26,7 @@ public:
 
     void set_span_limit(size_type limit);
     void initialize(input_type* input, chart* table);
-    void find(size_type start, size_type end, rule_set& rules);
+    void find(size_type start, size_type end, translation_option_set& rules);
     void clear();
 private:
     chart* table;

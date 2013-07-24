@@ -113,7 +113,10 @@ rt_node::size_type rt_node::prune(unsigned int limit)
     for (unsigned int i = limit; i < size; i++)
         delete rule_vector->at(i);
 
-    rule_vector->resize(limit);
+    auto iter_begin = rule_vector->begin() + limit;
+    auto iter_end = rule_vector->end();
+
+    rule_vector->erase(iter_begin, iter_end);
 
     return limit;
 }

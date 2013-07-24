@@ -13,8 +13,8 @@
 #include <unordered_set>
 #include <functional.h>
 
-class rule_list;
 class hypothesis;
+class translation_option;
 
 class cube {
 public:
@@ -23,7 +23,7 @@ public:
     typedef std::priority_queue<cube_item*, std::vector<cube_item*>,
         cube_item_less> queue_type;
 
-    cube(rule_list* list);
+    cube(translation_option* option);
     ~cube();
 
     cube(const cube& c) = delete;

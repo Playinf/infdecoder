@@ -5,11 +5,11 @@
 #include <rule.h>
 #include <symbol.h>
 #include <verbose.h>
-#include <rule_set.h>
 #include <rule_tree.h>
 #include <chart_cell.h>
 #include <hypothesis.h>
 #include <partial_rule.h>
+#include <translation_option.h>
 
 void print_beam(const beam* b)
 {
@@ -54,26 +54,26 @@ void print_symbol(const symbol* s)
         std::cout << "[NONTERMINAL]";
 }
 
-void print_rule_set(const rule_set* s)
+void print_translation_option(const translation_option* opt)
 {
-    unsigned int size = s->size();
-
-    for (unsigned int i = 0; i < size; i++) {
-        rule_list* l = s->get_rule_list(i);
-
-        print_rule_list(l);
-    }
-}
-
-void print_rule_list(const rule_list* l)
-{
-    auto vec = l->get_rule_vector();
+    auto vec = opt->get_rule_vector();
     unsigned int size = vec->size();
 
     for (unsigned int i = 0; i < size; i++) {
         const rule* r = vec->at(i);
 
         print_rule(r);
+    }
+}
+
+void print_translation_option_set(const translation_option_set* s)
+{
+    unsigned int size = s->size();
+
+    for (unsigned int i = 0; i < size; i++) {
+        translation_option* opt = s->get_translation_option(i);
+
+        print_translation_option(opt);
     }
 }
 

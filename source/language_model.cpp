@@ -1,5 +1,6 @@
 /* language_model.cpp */
 #include <mutex>
+#include <srilm.h>
 #include <language_model.h>
 
 language_model::language_model()
@@ -8,17 +9,22 @@ language_model::language_model()
     order = 0;
     feature_id = 0;
     type = SRI;
-    model = nullptr;
+    model = new srilm();
 }
 
 language_model::language_model(const char* filename)
 {
+    id = 0;
+    order = 0;
+    feature_id = 0;
+    type = SRI;
+    model = new srilm();
     load(filename);
 }
 
 language_model::~language_model()
 {
-    unload();
+    delete model;
 }
 
 unsigned int language_model::get_id() const
@@ -43,12 +49,7 @@ language_model_type language_model::get_type() const
 
 void language_model::load(const char* filename)
 {
-    model = sriLoadLM(filename, 1, order, 1, 0);
-}
-
-void language_model::unload()
-{
-    sriUnloadLM(model);
+    model->load(filename);
 }
 
 void language_model::set_id(unsigned int id)
@@ -59,6 +60,7 @@ void language_model::set_id(unsigned int id)
 void language_model::set_order(unsigned int n)
 {
     order = n;
+    model->set_order(order);
 }
 
 void language_model::set_feature(unsigned int id)
@@ -74,8 +76,7 @@ void language_model::set_type(language_model_type type)
 void language_model::ngram_probability(const input_type& str, float& full,
     float& ngram)
 {
-    std::unique_lock<std::mutex> lock { mutual_exclusion };
-    std::string context;
+    std::vector<std::string*> context;
     unsigned int offset = 0;
     unsigned int n = str.size();
     unsigned int context_len = 0;
@@ -83,25 +84,26 @@ void language_model::ngram_probability(const input_type& str, float& full,
     const float factor = 2.302585093;
 
     for (unsigned int i = 0; i < n; i++) {
-        const std::string& word = *str[i];
+        std::string* word = const_cast<std::string*>(str[i]);
         float prob;
 
-        if (i == 0 && word == "<s>") {
-            context += "<s> ";
+        if (i == 0 && *word == "<s>") {
+            context.push_back(word);
             context_len += 1;
             continue;
         }
 
-        const char* context_ptr = context.c_str() + offset;
-        prob = sriWordProb(model, word.c_str(), context_ptr);
+        std::string** context_ptr = context.data() + offset;
+
+        prob = model->word_probability(word, context_ptr, context_len);
 
         if (context_len >= order - 1) {
             ngram += prob;
-            offset += str[i - order + 1]->length() + 1;
+            offset += 1;
+            context_len -= 1;
         }
         full += prob;
-        context += word;
-        context += " ";
+        context.push_back(word);
         context_len += 1;
     }
 
@@ -112,11 +114,11 @@ void language_model::ngram_probability(const input_type& str, float& full,
 float language_model::word_probability(const std::string& word)
 {
     /* ln(10) */
-    std::unique_lock<std::mutex> lock { mutual_exclusion };
     const float factor = 2.302585093;
+    std::string* w = const_cast<std::string*>(&word);
 
     if (word == "<s>")
         return 0.0;
 
-    return factor * sriWordProb(model, word.c_str(), "");
+    return factor * model->word_probability(w, nullptr, 0);
 }

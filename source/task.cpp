@@ -12,8 +12,6 @@
 #include <trellis.h>
 #include <utility.h>
 
-#include <iostream>
-
 task::task()
 {
 }
@@ -30,10 +28,6 @@ unsigned int task::get_id() const
 void task::run()
 {
     decoder translator;
-
-    std::cout << input << std::endl;
-
-    //return;
 
     translator.process(input);
     hypothesis* best_hypo = translator.get_best_hypothesis();

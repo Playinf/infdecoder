@@ -16,7 +16,6 @@
 #include <trellis.h>
 #include <decoder.h>
 #include <utility.h>
-#include <rule_set.h>
 #include <parameter.h>
 #include <hypothesis.h>
 #include <language_model.h>
@@ -143,18 +142,22 @@ void output_nbest(const trellis_path* path, std::string& out)
     string_stream << " ||| ";
 
     for (unsigned int i = 0; i < score_vec->size(); i++) {
-        if (i == 0)
+        float score = score_vec->at(i);
+
+        if (i == 0) {
             string_stream << "lm: ";
-        else if (i == 7)
+            score += path->get_heuristic_score();
+        } else if (i == 7)
             string_stream << "w: ";
         else if (i == 1)
             string_stream << "tm: ";
-        string_stream << std::to_string(score_vec->at(i));
+
+        string_stream << score;
         string_stream << " ";
     }
 
     string_stream << " ||| ";
-    string_stream << std::to_string(path->get_total_score());
+    string_stream << path->get_total_score();
     out = string_stream.str();
 }
 
@@ -192,7 +195,6 @@ void translate()
         nbest_buffer_ptr = &nbest_buffer;
 
     while (std::getline(*stream, line)) {
-        unsigned int line_size = line.size();
         std::string::size_type pos1;
         std::string::size_type pos2;
 
@@ -219,6 +221,8 @@ void translate()
         t->set_handler(output_nbest);
         manager.add_task(t);
     }
+
+    std::cout << "stopping task manager" << std::endl;
 
     manager.stop();
 }
@@ -253,7 +257,6 @@ void single_thread_translate()
         nbest_buffer_ptr = &nbest_buffer;
 
     while (std::getline(*stream, line)) {
-        unsigned int line_size = line.size();
         std::string::size_type pos1;
         std::string::size_type pos2;
 
@@ -272,6 +275,7 @@ void single_thread_translate()
 
         translator.process(line);
         hypothesis* best_hypo = translator.get_best_hypothesis();
+        //hypothesis_track(best_hypo);
 
         if (best_hypo == nullptr)
             continue;
@@ -311,7 +315,6 @@ int main(int argc, char** argv)
 {
     configuration* config = configuration::get_instance();
     parameter* param = config->get_parameter();
-    model* system_model = config->get_model();
 
     load_moses_options(argc, argv);
     config->load_parameter();
@@ -325,5 +328,7 @@ int main(int argc, char** argv)
     print_parameter();
     load_moses_model();
 
-    translate();
+    single_thread_translate();
+
+    std::cout << "translation complete" << std::endl;
 }

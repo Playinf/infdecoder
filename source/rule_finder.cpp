@@ -1,7 +1,10 @@
 /* rule_finder.cpp */
+#include <chart.h>
+#include <rule_tree.h>
 #include <chart_cell.h>
 #include <rule_finder.h>
-#include <verbose.h>
+#include <partial_rule.h>
+#include <translation_option.h>
 
 rule_finder::rule_finder(rule_tree* tree)
 {
@@ -56,7 +59,8 @@ void rule_finder::clear()
     }
 }
 
-void rule_finder::find(size_type start, size_type end, rule_set& rules)
+void rule_finder::find(size_type start, size_type end,
+    translation_option_set& set)
 {
     partial_rule_set* rule_set = partial_rule_table->at(start);
     auto& expandable_rule_list = *rule_set->get_expandable_rule_list();
@@ -129,6 +133,6 @@ void rule_finder::find(size_type start, size_type end, rule_set& rules)
             continue;
 
         //print_partial_rule(r);
-        rules.add_complete_rule(r);
+        set.add_complete_rule(r);
     }
 }

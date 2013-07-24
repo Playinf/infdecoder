@@ -1,9 +1,9 @@
 /* cube_item.cpp */
 #include <rule.h>
 #include <utility.h>
-#include <rule_set.h>
 #include <cube_item.h>
 #include <hypothesis.h>
+#include <translation_option.h>
 
 rule_dimension::rule_dimension(std::vector<const rule*>* rules,
     unsigned int pos)
@@ -99,10 +99,10 @@ void hypothesis_dimension::next_hypothesis()
     position += 1;
 }
 
-cube_item::cube_item(rule_list* list)
-    : rule_position(list->get_rule_vector(), 0)
+cube_item::cube_item(translation_option* option)
+    : rule_position(option->get_rule_vector(), 0)
 {
-    unsigned int num = list->get_rule_nonterminal_number();
+    unsigned int num = option->get_rule_nonterminal_number();
     generated_hypothesis = nullptr;
 
     if (num) {
@@ -110,7 +110,7 @@ cube_item::cube_item(rule_list* list)
         hypothesis_position->reserve(num);
 
         for (unsigned int i = 0; i < num; i++) {
-            auto hypo_vec = list->get_hypothesis_vector(i);
+            auto hypo_vec = option->get_hypothesis_vector(i);
             hypothesis_dimension dim(hypo_vec, 0);
             hypothesis_position->push_back(dim);
         }

@@ -4,13 +4,16 @@
 #include <string>
 #include <cstdlib>
 #include <unordered_set>
+#include <chart.h>
 #include <config.h>
 #include <parser.h>
 #include <feature.h>
 #include <trellis.h>
 #include <chart_cell.h>
+#include <functional.h>
 #include <hypothesis.h>
 #include <rule_finder.h>
+#include <translation_option.h>
 
 typedef std::priority_queue<trellis_detour*, std::vector<trellis_detour*>,
     trellis_detour_less> queue_type;
@@ -76,8 +79,8 @@ parser::parser(std::vector<rule_tree*>* tree_vec)
 {
     input = nullptr;
     table = nullptr;
-    applicable_rule_set = nullptr;
     tree_vector = tree_vec;
+    applicable_translation_option_set = nullptr;
 
     unsigned int size = tree_vec->size();
 
@@ -112,7 +115,7 @@ void parser::parser_initialize()
 
     clear();
     table = new chart(size);
-    applicable_rule_set = new rule_set();
+    applicable_translation_option_set = new translation_option_set();
 
     for (unsigned int i = 0; i < n; i++) {
         rule_finder* finder = rule_lookup_manager[i];
@@ -224,7 +227,7 @@ void parser::parse(input_type& input)
             size_type j = i + len - 1;
 
             cell = table->get_cell(i, j);
-            applicable_rule_set->clear();
+            applicable_translation_option_set->clear();
 
             for (unsigned int k = 0; k < size; k++) {
                 rule_finder* finder = rule_lookup_manager[k];
@@ -233,11 +236,11 @@ void parser::parse(input_type& input)
                 if (span_limit && len > span_limit)
                     continue;
 
-                finder->find(i, j, *applicable_rule_set);
+                finder->find(i, j, *applicable_translation_option_set);
 
             }
 
-            cell->decode(applicable_rule_set, pop_limit);
+            cell->decode(applicable_translation_option_set, pop_limit);
             cell->sort();
         }
     }
@@ -257,8 +260,8 @@ void parser::clear()
         table = nullptr;
     }
 
-    if (applicable_rule_set) {
-        delete applicable_rule_set;
-        applicable_rule_set = nullptr;
+    if (applicable_translation_option_set) {
+        delete applicable_translation_option_set;
+        applicable_translation_option_set = nullptr;
     }
 }

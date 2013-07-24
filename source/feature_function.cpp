@@ -10,12 +10,12 @@
 
 float language_model_feature_function(const hypothesis* hypo, unsigned int id)
 {
-    float score = 0.0;
-    float prev_score = 0.0;
-    float prefix_score = 0.0;
     bool calc = false;
     bool prefix = true;
-    float full = 0.0;
+    float full = 0.0f;
+    float score = 0.0f;
+    float prev_score = 0.0f;
+    float prefix_score = 0.0f;
     const rule* r = hypo->get_rule();
     auto& rule_body = r->get_target_rule_body();
     unsigned int rule_body_size = rule_body.size();
@@ -85,9 +85,9 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
 
     if (prefix)
         prefix_score = full_score - ngram_score;
+
     score += ngram_score;
     full += full_score;
-
     score += prev_score;
     hypothesis* h = const_cast<hypothesis*>(hypo);
     h->set_heuristic_score(prefix_score * weight);

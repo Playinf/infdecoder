@@ -12,7 +12,8 @@
 #include <mutex>
 #include <string>
 #include <vector>
-#include <lmsri.h>
+
+class srilm;
 
 enum language_model_type {
     SRI
@@ -35,7 +36,6 @@ public:
     language_model_type get_type() const;
 
     void load(const char* filename);
-    void unload();
     void set_id(unsigned int id);
     void set_order(unsigned int n);
     void set_feature(unsigned int id);
@@ -43,12 +43,11 @@ public:
     void ngram_probability(const input_type& in, float& s, float& n);
     float word_probability(const std::string& word);
 private:
-    void* model;
+    srilm* model;
     unsigned int id;
     unsigned int order;
     unsigned int feature_id;
     language_model_type type;
-    std::mutex mutual_exclusion;
 };
 
 #endif /* __LM_H__ */

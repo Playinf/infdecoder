@@ -1,4 +1,4 @@
-/* thread_manager.cpp */
+/* task_manager.cpp */
 #include <thread>
 #include <vector>
 #include <task.h>

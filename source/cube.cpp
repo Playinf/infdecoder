@@ -1,12 +1,12 @@
 /* cube.h */
 #include <cube.h>
-#include <rule_set.h>
 #include <cube_item.h>
+#include <translation_option.h>
 
-cube::cube(rule_list* list)
+cube::cube(translation_option* option)
 {
-    cube_item* item = new cube_item(list);
-    dimension = list->get_rule_nonterminal_number() + 1;
+    cube_item* item = new cube_item(option);
+    dimension = option->get_rule_nonterminal_number() + 1;
     /***********************/
     margin = -1000.0f;
 

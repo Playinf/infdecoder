@@ -15,11 +15,11 @@
 
 class chart;
 class symbol;
-class rule_set;
 class rule_tree;
 class hypothesis;
 class rule_finder;
 class trellis_path;
+class translation_option_set;
 
 class parser {
 public:
@@ -44,9 +44,9 @@ private:
 
     chart* table;
     input_type* input;
-    rule_set* applicable_rule_set;
     std::vector<rule_tree*>* tree_vector;
     std::vector<rule_finder*> rule_lookup_manager;
+    translation_option_set* applicable_translation_option_set;
 };
 
 #endif /* __PARSER_H__ */
