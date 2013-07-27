@@ -124,7 +124,7 @@ float translation_model_feature_function(const hypothesis* h, unsigned int id)
 
 float word_penalty_feature_function(const hypothesis* hypo, unsigned int id)
 {
-    const float penalty = -1.0f;
+    const float penalty = -0.434294482f;
     unsigned int terminal_num = hypo->get_terminal_number();
 
     return terminal_num * penalty;

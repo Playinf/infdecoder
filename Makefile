@@ -7,11 +7,12 @@ SRCDIR = ./source
 LIBDIR = ./lib
 TESTDIR = ./test
 EXTDIR = ./extension/moses
+SRIDIR = /home/playinf/Applications/srilm
 
 CXX = g++
 CFLAGS = -Wall -O3 -I $(INCDIR) -std=c++0x
-LIBS = $(LIBDIR)/libsrilm.a $(LIBDIR)/liboolm.a $(LIBDIR)/dstruct.a \
-       $(LIBDIR)/misc.a
+LIBS = $(LIBDIR)/libsrilm.a $(LIBDIR)/liboolm.a $(LIBDIR)/libdstruct.a \
+       $(LIBDIR)/libmisc.a
 LDFLAGS = $(LIBS)
 
 SRC = $(wildcard $(SRCDIR)/*.cpp)
@@ -30,6 +31,12 @@ $(BIN): dir $(OBJ)
 
 dir:
 	-mkdir -p $(BINDIR)
+
+lib:
+	$(CXX) $(CFLAGS) -I $(SRIDIR)/include -c source/lm.cpp -o libsrilm.o
+	ar -crv libsrilm.o libsrilm.a
+	mv libsrilm.a lib
+	rm libsrilm.o
 
 .PHONY: clean
 clean:

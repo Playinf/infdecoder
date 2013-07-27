@@ -110,8 +110,10 @@ rt_node::size_type rt_node::prune(unsigned int limit)
     if (size <= limit)
         return size;
 
-    for (unsigned int i = limit; i < size; i++)
-        delete rule_vector->at(i);
+    for (unsigned int i = limit; i < size; i++) {
+        rule* r = const_cast<rule*>(rule_vector->at(i));
+        delete r;
+    }
 
     auto iter_begin = rule_vector->begin() + limit;
     auto iter_end = rule_vector->end();

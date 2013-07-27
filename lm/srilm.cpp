@@ -10,32 +10,39 @@ srilm::srilm()
     Vocab* vocab = new Vocab();
     Ngram* ngram = new Ngram((*vocab));
 
-    this->lm = static_cast<void*>(ngram);
-    this->vocab = static_cast<void*>(vocab);
+    ngram->skipOOVs() = false;
+
+    this->lm = ngram;
+    this->vocab = vocab;
+}
+
+srilm::srilm(unsigned int order)
+{
+    Vocab* vocab = new Vocab();
+    Ngram* ngram = new Ngram((*vocab), order);
+
+    ngram->skipOOVs() = false;
+
+    this->lm = ngram;
+    this->vocab = vocab;
 }
 
 srilm::~srilm()
 {
-    Ngram* ngram = static_cast<Ngram*>(this->lm);
-    Vocab* vocab = static_cast<Vocab*>(this->vocab);
-
-    delete ngram;
+    delete lm;
     delete vocab;
 }
 
 void srilm::load(const char* filename)
 {
     File file(filename, "r");
-    LM* ngram = static_cast<Ngram*>(lm);
 
-    ngram->read(file);
+    lm->read(file);
 }
 
 void srilm::set_order(unsigned int order)
 {
-    Ngram* ngram = static_cast<Ngram*>(lm);
-
-    ngram->setorder(order);
+    lm->setorder(order);
 }
 
 float srilm::sentence_probability(std::vector<std::string>& sentence)
@@ -43,7 +50,7 @@ float srilm::sentence_probability(std::vector<std::string>& sentence)
     float score = 0.0f;
     unsigned int size = sentence.size();
     VocabString* sen = new VocabString[size + 1];
-    LM* ngram = static_cast<Ngram*>(lm);
+    LM* ngram = lm;
     TextStats stats;
 
     for (unsigned int i = 0; i < size; i++)
@@ -62,11 +69,11 @@ float srilm::word_probability(std::string* word, std::string** ctx, int len)
 {
     float score = 0.0f;
     VocabString* sen = new VocabString[len + 1];
-    LM* ngram = static_cast<Ngram*>(lm);
+    LM* ngram = lm;
     TextStats stats;
 
-    for (unsigned int i = 0; i < len; i++)
-        sen[i] = ctx[i]->c_str();
+    for (int i = 0; i < len; i++)
+        sen[len - 1 - i] = ctx[i]->c_str();
 
     sen[len] = 0;
 

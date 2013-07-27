@@ -88,7 +88,6 @@ int string_vector_compare(const std::vector<const std::string*>* s1,
 
 void string_trim(const std::string& str, std::string& ret)
 {
-    std::string::size_type str_size = str.size();
     std::string::size_type pos1 = str.find_first_not_of(' ');
     std::string::size_type pos2 = str.find_last_not_of(' ');
     std::string::size_type npos = std::string::npos;

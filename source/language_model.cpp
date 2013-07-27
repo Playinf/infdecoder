@@ -1,7 +1,14 @@
 /* language_model.cpp */
-#include <mutex>
+#include <cmath>
 #include <srilm.h>
 #include <language_model.h>
+
+inline float floor_score(float score)
+{
+    const float min_score = -100.0f;
+
+    return std::max(score, min_score);
+}
 
 language_model::language_model()
 {
@@ -81,7 +88,10 @@ void language_model::ngram_probability(const input_type& str, float& full,
     unsigned int n = str.size();
     unsigned int context_len = 0;
     /* ln(10) */
-    const float factor = 2.302585093;
+    //const float factor = 2.302585093;
+
+    full = 0.0f;
+    ngram = 0.0f;
 
     for (unsigned int i = 0; i < n; i++) {
         std::string* word = const_cast<std::string*>(str[i]);
@@ -96,6 +106,7 @@ void language_model::ngram_probability(const input_type& str, float& full,
         std::string** context_ptr = context.data() + offset;
 
         prob = model->word_probability(word, context_ptr, context_len);
+        prob = floor_score(prob);
 
         if (context_len >= order - 1) {
             ngram += prob;
@@ -107,8 +118,8 @@ void language_model::ngram_probability(const input_type& str, float& full,
         context_len += 1;
     }
 
-    full *= factor;
-    ngram *= factor;
+    //full *= factor;
+    //ngram *= factor;
 }
 
 float language_model::word_probability(const std::string& word)
@@ -120,5 +131,7 @@ float language_model::word_probability(const std::string& word)
     if (word == "<s>")
         return 0.0;
 
-    return factor * model->word_probability(w, nullptr, 0);
+    float score = model->word_probability(w, nullptr, 0);
+
+    return factor * floor_score(score);
 }

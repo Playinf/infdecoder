@@ -18,6 +18,7 @@ class Vocab;
 class srilm {
 public:
     srilm();
+    srilm(unsigned int order);
     ~srilm();
 
     srilm(const srilm& lm) = delete;

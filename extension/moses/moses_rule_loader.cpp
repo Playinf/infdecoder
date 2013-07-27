@@ -13,6 +13,13 @@
 #include <verbose.h>
 #include <rule_tree.h>
 
+inline float floor_score(float score)
+{
+    const float min_score = -100.0f;
+
+    return std::max(score, min_score);
+}
+
 inline bool is_nonterminal(const std::string& str)
 {
     std::string::size_type end = str.length() - 1;
@@ -150,7 +157,7 @@ void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
     for (unsigned int i = 0; i < prob_size; i++) {
         /* convert to log probability */
         float score = std::log(prob[i]);
-        score_vec.push_back(score);
+        score_vec.push_back(floor_score(score));
     }
 
     target_rule->set_score(score_vec);

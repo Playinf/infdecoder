@@ -7,8 +7,6 @@ cube::cube(translation_option* option)
 {
     cube_item* item = new cube_item(option);
     dimension = option->get_rule_nonterminal_number() + 1;
-    /***********************/
-    margin = -1000.0f;
 
     item->generate_hypothesis();
     enumerated_item_set.insert(item);
@@ -49,11 +47,6 @@ bool cube::empty() const
     return cube_item_queue.empty();
 }
 
-void cube::set_margin(float val)
-{
-    margin = val;
-}
-
 void cube::explore_neighbor(cube_item* item)
 {
     const unsigned int rule_dim = 0;
@@ -78,48 +71,4 @@ void cube::explore_neighbor(cube_item* item, unsigned int dim)
     } else {
         delete new_item;
     }
-}
-
-cube_queue::cube_queue()
-{
-}
-
-cube_queue::~cube_queue()
-{
-    while (!rule_cube_queue.empty()) {
-        cube* rule_cube = rule_cube_queue.top();
-        rule_cube_queue.pop();
-        delete rule_cube;
-    }
-}
-
-bool cube_queue::empty() const
-{
-    return rule_cube_queue.empty();
-}
-
-cube_queue::size_type cube_queue::size() const
-{
-    return rule_cube_queue.size();
-}
-
-const hypothesis* cube_queue::pop()
-{
-    hypothesis* hypo;
-    cube* rule_cube = rule_cube_queue.top();
-    rule_cube_queue.pop();
-
-    hypo = rule_cube->pop()->get_hypothesis();
-
-    if (!rule_cube->empty())
-        rule_cube_queue.push(rule_cube);
-    else
-        delete rule_cube;
-
-    return hypo;
-}
-
-void cube_queue::insert(cube* rule_cube)
-{
-    rule_cube_queue.push(rule_cube);
 }

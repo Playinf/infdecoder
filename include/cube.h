@@ -33,12 +33,10 @@ public:
 
     cube_item* pop();
     bool empty() const;
-    void set_margin(float margin);
 private:
     void explore_neighbor(cube_item* item);
     void explore_neighbor(cube_item* item, unsigned int dim);
 
-    float margin;
     unsigned int dimension;
     set_type enumerated_item_set;
     queue_type cube_item_queue;
