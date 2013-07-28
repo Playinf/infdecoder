@@ -6,7 +6,9 @@ INCDIR = ./include
 SRCDIR = ./source
 LIBDIR = ./lib
 TESTDIR = ./test
-EXTDIR = ./extension/moses
+EXTDIR = ./extension/
+EXTIODIR = $(EXTDIR)/io
+EXTMOSESDIR = $(EXTDIR)/moses
 SRIDIR = /home/playinf/Applications/srilm
 
 CXX = g++
@@ -16,7 +18,8 @@ LIBS = $(LIBDIR)/libsrilm.a $(LIBDIR)/liboolm.a $(LIBDIR)/libdstruct.a \
 LDFLAGS = $(LIBS)
 
 SRC = $(wildcard $(SRCDIR)/*.cpp)
-SRC += $(wildcard $(EXTDIR)/*.cpp)
+SRC += $(wildcard $(EXTIODIR)/*.cpp)
+SRC += $(wildcard $(EXTMOSESDIR)/*.cpp)
 OBJ = $(patsubst %.cpp, %.o, $(SRC))
 
 # Compile and Assemble C++ Source Files into Object Files
@@ -40,6 +43,6 @@ lib:
 
 .PHONY: clean
 clean:
-	-rm -f $(SRCDIR)/*.o $(EXTDIR)/*.o
+	-rm -f $(SRCDIR)/*.o $(EXTIODIR)/*.o $(EXTMOSESDIR)/*.o
 	-rm -f -r $(BINDIR)
 

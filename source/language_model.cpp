@@ -118,8 +118,8 @@ void language_model::ngram_probability(const input_type& str, float& full,
         context_len += 1;
     }
 
-    //full *= factor;
-    //ngram *= factor;
+    full *= factor;
+    ngram *= factor;
 }
 
 float language_model::word_probability(const std::string& word)

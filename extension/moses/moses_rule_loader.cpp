@@ -6,7 +6,6 @@
 #include <iostream>
 #include <model.h>
 #include <config.h>
-#include <format.h>
 #include <parser.h>
 #include <symbol.h>
 #include <utility.h>

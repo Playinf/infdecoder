@@ -17,7 +17,7 @@ typedef std::map<std::string, std::vector<std::string>> param_map;
 
 void moses_format_loader(void* args);
 rule* create_unknow_word_rule(const symbol* sym);
-float moses_rule_heuristic_function(const rule* r);
+float hpb_rule_heuristic_function(const rule* r);
 
 bool is_option(const char* str)
 {
@@ -147,7 +147,7 @@ void load_moses_model()
     unsigned int rule_limit = param->get_integer_parameter("rule_limit");
 
     std::cerr << "sorting and pruning rule table";
-    table->set_heuristic_function(moses_rule_heuristic_function);
+    table->set_heuristic_function(hpb_rule_heuristic_function);
     table->sort(rule_limit);
     table->prune(rule_limit);
 
