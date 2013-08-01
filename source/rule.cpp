@@ -22,6 +22,11 @@ rule::~rule()
     delete[] nonterminal_map;
 }
 
+unsigned int rule::get_id() const
+{
+    return id;
+}
+
 float rule::get_heuristic_score() const
 {
     return heuristic_score;
@@ -35,11 +40,6 @@ float rule::get_score(unsigned int index) const
 rule::size_type rule::get_terminal_number() const
 {
     return target_terminal_number;
-}
-
-unsigned int rule::get_rule_tree_id() const
-{
-    return id;
 }
 
 const symbol* rule::get_start_symbol(int index) const

@@ -12,12 +12,6 @@ rule* create_unknow_word_rule(const symbol* word)
     const symbol* x_symbol = table->search_symbol("X", false);
     std::vector<float> scores;
 
-    scores.push_back(-10.0);
-    scores.push_back(-10.0);
-    scores.push_back(-10.0);
-    scores.push_back(-10.0);
-    scores.push_back(std::log(2.718));
-
     r->add_symbol(word);
     r->set_start_symbol(x_symbol, x_symbol);
     r->set_score(scores);

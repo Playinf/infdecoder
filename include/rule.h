@@ -26,10 +26,10 @@ public:
     rule(const rule& r) = delete;
     rule& operator=(const rule& r) = delete;
 
+    unsigned int get_id() const;
     float get_heuristic_score() const;
     float get_score(unsigned int index) const;
     size_type get_terminal_number() const;
-    unsigned int get_rule_tree_id() const;
     const symbol* get_start_symbol(int index) const;
     const std::vector<const symbol*>& get_target_rule_body() const;
     unsigned int get_nonterminal_map(unsigned int src) const;

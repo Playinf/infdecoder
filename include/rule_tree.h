@@ -71,15 +71,11 @@ public:
     size_type get_rule_number() const;
     size_type get_node_number() const;
     const node_type* get_root() const;
-    unsigned int get_feature_number() const;
-    unsigned int get_feature_id(unsigned int index) const;
-    float get_score(const rule* r, unsigned int id) const;
 
     void sort();
     void sort(unsigned int limit);
     void prune(unsigned int limit);
     void set_id(unsigned int id);
-    void add_feature(unsigned int id);
     void set_heuristic_function(heuristic_function func);
     rt_node* insert_node(rt_node* parent, const symbol* sym);
     rt_node* insert_node(rt_node* parent, const symbol* src, const symbol* tgt);
@@ -91,7 +87,6 @@ private:
     unsigned int id;
     size_type node_num;
     size_type rule_num;
-    std::vector<unsigned int> feature_vector;
     heuristic_function rule_heuristic_function;
 };
 

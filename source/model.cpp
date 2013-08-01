@@ -4,6 +4,7 @@
 #include <model.h>
 #include <rule_tree.h>
 #include <language_model.h>
+#include <translation_model.h>
 
 model::model()
 {
@@ -12,18 +13,19 @@ model::model()
 
 model::~model()
 {
-    unsigned int table_num = rule_tree_vector.size();
     unsigned int lm_num = language_model_vector.size();
+    unsigned int tm_num = translation_model_vector.size();
 
     /* release memory */
-    for (unsigned int i = 0; i < table_num; i++) {
-        rule_tree* t = rule_tree_vector[i];
-        delete t;
-    }
 
     for (unsigned int i = 0; i < lm_num; i++) {
         language_model* lm = language_model_vector[i];
         delete lm;
+    }
+
+    for (unsigned int i = 0; i < tm_num; i++) {
+        translation_model* tm = translation_model_vector[i];
+        delete tm;
     }
 }
 
@@ -63,29 +65,14 @@ const std::string& model::get_feature_description(unsigned int id) const
     return feature_description_map[id];
 }
 
-model::size_type model::get_rule_tree_number() const
-{
-    return rule_tree_vector.size();
-}
-
 model::size_type model::get_language_model_number() const
 {
     return language_model_vector.size();
 }
 
-rule_tree* model::get_rule_tree(size_type index) const
+model::size_type model::get_translation_model_number() const
 {
-    return rule_tree_vector[index];
-}
-
-rule_tree* model::get_rule_tree_source(unsigned int id) const
-{
-    auto iter = feature_tm_map.find(id);
-
-    if (iter == feature_tm_map.end())
-        return nullptr;
-
-    return iter->second;
+    return translation_model_vector.size();
 }
 
 language_model* model::get_language_model(size_type index) const
@@ -93,11 +80,26 @@ language_model* model::get_language_model(size_type index) const
     return language_model_vector[index];
 }
 
-language_model* model::get_language_model_source(unsigned int id) const
+translation_model* model::get_translation_model(size_type index) const
+{
+    return translation_model_vector[index];
+}
+
+language_model* model::find_language_model(unsigned int id) const
 {
     auto iter = feature_lm_map.find(id);
 
     if (iter == feature_lm_map.end())
+        return nullptr;
+
+    return iter->second;
+}
+
+translation_model* model::find_translation_model(unsigned int id) const
+{
+    auto iter = feature_tm_map.find(id);
+
+    if (iter == feature_tm_map.end())
         return nullptr;
 
     return iter->second;
@@ -115,24 +117,24 @@ void model::push_weight(std::vector<float>& weight)
         lambda.push_back(weight[i]);
 }
 
-void model::add_rule_table(rule_tree* tree)
-{
-    rule_tree_vector.push_back(tree);
-}
-
 void model::add_language_model(language_model* lm)
 {
     language_model_vector.push_back(lm);
 }
 
-void model::set_feature_source(unsigned int id, rule_tree* tree)
+void model::add_translation_model(translation_model* tm)
 {
-    feature_tm_map[id] = tree;
+    translation_model_vector.push_back(tm);
 }
 
 void model::set_feature_source(unsigned int id, language_model* lm)
 {
     feature_lm_map[id] = lm;
+}
+
+void model::set_feature_source(unsigned int id, translation_model* tm)
+{
+    feature_tm_map[id] = tm;
 }
 
 void model::set_feature_function(unsigned int id, feature_function func)

@@ -42,6 +42,7 @@ public:
     void set_type(language_model_type type);
     void ngram_probability(const input_type& in, float& s, float& n);
     float word_probability(const std::string& word);
+    float word_probability(std::vector<const std::string*>& ngram);
 private:
     srilm* model;
     unsigned int id;

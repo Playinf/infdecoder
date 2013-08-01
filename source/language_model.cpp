@@ -88,7 +88,7 @@ void language_model::ngram_probability(const input_type& str, float& full,
     unsigned int n = str.size();
     unsigned int context_len = 0;
     /* ln(10) */
-    //const float factor = 2.302585093;
+    //const float factor = 2.302585093f;
 
     full = 0.0f;
     ngram = 0.0f;
@@ -118,20 +118,34 @@ void language_model::ngram_probability(const input_type& str, float& full,
         context_len += 1;
     }
 
-    full *= factor;
-    ngram *= factor;
+    //full *= factor;
+    //ngram *= factor;
 }
 
 float language_model::word_probability(const std::string& word)
 {
     /* ln(10) */
-    const float factor = 2.302585093;
+    //const float factor = 2.302585093f;
     std::string* w = const_cast<std::string*>(&word);
 
     if (word == "<s>")
-        return 0.0;
+        return 0.0f;
 
     float score = model->word_probability(w, nullptr, 0);
 
-    return factor * floor_score(score);
+    return floor_score(score);
+}
+
+float language_model::word_probability(std::vector<const std::string*>& ngram)
+{
+    /* ln(10) */
+    //const float factor = 2.302585093f;
+    unsigned int size = ngram.size();
+    std::string* word = const_cast<std::string*>(ngram[size - 1]);
+    std::string** ctx = const_cast<std::string**>(ngram.data());
+    float score;
+
+    score = model->word_probability(word, ctx, size - 1);
+
+    return floor_score(score);
 }

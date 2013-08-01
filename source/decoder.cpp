@@ -10,6 +10,7 @@
 #include <trellis.h>
 #include <utility.h>
 #include <rule_tree.h>
+#include <translation_model.h>
 
 decoder::decoder()
 {
@@ -53,9 +54,12 @@ void decoder::process(const std::string& sentence)
     lexical_analyzer->set_handler(handler);
     lexical_analyzer->process();
 
+    translation_model* main_tm = system_model->get_translation_model(1);
+    translation_model* glue_tm = system_model->get_translation_model(2);
+
     rule_tree* unknow_word_tree = lexical_analyzer->get_rule_tree();
-    rule_tree* main_tree = system_model->get_rule_tree(0);
-    rule_tree* glue_tree = system_model->get_rule_tree(1);
+    rule_tree* main_tree = main_tm->get_rule_tree();
+    rule_tree* glue_tree = glue_tm->get_rule_tree();
 
     tree_vec.push_back(unknow_word_tree);
     tree_vec.push_back(main_tree);

@@ -7,6 +7,7 @@
 #include <rule_tree.h>
 #include <hypothesis.h>
 #include <language_model.h>
+#include <translation_model.h>
 
 float language_model_feature_function(const hypothesis* hypo, unsigned int id)
 {
@@ -21,7 +22,7 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
     unsigned int rule_body_size = rule_body.size();
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
-    language_model* lm = system_model->get_language_model_source(id);
+    language_model* lm = system_model->get_language_model(id);
     float weight = system_model->get_weight(id);
     unsigned int lm_order = lm->get_order();
     unsigned int indx = 0;
@@ -103,10 +104,13 @@ float translation_model_feature_function(const hypothesis* h, unsigned int id)
     unsigned int size = h->get_previous_hypothesis_number();
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
-    unsigned int tree_id = r->get_rule_tree_id();
-    rule_tree* tree = system_model->get_rule_tree(tree_id);
+    unsigned int tm_id = r->get_id();
+    translation_model* tm = system_model->get_translation_model(tm_id);
+    const unsigned int not_found = static_cast<unsigned int> (-1);
+    unsigned index = tm->get_index(id);
 
-    score = tree->get_score(r, id);
+    if (index != not_found)
+        score = r->get_score(index);
 
     if (!size)
         return score;
@@ -128,4 +132,32 @@ float word_penalty_feature_function(const hypothesis* hypo, unsigned int id)
     unsigned int terminal_num = hypo->get_terminal_number();
 
     return terminal_num * penalty;
+}
+
+float unknow_word_feature_function(const hypothesis* hypo, unsigned int id)
+{
+    float score = 0.0f;
+    const float penalty = -100.0f;
+    const rule* r = hypo->get_rule();
+    unsigned int size = hypo->get_previous_hypothesis_number();
+    configuration* config = configuration::get_instance();
+    model* system_model = config->get_model();
+    unsigned int tm_id = r->get_id();
+    translation_model* tm = system_model->get_translation_model(tm_id);
+
+    if (tm->get_id() == 0)
+        score += penalty;
+
+    if (!size)
+        return score;
+
+    /* sum score from previous hypotheses */
+    for (unsigned int i = 0; i < size; i++) {
+        hypothesis* h = hypo->get_previous_hypothesis(i);
+        const feature* f = h->get_feature(id);
+
+        score += f->get_score();
+    }
+
+    return score;
 }

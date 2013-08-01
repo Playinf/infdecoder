@@ -71,7 +71,7 @@ void output_nbest(const trellis_path* path, std::string& out)
     auto score_vec = path->get_score_vector();
     string_stream << " ||| ";
 
-    for (unsigned int i = 0; i < score_vec->size(); i++) {
+    for (unsigned int i = 0; i < 8; i++) {
         float score = score_vec->at(i);
 
         if (i == 0) {

@@ -5,6 +5,7 @@
 #include <symbol.h>
 #include <rule_tree.h>
 #include <language_model.h>
+#include <translation_model.h>
 
 float hpb_rule_heuristic_function(const rule* r)
 {
@@ -13,8 +14,9 @@ float hpb_rule_heuristic_function(const rule* r)
     auto& target_rule_body = r->get_target_rule_body();
     unsigned int size = target_rule_body.size();
     const float penalty = -1.0f;
-    rule_tree* tree = system_model->get_rule_tree(r->get_rule_tree_id());
+    unsigned int tm_id = r->get_id();
     language_model* lm = system_model->get_language_model(0);
+    translation_model* tm = system_model->get_translation_model(tm_id);
     float lm_weight = system_model->get_weight(lm->get_feature_id());
     unsigned int id = system_model->get_feature_id("word penalty");
     float terminal_num_weight = system_model->get_weight(id);
@@ -30,11 +32,11 @@ float hpb_rule_heuristic_function(const rule* r)
         score += lm->word_probability(*sym->get_name());
     }
 
-    size = tree->get_feature_number();
+    size = tm->get_feature_number();
     score *= lm_weight;
 
     for (unsigned int i = 0; i < size; i++) {
-        unsigned int id = tree->get_feature_id(i);
+        unsigned int id = tm->get_feature_id(i);
         float weight = system_model->get_weight(id);
 
         score += weight * r->get_score(i);

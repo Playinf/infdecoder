@@ -37,28 +37,6 @@ unsigned int rule_tree::get_id() const
     return id;
 }
 
-unsigned int rule_tree::get_feature_number() const
-{
-    return feature_vector.size();
-}
-
-unsigned int rule_tree::get_feature_id(unsigned int index) const
-{
-    return feature_vector[index];
-}
-
-float rule_tree::get_score(const rule* r, unsigned int id) const
-{
-    unsigned int size = feature_vector.size();
-
-    for (unsigned int i = 0; i < size; i++) {
-        if (feature_vector[i] == id)
-            return r->get_score(i);
-    }
-
-    return 0.0f;
-}
-
 void rule_tree::sort()
 {
     rt_node::sort(&root, rule_heuristic_function);
@@ -83,11 +61,6 @@ void rule_tree::prune(unsigned int limit)
 void rule_tree::set_id(unsigned int id)
 {
     this->id = id;
-}
-
-void rule_tree::add_feature(unsigned int id)
-{
-    feature_vector.push_back(id);
 }
 
 void rule_tree::set_heuristic_function(heuristic_function func)
