@@ -1,4 +1,4 @@
-/* unknow_word_rule.cpp */
+/* moses_oov_rule.cpp */
 #include <cmath>
 #include <string>
 #include <vector>

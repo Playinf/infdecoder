@@ -1,4 +1,4 @@
-/* rule_heuristic.cpp */
+/* moses_rule_heuristic.cpp */
 #include <cmath>
 #include <vector>
 #include <rule.h>

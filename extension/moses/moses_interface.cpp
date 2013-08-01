@@ -1,5 +1,4 @@
-/* moses_translation.cpp */
-#include <ctime>
+/* moses_interface.cpp */
 #include <string>
 #include <cstdlib>
 #include <utility>
@@ -8,13 +7,15 @@
 #include <config.h>
 #include <parameter.h>
 
+/* defined in moses_model.cpp */
 void load_moses_model();
-void moses_ini_loader(const char* filename);
+/* defined in moses_config_loader.cpp */
 void load_moses_options(int argc, char** argv);
+/* defined in standard.cpp */
 void translate();
 void singel_thread_translate();
 
-void print_parameter()
+static void print_parameter()
 {
     configuration* config = configuration::get_instance();
     parameter* param = config->get_parameter();
@@ -27,7 +28,7 @@ void print_parameter()
     }
 }
 
-void show_weights()
+static void show_weights()
 {
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
