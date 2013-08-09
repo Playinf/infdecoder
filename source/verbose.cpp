@@ -5,6 +5,7 @@
 #include <rule.h>
 #include <symbol.h>
 #include <verbose.h>
+#include <cube_item.h>
 #include <rule_tree.h>
 #include <chart_cell.h>
 #include <hypothesis.h>
@@ -54,27 +55,20 @@ void print_symbol(const symbol* s)
         std::cout << "[NONTERMINAL]";
 }
 
-void print_translation_option(const translation_option* opt)
+void print_cube_item(const cube_item* i)
 {
-    auto vec = opt->get_rule_vector();
-    unsigned int size = vec->size();
+    const cube_item* item = i;
+    unsigned int rpos = item->get_rule_position();
+    unsigned int hypo_num = item->get_hypothesis_dimension();
 
-    for (unsigned int i = 0; i < size; i++) {
-        const rule* r = vec->at(i);
+    std::cout << rpos;
 
-        print_rule(r);
+    for (unsigned int i = 0; i < hypo_num; i++) {
+        unsigned int hpos = item->get_hypothesis_position(i);
+        std::cout << ":" << hpos;
     }
-}
 
-void print_translation_option_set(const translation_option_set* s)
-{
-    unsigned int size = s->size();
-
-    for (unsigned int i = 0; i < size; i++) {
-        translation_option* opt = s->get_translation_option(i);
-
-        print_translation_option(opt);
-    }
+    std::cout << " ||| " << item->get_score() << std::endl;
 }
 
 void print_chart_cell(const chart_cell* c)
@@ -125,9 +119,7 @@ void print_hypothesis(const hypothesis* hypo)
         std::cout << fea->get_score() << " ";
     }
 
-    std::cout << " ||| " << hypo->get_total_score();
-    std::cout << " ||| " << hypo->get_heuristic_score();
-    std::cout << " ||| " << hypo->get_score() << std::endl;
+    std::cout << " ||| " << hypo->get_total_score() << std::endl;
 }
 
 void hypothesis_track(const hypothesis* hypo)
@@ -175,4 +167,27 @@ void print_partial_rule(const partial_rule* r)
 {
     std::cout << r->get_length() << ":";
     print_partial_rule(r, true);
+}
+
+void print_translation_option(const translation_option* opt)
+{
+    auto vec = opt->get_rule_vector();
+    unsigned int size = vec->size();
+
+    for (unsigned int i = 0; i < size; i++) {
+        const rule* r = vec->at(i);
+
+        print_rule(r);
+    }
+}
+
+void print_translation_option_set(const translation_option_set* s)
+{
+    unsigned int size = s->size();
+
+    for (unsigned int i = 0; i < size; i++) {
+        translation_option* opt = s->get_translation_option(i);
+
+        print_translation_option(opt);
+    }
 }

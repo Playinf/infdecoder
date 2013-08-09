@@ -35,7 +35,6 @@ public:
 private:
     void prune();
 
-    bool sorted;
     float max_score;
     float threshold;
     size_type beam_size;

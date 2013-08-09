@@ -45,6 +45,7 @@ void decoder::process(const std::string& sentence)
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
     unknow_word_handler handler;
+    unsigned int tm_number = system_model->get_translation_model_number();
 
     string_split(sentence, seperator, word_seq);
     handler = config->get_unknow_word_handler();
@@ -54,16 +55,14 @@ void decoder::process(const std::string& sentence)
     lexical_analyzer->set_handler(handler);
     lexical_analyzer->process();
 
-    translation_model* main_tm = system_model->get_translation_model(1);
-    translation_model* glue_tm = system_model->get_translation_model(2);
-
     rule_tree* unknow_word_tree = lexical_analyzer->get_rule_tree();
-    rule_tree* main_tree = main_tm->get_rule_tree();
-    rule_tree* glue_tree = glue_tm->get_rule_tree();
-
     tree_vec.push_back(unknow_word_tree);
-    tree_vec.push_back(main_tree);
-    tree_vec.push_back(glue_tree);
+
+    for (unsigned int i = 0; i < tm_number - 1; i++) {
+        translation_model* tm = system_model->get_translation_model(i);
+        rule_tree* tree = tm->get_rule_tree();
+        tree_vec.push_back(tree);
+    }
 
     syntax_analyzer = new parser(&tree_vec);
     syntax_analyzer->parse(lexical_analyzer->get_output());

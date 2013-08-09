@@ -62,8 +62,8 @@ void moses_translate(int argc, char** argv)
         std::exit(0);
     }
 
-    print_parameter();
     load_moses_model();
+    print_parameter();
     translate();
 
     std::cerr << "translation complete" << std::endl;

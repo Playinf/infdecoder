@@ -90,37 +90,58 @@ static void translate_moses_ini(param_map& setting)
     parameter* param = config->get_parameter();
     std::vector<std::string> str_vec;
 
-    /* rule table */
-    std::vector<std::string>& table_vec = setting["ttable-file"];
+    /* language models */
+    std::vector<std::string>& lm_vec = setting["lmodel-file"];
+    unsigned int lm_num = lm_vec.size();
 
-    if (table_vec.size() != 2) {
+    if (lm_num == 0) {
+        std::cerr << "no language model specified" << std::endl;
+        std::exit(-1);
+    }
+
+    param->add_parameter("language_model_number", lm_num);
+
+    for (unsigned int i = 0; i < lm_num; i++) {
+        std::string& lm_str = lm_vec[i];
+        std::string lm_file = "language_model_";
+        std::string lm_order = "language_model_";
+        unsigned int order;
+
+        string_split(lm_str, " ", str_vec);
+        order = std::stoi(str_vec[2]);
+        lm_file += std::to_string(i) + "_file";
+        lm_order += std::to_string(i) + "_order";
+        param->add_parameter(lm_order, order);
+        param->add_parameter(lm_file, str_vec[3]);
+        str_vec.clear();
+    }
+
+    /* translation models */
+    std::vector<std::string>& table_vec = setting["ttable-file"];
+    unsigned int tm_num = table_vec.size();
+    unsigned int tm_fea_num = 0;
+    param->add_parameter("translation_model_number", tm_num);
+
+    if (tm_num < 2) {
         std::cerr << "do not have enough rule table" << std::endl;
         std::exit(-1);
     }
 
-    const std::string& ntable = table_vec[0];
-    const std::string& gtable = table_vec[1];
+    for (unsigned int i = 0; i < tm_num; i++) {
+        std::string& tm = table_vec[i];
+        std::string tm_file = "translation_model_";
+        std::string tm_fnum = "translation_model_";
+        unsigned int tm_feature_number;
 
-    string_split(ntable, " ", str_vec);
-    param->add_parameter("rule_table", str_vec[4]);
-    str_vec.clear();
-    string_split(gtable, " ", str_vec);
-    param->add_parameter("special_rule_table", str_vec[4]);
-    str_vec.clear();
-
-    /* language model */
-    std::vector<std::string>& lm_vec = setting["lmodel-file"];
-
-    if (lm_vec.size() != 1) {
-        std::cerr << "incorrect number of language model" << std::endl;
-        std::exit(-1);
+        string_split(tm, " ", str_vec);
+        tm_feature_number = std::stoi(str_vec[3]);
+        tm_file += std::to_string(i) + "_file";
+        tm_fnum += std::to_string(i) + "_feature_number";
+        param->add_parameter(tm_fnum, tm_feature_number);
+        param->add_parameter(tm_file, str_vec[4]);
+        tm_fea_num += tm_feature_number;
+        str_vec.clear();
     }
-
-    string_split(lm_vec[0], " ", str_vec);
-    unsigned int order = std::stoi(str_vec[2]);
-    param->add_parameter("language_model_order", order);
-    param->add_parameter("language_model", str_vec[3]);
-    str_vec.clear();
 
     /* rule limit */
     std::vector<std::string>& rule_limit_vec = setting["ttable-limit"];
@@ -176,66 +197,91 @@ static void translate_moses_ini(param_map& setting)
         param->add_parameter("beam_threshold", threshold);
     }
 
-    /* weight */
-    std::vector<std::string>& lm_weight = setting["weight-l"];
+    /* cube pruning */
+    std::vector<std::string>& pop_lim_vec = setting["cube-pruning-pop-limit"];
 
-    if (!lm_weight.size()) {
-        std::cerr << "no language model weight specified" << std::endl;
-        std::exit(-1);
+    if (pop_lim_vec.size() > 0) {
+        unsigned int pop_limit = std::stoi(pop_lim_vec[0]);
+        param->add_parameter("pop_limit", pop_limit);
     }
 
-    param->add_parameter("weight_0", std::stof(lm_weight[0]));
+    /* weight */
+    unsigned int feature_id = 0;
+    std::vector<std::string>& lm_weight1 = setting["weight-l"];
+    std::vector<std::string>& lm_weight2 = setting["lm"];
+    std::vector<std::string>* lm_weight_ptr;
+    std::vector<std::string>& tm_weight1 = setting["weight-t"];
+    std::vector<std::string>& tm_weight2 = setting["tm"];
+    std::vector<std::string>* tm_weight_ptr;
+    std::vector<std::string>& w_weight1 = setting["weight-w"];
+    std::vector<std::string>& w_weight2 = setting["w"];
+    std::vector<std::string>* w_weight_ptr;
 
-    std::vector<std::string>& tm_weight = setting["weight-t"];
+    if (lm_weight2.size() > 0)
+        lm_weight_ptr = &lm_weight2;
+    else
+        lm_weight_ptr = &lm_weight1;
 
-    if (tm_weight.size() != 6) {
-        std::cerr << "incorrect number of translation model feature weights";
+    if (tm_weight2.size() > 0)
+        tm_weight_ptr = &tm_weight2;
+    else
+        tm_weight_ptr = &tm_weight1;
+
+    if (w_weight2.size() > 0)
+        w_weight_ptr = &w_weight2;
+    else
+        w_weight_ptr = &w_weight1;
+
+    /* language model weights */
+    std::vector<std::string>& lm_weight = *lm_weight_ptr;
+    unsigned int lm_weight_num = lm_weight.size();
+
+    if (lm_weight_num != lm_num) {
+        std::cerr << "incorrect number of language model weights";
         std::cerr << std::endl;
         std::exit(-1);
     }
 
-    param->add_parameter("weight_1", std::stof(tm_weight[0]));
-    param->add_parameter("weight_2", std::stof(tm_weight[1]));
-    param->add_parameter("weight_3", std::stof(tm_weight[2]));
-    param->add_parameter("weight_4", std::stof(tm_weight[3]));
-    param->add_parameter("weight_5", std::stof(tm_weight[4]));
-    param->add_parameter("weight_6", std::stof(tm_weight[5]));
+    for (unsigned int i = 0; i < lm_weight_num; i++) {
+        std::string weight_str = "weight_" + std::to_string(feature_id);
+        param->add_parameter(weight_str, std::stof(lm_weight[i]));
+        feature_id++;
+    }
 
-    std::vector<std::string>& w_weight = setting["weight-w"];
+    /* translation model weights*/
+    std::vector<std::string>& tm_weight = *tm_weight_ptr;
+    unsigned int tm_weight_num = tm_weight.size();
+
+    if (tm_weight_num != tm_fea_num) {
+        std::cerr << "incorrect number of translation model weights";
+        std::cerr << std::endl;
+        std::exit(-1);
+    }
+
+    for (unsigned int i = 0; i < tm_weight_num; i++) {
+        std::string weight_str = "weight_" + std::to_string(feature_id);
+        param->add_parameter(weight_str, std::stof(tm_weight[i]));
+        feature_id++;
+    }
+
+    /* word penalty weight */
+    std::vector<std::string>& w_weight = *w_weight_ptr;
+    std::string weight_str = "weight_" + std::to_string(feature_id);
 
     if (!w_weight.size()) {
         std::cerr << "no word penalty weight specified" << std::endl;
         std::exit(-1);
     }
 
-    param->add_parameter("weight_7", std::stof(w_weight[0]));
-
-    /* weight */
-    std::vector<std::string>& w_lm = setting["lm"];
-
-    if (w_lm.size() == 1) {
-        param->add_parameter("weight_0", std::stof(w_lm[0]));
-    }
-
-    std::vector<std::string>& w_tm = setting["tm"];
-
-    if (w_tm.size() == 6) {
-        param->add_parameter("weight_1", std::stof(w_tm[0]));
-        param->add_parameter("weight_2", std::stof(w_tm[1]));
-        param->add_parameter("weight_3", std::stof(w_tm[2]));
-        param->add_parameter("weight_4", std::stof(w_tm[3]));
-        param->add_parameter("weight_5", std::stof(w_tm[4]));
-        param->add_parameter("weight_6", std::stof(w_tm[5]));
-    }
-
-    std::vector<std::string>& w_word = setting["w"];
-
-    if (w_word.size() == 1) {
-        param->add_parameter("weight_7", std::stof(w_word[0]));
-    }
+    param->add_parameter(weight_str, std::stof(w_weight[0]));
 
     if (setting.find("show-weights") != setting.end())
         param->add_parameter("show_weights", 1u);
+
+    if (setting.find("tense-dict") != setting.end())
+        param->add_parameter("tense_dict", setting["tense-dict"][0]);
+
+    param->add_parameter("feature_number", lm_num + tm_fea_num + 1);
 }
 
 void load_moses_options(int argc, char** argv)

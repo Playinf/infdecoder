@@ -63,10 +63,10 @@ void cube::explore_neighbor(cube_item* item, unsigned int dim)
 {
     cube_item* new_item = new cube_item(*item, dim);
 
-    new_item->generate_hypothesis();
     auto result = enumerated_item_set.insert(new_item);
 
     if (result.second) {
+        new_item->generate_hypothesis();
         cube_item_queue.push(new_item);
     } else {
         delete new_item;

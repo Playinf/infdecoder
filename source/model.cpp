@@ -75,6 +75,11 @@ model::size_type model::get_translation_model_number() const
     return translation_model_vector.size();
 }
 
+word_penalty_model* model::get_word_penalty_model() const
+{
+    return word_penalty_model_vector[0];
+}
+
 language_model* model::get_language_model(size_type index) const
 {
     return language_model_vector[index];
@@ -125,6 +130,11 @@ void model::add_language_model(language_model* lm)
 void model::add_translation_model(translation_model* tm)
 {
     translation_model_vector.push_back(tm);
+}
+
+void model::add_word_penalty_model(word_penalty_model* w)
+{
+    word_penalty_model_vector.push_back(w);
 }
 
 void model::set_feature_source(unsigned int id, language_model* lm)

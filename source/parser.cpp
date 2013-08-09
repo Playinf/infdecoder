@@ -82,20 +82,19 @@ parser::parser(std::vector<rule_tree*>* tree_vec)
     tree_vector = tree_vec;
     applicable_translation_option_set = nullptr;
 
+    configuration* config = configuration::get_instance();
+    unsigned int limit = config->get_span_limit();
     unsigned int size = tree_vec->size();
 
     for (unsigned int i = 0; i < size; i++) {
         rule_tree* tree = tree_vector->at(i);
         rule_finder* finder = new rule_finder(tree);
+        finder->set_span_limit(limit);
         rule_lookup_manager.push_back(finder);
     }
 
-    configuration* config = configuration::get_instance();
-    unsigned int limit = config->get_span_limit();
-
     rule_lookup_manager[0]->set_span_limit(1);
-    rule_lookup_manager[1]->set_span_limit(limit);
-    rule_lookup_manager[2]->set_span_limit(0);
+    rule_lookup_manager[size - 1]->set_span_limit(0);
 }
 
 parser::~parser()

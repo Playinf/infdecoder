@@ -52,6 +52,11 @@ const std::vector<const symbol*>& rule::get_target_rule_body() const
     return target_rule_body;
 }
 
+unsigned int rule::get_nonterminal_number() const
+{
+    return target_rule_body.size() - target_terminal_number;
+}
+
 unsigned int rule::get_nonterminal_map(unsigned int src) const
 {
     return nonterminal_map[src];

@@ -44,9 +44,7 @@ void translation_option_set::add_complete_rule(partial_rule* rule)
 {
     auto& rule_vec = *rule->get_rule();
     auto r = rule_vec[0];
-    unsigned int terminal_num = r->get_terminal_number();
-    unsigned int symbol_num = r->get_target_rule_body().size();
-    unsigned int nonterminal_num = symbol_num - terminal_num;
+    unsigned int nonterminal_num = r->get_nonterminal_number();
     translation_option* option = new translation_option(nonterminal_num);
     const partial_rule* p = rule;
 
@@ -60,9 +58,7 @@ void translation_option_set::add_complete_rule(partial_rule* rule)
 
         nonterminal_num--;
         auto hypo_list = p->get_hypothesis_list();
-        unsigned int index = r->get_nonterminal_map(nonterminal_num);
-
-        option->add_hypothesis_list(index, hypo_list);
+        option->add_hypothesis_list(nonterminal_num, hypo_list);
         p = p->get_parent();
     }
 

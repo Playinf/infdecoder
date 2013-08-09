@@ -37,25 +37,14 @@ unsigned int rule_tree::get_id() const
     return id;
 }
 
-void rule_tree::sort()
+void rule_tree::sort_and_prune(unsigned int limit)
 {
-    rt_node::sort(&root, rule_heuristic_function);
-}
-
-void rule_tree::sort(unsigned int limit)
-{
-    if (!limit)
+    if (!limit) {
         rt_node::sort(&root, rule_heuristic_function);
-    else
-        rt_node::sort(&root, rule_heuristic_function, limit);
-}
-
-void rule_tree::prune(unsigned int limit)
-{
-    if (!limit)
         return;
-
-    rule_num = rt_node::prune(&root, limit);
+    } else {
+        rule_num = rt_node::sort(&root, rule_heuristic_function, limit);
+    }
 }
 
 void rule_tree::set_id(unsigned int id)

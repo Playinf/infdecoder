@@ -6,6 +6,7 @@
 #include <feature.h>
 #include <rule_tree.h>
 #include <hypothesis.h>
+#include <penalty_model.h>
 #include <language_model.h>
 #include <translation_model.h>
 
@@ -23,7 +24,7 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
     language_model* lm = system_model->get_language_model(id);
-    float weight = system_model->get_weight(id);
+    float old_prefix_score = 0.0f;
     unsigned int lm_order = lm->get_order();
     unsigned int indx = 0;
     std::vector<const std::string*> ngram;
@@ -41,16 +42,17 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
             hypothesis* prev_hypo = hypo->get_previous_hypothesis(indx++);
             unsigned int prev_term_num = prev_hypo->get_terminal_number();
             const feature* prev_fea = prev_hypo->get_feature(id);
-            auto hypo_prefix = prev_hypo->get_prefix();
-            auto hypo_suffix = prev_hypo->get_suffix();
+            auto hypo_prefix = prev_hypo->get_prefix(id);
+            auto hypo_suffix = prev_hypo->get_suffix(id);
             auto iter_begin = hypo_prefix->begin();
             auto iter_end = hypo_prefix->end();
 
+            prev_score += prev_fea->get_score();
+            old_prefix_score += prev_hypo->get_heuristic_score(id);
             ngram.insert(ngram.end(), iter_begin, iter_end);
 
             if (prev_term_num >= lm_order - 1) {
                 calc = true;
-                prev_score += prev_fea->get_score();
             }
 
             if (calc) {
@@ -58,9 +60,7 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
                 iter_end = hypo_suffix->end();
 
                 if (i == 0 && prev_term_num >= lm_order - 1) {
-                    prefix_score = prev_hypo->get_heuristic_score();
-                    /* unweighted prefix score */
-                    prefix_score /= weight;
+                    prefix_score = prev_hypo->get_heuristic_score(id);
                 } else {
                     float ngram_score = 0.0;
                     float full_score = 0.0;
@@ -90,9 +90,11 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
     score += ngram_score;
     full += full_score;
     score += prev_score;
+    score -= old_prefix_score;
     hypothesis* h = const_cast<hypothesis*>(hypo);
-    h->set_heuristic_score(prefix_score * weight);
-    h->calculate_prefix_suffix(lm_order);
+    h->set_heuristic_score(id, prefix_score);
+    h->calculate_prefix_suffix(id, lm_order);
+    score += prefix_score;
 
     return score;
 }
@@ -128,8 +130,11 @@ float translation_model_feature_function(const hypothesis* h, unsigned int id)
 
 float word_penalty_feature_function(const hypothesis* hypo, unsigned int id)
 {
-    const float penalty = -0.434294482f;
+    configuration* config = configuration::get_instance();
+    model* system_model = config->get_model();
+    word_penalty_model* wm = system_model->get_word_penalty_model();
     unsigned int terminal_num = hypo->get_terminal_number();
+    float penalty = wm->get_penalty();
 
     return terminal_num * penalty;
 }
@@ -143,9 +148,9 @@ float unknow_word_feature_function(const hypothesis* hypo, unsigned int id)
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
     unsigned int tm_id = r->get_id();
-    translation_model* tm = system_model->get_translation_model(tm_id);
+    unsigned int tm_num = system_model->get_translation_model_number();
 
-    if (tm->get_id() == 0)
+    if (tm_id == tm_num - 1)
         score += penalty;
 
     if (!size)

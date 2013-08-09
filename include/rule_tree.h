@@ -38,18 +38,16 @@ public:
     const symbol* get_symbol(int index) const;
     const vector_type* get_rules() const;
 
-    void sort(heuristic_function func);
-    void sort(heuristic_function func, unsigned int limit);
-    size_type prune(unsigned int limit);
     void insert_rule(const rule* r);
+    void sort(heuristic_function func);
+    size_type sort(heuristic_function func, unsigned int limit);
     rt_node* find_child(const symbol* sym) const;
     rt_node* find_child(const symbol* src, const symbol* tgt) const;
     std::pair<rt_node*, bool> insert_child(const symbol* sym);
     std::pair<rt_node*, bool> insert_child(const symbol* s, const symbol* t);
 
     static void sort(rt_node* n, heuristic_function f);
-    static void sort(rt_node* n, heuristic_function f, unsigned int lim);
-    static size_type prune(rt_node* node, unsigned int limit);
+    static size_type sort(rt_node* n, heuristic_function f, unsigned int lim);
 private:
     const symbol* link[2];
     vector_type* rule_vector;
@@ -72,10 +70,8 @@ public:
     size_type get_node_number() const;
     const node_type* get_root() const;
 
-    void sort();
-    void sort(unsigned int limit);
-    void prune(unsigned int limit);
     void set_id(unsigned int id);
+    void sort_and_prune(unsigned int limit);
     void set_heuristic_function(heuristic_function func);
     rt_node* insert_node(rt_node* parent, const symbol* sym);
     rt_node* insert_node(rt_node* parent, const symbol* src, const symbol* tgt);

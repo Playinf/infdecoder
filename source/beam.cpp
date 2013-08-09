@@ -10,7 +10,6 @@ beam::beam(size_type histogram, float threshold)
 {
     const float inf = std::numeric_limits<float>::infinity();
 
-    sorted = false;
     max_score = -inf;
     beam_size = histogram;
     this->threshold = threshold;
@@ -42,9 +41,6 @@ void beam::sort()
     auto begin = hypothesis_set.begin();
     auto end = hypothesis_set.end();
 
-    if (sorted)
-        return;
-
     ordered_hypothesis_list.clear();
 
     if (size > beam_size) {
@@ -69,8 +65,6 @@ void beam::sort()
 
         std::sort(list_begin, list_end, hypothesis_less());
     }
-
-    sorted = true;
 }
 
 void beam::prune()
@@ -132,7 +126,6 @@ void beam::insert_hypothesis(hypothesis* hypo)
 
         if (result.second) {
             /* inserted */
-            sorted = false;
 
             if (total_score > max_score)
                 max_score = total_score;
@@ -145,13 +138,12 @@ void beam::insert_hypothesis(hypothesis* hypo)
             float s1 = h->get_total_score();
             float s2 = total_score;
 
-            if (s1 > s2)
+            if (s1 >= s2) {
                 h->recombine(hypo);
-            else {
+            } else {
                 hypothesis_set.erase(result.first);
                 hypo->recombine(h);
                 hypothesis_set.insert(hypo);
-                sorted = false;
             }
         }
     }

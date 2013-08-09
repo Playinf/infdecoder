@@ -50,7 +50,6 @@ public:
     ~trellis_path();
 
     float get_total_score() const;
-    float get_heuristic_score() const;
     const trellis_node* get_final_node() const;
     const trellis_node* get_deviation_node() const;
     const std::vector<float>* get_score_vector() const;
@@ -60,7 +59,6 @@ private:
     trellis_node* final_node;
     trellis_node* deviation_node;
     std::vector<float> score_vector;
-    float heuristic_score;
     float total_score;
 };
 

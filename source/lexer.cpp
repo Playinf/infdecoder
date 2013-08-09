@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <lexer.h>
+#include <model.h>
+#include <config.h>
 #include <symbol.h>
 #include <rule_tree.h>
 
@@ -27,6 +29,9 @@ std::vector<const symbol*>& lexer::get_output()
 
 void lexer::process()
 {
+    configuration* config = configuration::get_instance();
+    model* system_model = config->get_model();
+    unsigned tm_num = system_model->get_translation_model_number();
     symbol_table* table = symbol_table::get_instance();
     const symbol* bos = table->search_symbol("<s>");
     const symbol* eos = table->search_symbol("</s>");
@@ -34,6 +39,7 @@ void lexer::process()
     rt_node* root;
 
     unknow_word_tree = new rule_tree();
+    unknow_word_tree->set_id(tm_num - 1);
     root = const_cast<rt_node*>(unknow_word_tree->get_root());
 
     sentence.push_back(bos);

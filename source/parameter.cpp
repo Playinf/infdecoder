@@ -64,14 +64,24 @@ parameter::~parameter()
     /* do nothing */
 }
 
-float parameter::get_real_parameter(const std::string& param)
+float parameter::get_real_parameter(const std::string& param) const
 {
-    return real_parameter_map[param];
+    auto iter = real_parameter_map.find(param);
+
+    if (iter != real_parameter_map.end())
+        return iter->second;
+
+    return 0.0f;
 }
 
-unsigned int parameter::get_integer_parameter(const std::string& param)
+unsigned int parameter::get_integer_parameter(const std::string& param) const
 {
-    return integer_parameter_map[param];
+    auto iter = integer_parameter_map.find(param);
+
+    if (iter != integer_parameter_map.end())
+        return iter->second;
+
+    return 0;
 }
 
 const std::string& parameter::get_string_parameter(const std::string& param)

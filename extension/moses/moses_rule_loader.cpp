@@ -47,7 +47,8 @@ inline void parser_nonterminal_map(const std::string& str, std::string& src,
     tgt = str.substr(s2, s2 - e2 + 1);
 }
 
-static void parse_rule_score(const std::string& str, std::vector<double>& feature)
+static void parse_rule_score(const std::string& str,
+    std::vector<double>& feature)
 {
     std::vector<std::string> feature_str;
     unsigned int size;
@@ -59,7 +60,8 @@ static void parse_rule_score(const std::string& str, std::vector<double>& featur
         feature.push_back(std::stod(feature_str[i]));
 }
 
-static void parse_alignment(std::string& str, std::vector<std::pair<int, int>>& align)
+static void parse_alignment(std::string& str,
+    std::vector<std::pair<int, int>>& align)
 {
     std::vector<std::string> align_str;
 
@@ -266,7 +268,8 @@ static void analyze_moses_rule(std::vector<std::string>& src,
     std::cout << std::endl;
 }
 
-static void moses_rule_table_loader(std::ifstream& file, rule_tree& table, bool output)
+static void moses_rule_table_loader(std::ifstream& file, rule_tree& table,
+    bool output)
 {
     std::string line;
     std::vector<std::string> vec;

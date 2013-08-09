@@ -22,10 +22,8 @@ public:
 
     rule_dimension& operator=(const rule_dimension& r) = delete;
 
-    bool operator==(const rule_dimension& dim) const;
-    bool operator!=(const rule_dimension& dim) const;
-
     const rule* get_rule() const;
+    unsigned int get_position() const;
 
     bool has_more_rules() const;
     void next_rule();
@@ -41,9 +39,7 @@ public:
 
     hypothesis_dimension& operator=(const hypothesis_dimension& h) = delete;
 
-    bool operator==(const hypothesis_dimension& dim) const;
-    bool operator!=(const hypothesis_dimension& dim) const;
-
+    unsigned int get_position() const;
     const hypothesis* get_hypothesis() const;
 
     bool has_more_hypothesis() const;
@@ -61,7 +57,9 @@ public:
 
     float get_score() const;
     hypothesis* get_hypothesis();
+    unsigned int get_rule_position() const;
     unsigned int get_hypothesis_dimension() const;
+    unsigned int get_hypothesis_position(unsigned int dim) const;
 
     void generate_hypothesis();
     bool has_more_rules() const;
@@ -69,9 +67,9 @@ public:
     bool operator==(const cube_item& item) const;
     unsigned int hash() const;
 private:
+    float score;
     rule_dimension rule_position;
     std::vector<hypothesis_dimension>* hypothesis_position;
-    float score;
     hypothesis* generated_hypothesis;
 };
 

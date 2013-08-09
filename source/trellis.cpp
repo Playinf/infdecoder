@@ -130,7 +130,6 @@ trellis_path::trellis_path(const hypothesis* hypo)
     unsigned int feature_num = hypo->get_feature_number();
 
     total_score = hypo->get_total_score();
-    heuristic_score = hypo->get_heuristic_score();
     score_vector.reserve(feature_num);
 
     for (unsigned int i = 0; i < feature_num; i++) {
@@ -161,10 +160,6 @@ trellis_path::trellis_path(const trellis_detour* detour)
         score_vector.push_back(score);
     }
 
-    float h1 = substituted->get_heuristic_score();
-    float h2 = replacement->get_heuristic_score();
-    heuristic_score = basepath->get_heuristic_score();
-    heuristic_score += h2 - h1;
     total_score = detour->get_total_score();
 
     final_node = new trellis_node(detour, &deviation_node);
@@ -173,11 +168,6 @@ trellis_path::trellis_path(const trellis_detour* detour)
 trellis_path::~trellis_path()
 {
     delete final_node;
-}
-
-float trellis_path::get_heuristic_score() const
-{
-    return heuristic_score;
 }
 
 float trellis_path::get_total_score() const

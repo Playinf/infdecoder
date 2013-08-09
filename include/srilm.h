@@ -27,6 +27,7 @@ public:
     void load(const char* filename);
     void set_order(unsigned int order);
     float sentence_probability(std::vector<std::string>& sentence);
+    float word_probability(std::vector<std::string>& context, void **state);
     float word_probability(std::string* word, std::string** context, int len);
 private:
     Ngram* lm;

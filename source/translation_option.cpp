@@ -33,11 +33,8 @@ const symbol* translation_option::get_start_symbol() const
 unsigned int translation_option::get_rule_nonterminal_number() const
 {
     auto r = rule_vector->at(0);
-    unsigned int terminal_num = r->get_terminal_number();
-    unsigned int symbol_num = r->get_target_rule_body().size();
-    unsigned int nonterminal_num = symbol_num - terminal_num;
 
-    return nonterminal_num;
+    return r->get_nonterminal_number();
 }
 
 std::vector<const rule*>* translation_option::get_rule_vector() const

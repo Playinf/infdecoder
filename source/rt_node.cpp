@@ -70,8 +70,17 @@ const rt_node::vector_type* rt_node::get_rules() const
     return rule_vector;
 }
 
+void rt_node::insert_rule(const rule* r)
+{
+    if (rule_vector == nullptr)
+        rule_vector = new std::vector<const rule*>;
+
+    rule_vector->push_back(r);
+}
+
 void rt_node::sort(heuristic_function func)
 {
+    unsigned int size = rule_vector->size();
     auto begin = rule_vector->begin();
     auto end = rule_vector->end();
 
@@ -82,10 +91,12 @@ void rt_node::sort(heuristic_function func)
         r->set_heuristic_score(score);
     }
 
-    std::sort(begin, end, rule_less());
+    if (size > 1) {
+        std::sort(begin, end, rule_less());
+    }
 }
 
-void rt_node::sort(heuristic_function func, unsigned int limit)
+rt_node::size_type rt_node::sort(heuristic_function func, unsigned int limit)
 {
     auto begin = rule_vector->begin();
     auto end = rule_vector->end();
@@ -99,13 +110,11 @@ void rt_node::sort(heuristic_function func, unsigned int limit)
         r->set_heuristic_score(score);
     }
 
+    if (size == 1)
+        return size;
+
     /* using partial_sort instead of sort */
     std::partial_sort(begin, mid, end, rule_less());
-}
-
-rt_node::size_type rt_node::prune(unsigned int limit)
-{
-    size_type size = rule_vector->size();
 
     if (size <= limit)
         return size;
@@ -121,14 +130,6 @@ rt_node::size_type rt_node::prune(unsigned int limit)
     rule_vector->erase(iter_begin, iter_end);
 
     return limit;
-}
-
-void rt_node::insert_rule(const rule* r)
-{
-    if (rule_vector == nullptr)
-        rule_vector = new std::vector<const rule*>;
-
-    rule_vector->push_back(r);
 }
 
 rt_node* rt_node::find_child(const symbol* sym) const
@@ -193,7 +194,7 @@ void rt_node::sort(rt_node* node, heuristic_function func)
     auto rules = node->rule_vector;
     auto child = node->child_nodes;
 
-    if (rules != nullptr && rules->size() > 1)
+    if (rules != nullptr)
         node->sort(func);
 
     if (child == nullptr)
@@ -205,43 +206,22 @@ void rt_node::sort(rt_node* node, heuristic_function func)
     }
 }
 
-void rt_node::sort(rt_node* node, heuristic_function func, unsigned int limit)
-{
-    auto rules = node->rule_vector;
-    auto child = node->child_nodes;
-
-    if (rules != nullptr && rules->size() > 1)
-        node->sort(func, limit);
-
-    if (child == nullptr)
-        return;
-
-    for (auto iter = child->begin(); iter != child->end(); ++iter) {
-        rt_node* n = const_cast<rt_node*>(&(*iter));
-        sort(n, func, limit);
-    }
-}
-
-rt_node::size_type rt_node::prune(rt_node* node, unsigned int limit)
+rt_node::size_type rt_node::sort(rt_node* node, heuristic_function func,
+    unsigned int limit)
 {
     size_type num = 0;
     auto rules = node->rule_vector;
     auto child = node->child_nodes;
 
-    if (rules != nullptr && rules->size() > limit)
-        num += node->prune(limit);
+    if (rules != nullptr)
+        num += node->sort(func, limit);
 
     if (child == nullptr)
         return num;
 
-    auto begin = child->begin();
-    auto end = child->end();
-    auto iter = begin;
-
-    while (iter != end) {
+    for (auto iter = child->begin(); iter != child->end(); ++iter) {
         rt_node* n = const_cast<rt_node*>(&(*iter));
-        num += prune(n, limit);
-        ++iter;
+        num += sort(n, func, limit);
     }
 
     return num;

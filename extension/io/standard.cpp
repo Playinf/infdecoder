@@ -15,6 +15,7 @@
 #include <hypothesis.h>
 #include <language_model.h>
 #include <feature_function.h>
+#include <translation_model.h>
 
 rule* create_unknow_word_rule(const symbol* sym);
 
@@ -42,24 +43,35 @@ void output_hypothesis(const hypothesis* hypo, std::string& out)
 {
     std::vector<const std::string*> s;
     std::stringstream string_stream;
+    unsigned int size;
 
     output_hypothesis(hypo, s);
 
-    for (unsigned int i = 1; i < s.size() - 1; i++) {
+    size = s.size();
+
+    for (unsigned int i = 1; i < size - 2; i++) {
         string_stream << *s[i];
         string_stream << " ";
     }
 
+    if (size > 2) {
+        string_stream << *s[size - 2];
+    }
+
     string_stream << std::endl;
+
     out = string_stream.str();
 }
 
 void output_nbest(const trellis_path* path, std::string& out)
 {
+    unsigned int index = 0;
     std::stringstream string_stream;
     std::vector<const std::string*> output_vec;
     configuration* config = configuration::get_instance();
-    float lm_weight = config->get_weight(0);
+    model* system_model = config->get_model();
+    unsigned int lm_number = system_model->get_language_model_number();
+    unsigned int tm_number = system_model->get_translation_model_number();
 
     path->output(&output_vec);
 
@@ -71,24 +83,24 @@ void output_nbest(const trellis_path* path, std::string& out)
     auto score_vec = path->get_score_vector();
     string_stream << " ||| ";
 
-    for (unsigned int i = 0; i < 8; i++) {
-        float score = score_vec->at(i);
-
-        if (i == 0) {
-            float prefix_weight;
-            string_stream << "lm: ";
-            prefix_weight = path->get_heuristic_score();
-            prefix_weight /= lm_weight;
-            score += prefix_weight;
-        } else if (i == 7)
-            string_stream << "w: ";
-        else if (i == 1)
-            string_stream << "tm: ";
-
-        string_stream << score;
-        string_stream << " ";
+    string_stream << "lm: ";
+    for (unsigned int i = 0; i < lm_number; i++) {
+        float score = score_vec->at(index++);
+        string_stream << score << " ";
     }
 
+    string_stream << "tm: ";
+    for (unsigned int i = 0; i < tm_number - 1; i++) {
+        translation_model* tm = system_model->get_translation_model(i);
+        unsigned int fnum = tm->get_feature_number();
+
+        for (unsigned int j = 0; j < fnum; j++) {
+            float score = score_vec->at(index++);
+            string_stream << score << " ";
+        }
+    }
+
+    string_stream << "w: " << score_vec->at(index++);
     string_stream << " ||| ";
     string_stream << path->get_total_score();
     out = string_stream.str();

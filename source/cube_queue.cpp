@@ -29,9 +29,10 @@ const hypothesis* cube_queue::pop()
 {
     hypothesis* hypo;
     cube* rule_cube = rule_cube_queue.top();
-    rule_cube_queue.pop();
+    cube_item* item = rule_cube->pop();
 
-    hypo = rule_cube->pop()->get_hypothesis();
+    rule_cube_queue.pop();
+    hypo = item->get_hypothesis();
 
     if (!rule_cube->empty())
         rule_cube_queue.push(rule_cube);

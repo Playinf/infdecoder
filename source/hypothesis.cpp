@@ -3,25 +3,37 @@
 #include <model.h>
 #include <config.h>
 #include <symbol.h>
-#include <utility.h>
 #include <hypothesis.h>
+
+typedef std::vector<const std::string*> string_vector;
 
 hypothesis::hypothesis(const rule* r)
 {
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
     unsigned int feature_number = system_model->get_feature_number();
+    unsigned int nonterm_number = r->get_nonterminal_number();
+    unsigned int lm_number = system_model->get_language_model_number();
 
     score = 0.0f;
-    heuristic_score = 0.0f;
     target_rule = r;
     terminal_number = r->get_terminal_number();
     hypothesis_vector = nullptr;
     recombined_hypothesis = nullptr;
     log_linear_model.reserve(feature_number);
+    state_vector.reserve(lm_number);
+
+    if (nonterm_number) {
+        hypothesis_vector = new std::vector<hypothesis*>;
+        hypothesis_vector->resize(nonterm_number);
+    }
 
     for (unsigned int i = 0; i < feature_number; i++)
         log_linear_model.push_back(feature(i));
+
+    for (unsigned int i = 0; i < lm_number; i++) {
+        state_vector.push_back(hypothesis_state(this, i));
+    }
 }
 
 hypothesis::~hypothesis()
@@ -36,24 +48,14 @@ hypothesis::~hypothesis()
     }
 }
 
-float hypothesis::get_score() const
+const rule* hypothesis::get_rule() const
 {
-    return score;
-}
-
-float hypothesis::get_heuristic_score() const
-{
-    return heuristic_score;
+    return target_rule;
 }
 
 float hypothesis::get_total_score() const
 {
-    return score + heuristic_score;
-}
-
-const rule* hypothesis::get_rule() const
-{
-    return target_rule;
+    return score;
 }
 
 unsigned int hypothesis::get_terminal_number() const
@@ -64,6 +66,11 @@ unsigned int hypothesis::get_terminal_number() const
 unsigned int hypothesis::get_feature_number() const
 {
     return log_linear_model.size();
+}
+
+float hypothesis::get_heuristic_score(unsigned int id) const
+{
+    return state_vector[id].get_heuristic_score();
 }
 
 const feature* hypothesis::get_feature(unsigned int index) const
@@ -102,14 +109,14 @@ hypothesis* hypothesis::get_previous_hypothesis(unsigned int index) const
     return hypothesis_vector->at(index);
 }
 
-const std::vector<const std::string*>* hypothesis::get_prefix() const
+const string_vector* hypothesis::get_prefix(unsigned int id) const
 {
-    return &prefix;
+    return state_vector[id].get_prefix();
 }
 
-const std::vector<const std::string*>* hypothesis::get_suffix() const
+const string_vector* hypothesis::get_suffix(unsigned int id) const
 {
-    return &suffix;
+    return state_vector[id].get_suffix();
 }
 
 void hypothesis::evaluate_score()
@@ -124,13 +131,6 @@ void hypothesis::evaluate_score()
         score += fea.get_score() * weight;
     }
 }
-
-void hypothesis::set_heuristic_score(float score)
-{
-    heuristic_score = score;
-}
-
-#include <iostream>
 
 void hypothesis::recombine(hypothesis* hypo)
 {
@@ -153,145 +153,41 @@ void hypothesis::recombine(hypothesis* hypo)
     }
 }
 
-void hypothesis::push_hypothesis(hypothesis* h)
-{
-    if (hypothesis_vector == nullptr)
-        hypothesis_vector = new std::vector<hypothesis*>;
-
-    hypothesis_vector->push_back(h);
-    terminal_number += h->get_terminal_number();
-}
-
 int hypothesis::compare(const hypothesis* hypo) const
 {
-    int result;
+    auto& state_vec = hypo->state_vector;
+    unsigned int size1 = state_vector.size();
+    unsigned int size2 = state_vec.size();
+    unsigned int size = (size1 > size2) ? size2 : size1;
 
-    result = string_vector_compare(&prefix, hypo->get_prefix());
+    for (unsigned int i = 0; i < size; i++) {
+        auto& state1 = state_vector[i];
+        auto& state2 = state_vec[i];
+        unsigned int result;
 
-    if (result != 0)
-        return result;
+        result = state1.compare(&state2);
 
-    result = string_vector_compare(&suffix, hypo->get_suffix());
+        if (result != 0)
+            return result;
+    }
 
-    return result;
+    return size1 - size2;
 }
 
-void hypothesis::calculate_prefix_suffix(unsigned int order)
+void hypothesis::calculate_prefix_suffix(unsigned int id, unsigned int order)
 {
-    auto& rule_body = target_rule->get_target_rule_body();
-    unsigned int rule_body_size = rule_body.size();
-    std::vector<const std::string*> ngram;
-    unsigned int nonterm_indx = 0;
-    unsigned int lm_order = order;
-
-    ngram.reserve(2 * terminal_number);
-
-    /* calculate prefix and suffix */
-    for (unsigned int i = 0; i < rule_body_size; ++i) {
-        const symbol* sym = rule_body[i];
-
-        if (sym->is_terminal())
-            ngram.push_back(sym->get_name());
-        else {
-            hypothesis* hypo = get_previous_hypothesis(nonterm_indx++);
-            auto hypo_prefix = hypo->get_prefix();
-            auto hypo_suffix = hypo->get_suffix();
-            unsigned int hypo_prefix_size = hypo_prefix->size();
-            unsigned int hypo_suffix_size = hypo_suffix->size();
-            unsigned int hypo_nonterm_num = hypo->get_terminal_number();
-
-            for (unsigned int j = 0; j < hypo_prefix_size; ++j)
-                ngram.push_back(hypo_prefix->at(j));
-
-            if (hypo_nonterm_num < lm_order)
-                continue;
-
-            for (unsigned int j = 0; j < hypo_suffix_size; ++j)
-                ngram.push_back(hypo_suffix->at(j));
-        }
-    }
-
-    if (terminal_number < lm_order) {
-        for (unsigned int i = 0; i < terminal_number; ++i) {
-            const std::string* str = ngram[i];
-            prefix.push_back(str);
-            suffix.push_back(str);
-        }
-    } else {
-        unsigned int ngram_size = ngram.size();
-
-        for (unsigned int i = 0; i < lm_order - 1; ++i) {
-            const std::string* str = ngram[i];
-            prefix.push_back(str);
-        }
-
-        for (unsigned int i = 0; i < lm_order - 1; ++i) {
-            unsigned int j = ngram_size - lm_order + i + 1;
-            const std::string* str = ngram[j];
-            suffix.push_back(str);
-        }
-    }
+    hypothesis_state& state = state_vector[id];
+    state.calculate_prefix_suffix(order);
 }
 
-void hypothesis::calculate_prefix(std::vector<const std::string*>* out,
-        size_type& size)
+void hypothesis::set_heuristic_score(unsigned int id, float score)
 {
-    auto& rule_body = target_rule->get_target_rule_body();
-    size_type len = rule_body.size();
-    size_type nonterminal_index = 0;
-
-    for (size_type i = 0; i < len; ++i) {
-        const symbol* sym = rule_body[i];
-
-        if (sym->is_nonterminal()) {
-            hypothesis* hypo = get_previous_hypothesis(nonterminal_index);
-            hypo->calculate_prefix(out, size);
-            ++nonterminal_index;
-        } else {
-            out->push_back(sym->get_name());
-            --size;
-        }
-
-        if (size == 0)
-            break;
-    }
+    state_vector[id].set_heuristic_score(score);
 }
 
-void hypothesis::calculate_suffix(std::vector<const std::string*>* out,
-        size_type& size)
+void hypothesis::set_previous_hypothesis(unsigned int index, hypothesis* h)
 {
-    auto& rule_body = target_rule->get_target_rule_body();
-    size_type len = rule_body.size();
-
-    if (prefix.size() == terminal_number) {
-        size_type count = (terminal_number) < size ? terminal_number: size;
-        size_type pos = terminal_number - 1;
-
-        for (size_type i = 0; i < count; ++i) {
-            const std::string* str = prefix[pos];
-            out->push_back(str);
-            --pos;
-        }
-
-        size -= count;
-    } else {
-        unsigned int nonterminal_num = len - target_rule->get_terminal_number();
-        unsigned int nonterminal_index = nonterminal_num - 1;
-        for (size_type i = len - 1; i >= 0; --i) {
-            const symbol* sym = rule_body[i];
-
-            if (sym->is_nonterminal()) {
-                hypothesis* hypo;
-                hypo = get_previous_hypothesis(nonterminal_index);
-                hypo->calculate_suffix(out, size);
-                --nonterminal_index;
-            } else {
-                out->push_back(sym->get_name());
-                --size;
-            }
-
-            if (size == 0)
-                break;
-        }
-    }
+    auto& hypo = hypothesis_vector->at(index);
+    hypo = h;
+    terminal_number += h->terminal_number;
 }

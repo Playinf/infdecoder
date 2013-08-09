@@ -1,4 +1,5 @@
 /* cube_item.cpp */
+#include <functional>
 #include <rule.h>
 #include <utility.h>
 #include <cube_item.h>
@@ -17,31 +18,21 @@ rule_dimension::~rule_dimension()
     /* do nothing */
 }
 
-bool rule_dimension::operator==(const rule_dimension& dim) const
-{
-    if (sorted_rule_list != dim.sorted_rule_list)
-        return false;
-    else if (position != dim.position)
-        return false;
-
-    return true;
-}
-
-bool rule_dimension::operator!=(const rule_dimension& dim) const
-{
-    return !operator==(dim);
-}
-
 const rule* rule_dimension::get_rule() const
 {
     return sorted_rule_list->at(position);
 }
 
+unsigned int rule_dimension::get_position() const
+{
+    return position;
+}
+
 bool rule_dimension::has_more_rules() const
 {
-    unsigned int hypo_num = sorted_rule_list->size();
+    unsigned int rule_num = sorted_rule_list->size();
 
-    if (position + 1 < hypo_num)
+    if (position < rule_num - 1)
         return true;
 
     return false;
@@ -64,19 +55,9 @@ hypothesis_dimension::~hypothesis_dimension()
     /* do nothing */
 }
 
-bool hypothesis_dimension::operator==(const hypothesis_dimension& dim) const
+unsigned int hypothesis_dimension::get_position() const
 {
-    if (sorted_hypothesis_list != dim.sorted_hypothesis_list)
-        return false;
-    else if (position != dim.position)
-        return false;
-
-    return true;
-}
-
-bool hypothesis_dimension::operator!=(const hypothesis_dimension& dim) const
-{
-    return !operator==(dim);
+    return position;
 }
 
 const hypothesis* hypothesis_dimension::get_hypothesis() const
@@ -86,9 +67,9 @@ const hypothesis* hypothesis_dimension::get_hypothesis() const
 
 bool hypothesis_dimension::has_more_hypothesis() const
 {
-    unsigned int rule_num = sorted_hypothesis_list->size();
+    unsigned int hypo_num = sorted_hypothesis_list->size();
 
-    if (position + 1 < rule_num)
+    if (position < hypo_num - 1)
         return true;
 
     return false;
@@ -161,6 +142,34 @@ float cube_item::get_score() const
     return score;
 }
 
+hypothesis* cube_item::get_hypothesis()
+{
+    hypothesis* hypo = generated_hypothesis;
+    generated_hypothesis = nullptr;
+
+    return hypo;
+}
+
+unsigned int cube_item::get_rule_position() const
+{
+    return rule_position.get_position();
+}
+
+unsigned int cube_item::get_hypothesis_dimension() const
+{
+    if (hypothesis_position == nullptr)
+        return 0;
+
+    return hypothesis_position->size();
+}
+
+unsigned int cube_item::get_hypothesis_position(unsigned int dim) const
+{
+    hypothesis_dimension& h = hypothesis_position->at(dim);
+
+    return h.get_position();
+}
+
 void cube_item::generate_hypothesis()
 {
     const rule* r = rule_position.get_rule();
@@ -172,22 +181,15 @@ void cube_item::generate_hypothesis()
         for (unsigned int i = 0; i < size; i++) {
             hypothesis_dimension& dim = hypothesis_position->at(i);
             hypothesis* h = const_cast<hypothesis*>(dim.get_hypothesis());
+            unsigned int index = r->get_nonterminal_map(i);
 
-            hypo->push_hypothesis(h);
+            hypo->set_previous_hypothesis(index, h);
         }
     }
 
     hypo->evaluate_score();
     generated_hypothesis = hypo;
     score = hypo->get_total_score();
-}
-
-hypothesis* cube_item::get_hypothesis()
-{
-    hypothesis* hypo = generated_hypothesis;
-    generated_hypothesis = nullptr;
-
-    return hypo;
 }
 
 bool cube_item::has_more_rules() const
@@ -205,11 +207,14 @@ bool cube_item::has_more_hypotheses(unsigned int dim) const
 
 bool cube_item::operator==(const cube_item& item) const
 {
+    unsigned int rule_pos1 = rule_position.get_position();
+    unsigned int rule_pos2 = item.rule_position.get_position();
+
+    if (rule_pos1 != rule_pos2)
+        return false;
+
     auto hypo_dim1 = hypothesis_position;
     auto hypo_dim2 = item.hypothesis_position;
-
-    if (rule_position != item.rule_position)
-        return false;
 
     if (hypo_dim1 != nullptr && hypo_dim2 != nullptr) {
         unsigned int size1 = hypo_dim1->size();
@@ -221,8 +226,10 @@ bool cube_item::operator==(const cube_item& item) const
         for (unsigned int i = 0; i < size1; i++) {
             hypothesis_dimension& dim1 = hypo_dim1->at(i);
             hypothesis_dimension& dim2 = hypo_dim2->at(i);
+            unsigned int hypo_pos1 = dim1.get_position();
+            unsigned int hypo_pos2 = dim2.get_position();
 
-            if (dim1 != dim2)
+            if (hypo_pos1 != hypo_pos2)
                 return false;
         }
 
@@ -235,20 +242,21 @@ bool cube_item::operator==(const cube_item& item) const
 
 unsigned int cube_item::hash() const
 {
-    const char* p = reinterpret_cast<const char*>(&rule_position);
-    unsigned int size = sizeof(rule_position);
-    unsigned int hash_code = data_hash(p, size);
+    std::hash<unsigned int> hasher;
+    unsigned int rule_pos = rule_position.get_position();
+    unsigned int hash_code;
+
+    hash_code = hasher(rule_pos);
 
     if (!hypothesis_position)
         return hash_code;
 
     for (unsigned int i = 0; i < hypothesis_position->size(); i++) {
         hypothesis_dimension* dim = &hypothesis_position->at(i);
-        p = reinterpret_cast<const char*>(dim);
-        unsigned int size = sizeof(hypothesis_dimension);
+        unsigned int hypo_pos = dim->get_position();
         unsigned int hash_val = 0;
 
-        hash_val = data_hash(p, size);
+        hash_val = hasher(hypo_pos);
         hash_code = hash_combine(hash_code, hash_val);
     }
 

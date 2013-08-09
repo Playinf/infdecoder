@@ -14,6 +14,7 @@
 class beam;
 class rule;
 class symbol;
+class cube_item;
 class chart_cell;
 class hypothesis;
 class partial_rule;
@@ -23,6 +24,7 @@ class translation_option_set;
 void print_beam(const beam* b);
 void print_rule(const rule* r);
 void print_symbol(const symbol* s);
+void print_cube_item(const cube_item* i);
 void print_chart_cell(const chart_cell* c);
 void print_hypothesis(const hypothesis* h);
 void hypothesis_track(const hypothesis* h);

@@ -17,6 +17,7 @@
 class rule_tree;
 class language_model;
 class translation_model;
+class word_penalty_model;
 
 class model {
 public:
@@ -33,6 +34,7 @@ public:
 
     size_type get_language_model_number() const;
     size_type get_translation_model_number() const;
+    word_penalty_model* get_word_penalty_model() const;
     language_model* get_language_model(size_type index) const;
     translation_model* get_translation_model(size_type index) const;
     language_model* find_language_model(unsigned int id) const;
@@ -42,6 +44,7 @@ public:
     void push_weight(std::vector<float>& weight);
     void add_language_model(language_model* lm);
     void add_translation_model(translation_model* lm);
+    void add_word_penalty_model(word_penalty_model* w);
     void set_feature_source(unsigned int id, language_model* lm);
     void set_feature_source(unsigned int id, translation_model* tm);
     void set_feature_function(unsigned int id, feature_function func);
@@ -54,6 +57,7 @@ private:
     std::vector<feature_function> feature_function_vector;
     std::vector<language_model*> language_model_vector;
     std::vector<translation_model*> translation_model_vector;
+    std::vector<word_penalty_model*> word_penalty_model_vector;
     std::map<unsigned int, language_model*> feature_lm_map;
     std::map<unsigned int, translation_model*> feature_tm_map;
     unsigned int feature_number;

@@ -32,6 +32,7 @@ public:
     size_type get_terminal_number() const;
     const symbol* get_start_symbol(int index) const;
     const std::vector<const symbol*>& get_target_rule_body() const;
+    unsigned int get_nonterminal_number() const;
     unsigned int get_nonterminal_map(unsigned int src) const;
 
     void add_symbol(const symbol* sym);

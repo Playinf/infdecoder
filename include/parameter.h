@@ -26,8 +26,8 @@ public:
     parameter();
     ~parameter();
 
-    float get_real_parameter(const std::string& param);
-    unsigned int get_integer_parameter(const std::string& param);
+    float get_real_parameter(const std::string& param) const;
+    unsigned int get_integer_parameter(const std::string& param) const;
     const std::string& get_string_parameter(const std::string& param);
     void get_parameter(std::vector<pair_type>& vec) const;
 
