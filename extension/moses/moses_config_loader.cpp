@@ -278,6 +278,12 @@ static void translate_moses_ini(param_map& setting)
     if (setting.find("show-weights") != setting.end())
         param->add_parameter("show_weights", 1u);
 
+    if (setting.find("drop-unknow") != setting.end()) {
+        if (setting["drop-unknow"][0] == "true") {
+            param->add_parameter("drop_unknow_word", 1u);
+        }
+    }
+
     if (setting.find("tense-dict") != setting.end())
         param->add_parameter("tense_dict", setting["tense-dict"][0]);
 

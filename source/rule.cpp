@@ -79,6 +79,9 @@ void rule::set_score(std::vector<float>& vec)
 {
     unsigned int feature_number = vec.size();
 
+    if (feature_number == 0)
+        return;
+
     score = new float[feature_number];
 
     for (unsigned int i = 0; i < feature_number; i++)

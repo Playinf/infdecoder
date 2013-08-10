@@ -1,11 +1,10 @@
 /* hypothesis.cpp */
 #include <rule.h>
 #include <model.h>
+#include <state.h>
 #include <config.h>
 #include <symbol.h>
 #include <hypothesis.h>
-
-typedef std::vector<const std::string*> string_vector;
 
 hypothesis::hypothesis(const rule* r)
 {
@@ -13,7 +12,6 @@ hypothesis::hypothesis(const rule* r)
     model* system_model = config->get_model();
     unsigned int feature_number = system_model->get_feature_number();
     unsigned int nonterm_number = r->get_nonterminal_number();
-    unsigned int lm_number = system_model->get_language_model_number();
 
     score = 0.0f;
     target_rule = r;
@@ -21,7 +19,6 @@ hypothesis::hypothesis(const rule* r)
     hypothesis_vector = nullptr;
     recombined_hypothesis = nullptr;
     log_linear_model.reserve(feature_number);
-    state_vector.reserve(lm_number);
 
     if (nonterm_number) {
         hypothesis_vector = new std::vector<hypothesis*>;
@@ -30,10 +27,6 @@ hypothesis::hypothesis(const rule* r)
 
     for (unsigned int i = 0; i < feature_number; i++)
         log_linear_model.push_back(feature(i));
-
-    for (unsigned int i = 0; i < lm_number; i++) {
-        state_vector.push_back(hypothesis_state(this, i));
-    }
 }
 
 hypothesis::~hypothesis()
@@ -66,11 +59,6 @@ unsigned int hypothesis::get_terminal_number() const
 unsigned int hypothesis::get_feature_number() const
 {
     return log_linear_model.size();
-}
-
-float hypothesis::get_heuristic_score(unsigned int id) const
-{
-    return state_vector[id].get_heuristic_score();
 }
 
 const feature* hypothesis::get_feature(unsigned int index) const
@@ -109,16 +97,6 @@ hypothesis* hypothesis::get_previous_hypothesis(unsigned int index) const
     return hypothesis_vector->at(index);
 }
 
-const string_vector* hypothesis::get_prefix(unsigned int id) const
-{
-    return state_vector[id].get_prefix();
-}
-
-const string_vector* hypothesis::get_suffix(unsigned int id) const
-{
-    return state_vector[id].get_suffix();
-}
-
 void hypothesis::evaluate_score()
 {
     unsigned int size = log_linear_model.size();
@@ -155,34 +133,26 @@ void hypothesis::recombine(hypothesis* hypo)
 
 int hypothesis::compare(const hypothesis* hypo) const
 {
-    auto& state_vec = hypo->state_vector;
-    unsigned int size1 = state_vector.size();
-    unsigned int size2 = state_vec.size();
-    unsigned int size = (size1 > size2) ? size2 : size1;
+    auto& feature_vector = hypo->log_linear_model;
+    unsigned int size = log_linear_model.size();
 
     for (unsigned int i = 0; i < size; i++) {
-        auto& state1 = state_vector[i];
-        auto& state2 = state_vec[i];
-        unsigned int result;
+        const feature& f1 = log_linear_model[i];
+        const feature& f2 = feature_vector[i];
+        state* s1 = f1.get_state();
+        state* s2 = f2.get_state();
+        int ret;
 
-        result = state1.compare(&state2);
+        if (s1 == nullptr || s2 == nullptr)
+            continue;
 
-        if (result != 0)
-            return result;
+        ret = s1->compare(s2);
+
+        if (ret != 0)
+            return ret;
     }
 
-    return size1 - size2;
-}
-
-void hypothesis::calculate_prefix_suffix(unsigned int id, unsigned int order)
-{
-    hypothesis_state& state = state_vector[id];
-    state.calculate_prefix_suffix(order);
-}
-
-void hypothesis::set_heuristic_score(unsigned int id, float score)
-{
-    state_vector[id].set_heuristic_score(score);
+    return 0;
 }
 
 void hypothesis::set_previous_hypothesis(unsigned int index, hypothesis* h)

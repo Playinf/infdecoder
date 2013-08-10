@@ -4,6 +4,7 @@
 #include <config.h>
 #include <symbol.h>
 #include <feature.h>
+#include <lm_state.h>
 #include <rule_tree.h>
 #include <hypothesis.h>
 #include <penalty_model.h>
@@ -24,14 +25,11 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
     language_model* lm = system_model->get_language_model(id);
+    feature* lm_feature = const_cast<feature*>(hypo->get_feature(id));
     float old_prefix_score = 0.0f;
     unsigned int lm_order = lm->get_order();
     unsigned int indx = 0;
     std::vector<const std::string*> ngram;
-
-    /* this test should be false */
-    if (lm == nullptr)
-        return 0.0f;
 
     for (unsigned int i = 0; i < rule_body_size; i++) {
         const symbol* sym = rule_body[i];
@@ -42,13 +40,15 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
             hypothesis* prev_hypo = hypo->get_previous_hypothesis(indx++);
             unsigned int prev_term_num = prev_hypo->get_terminal_number();
             const feature* prev_fea = prev_hypo->get_feature(id);
-            auto hypo_prefix = prev_hypo->get_prefix(id);
-            auto hypo_suffix = prev_hypo->get_suffix(id);
+            state* prev_state = prev_fea->get_state();
+            lm_state* prev_lm_state = static_cast<lm_state*>(prev_state);
+            auto hypo_prefix = prev_lm_state->get_prefix();
+            auto hypo_suffix = prev_lm_state->get_suffix();
             auto iter_begin = hypo_prefix->begin();
             auto iter_end = hypo_prefix->end();
 
             prev_score += prev_fea->get_score();
-            old_prefix_score += prev_hypo->get_heuristic_score(id);
+            old_prefix_score += prev_lm_state->get_score();
             ngram.insert(ngram.end(), iter_begin, iter_end);
 
             if (prev_term_num >= lm_order - 1) {
@@ -60,7 +60,7 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
                 iter_end = hypo_suffix->end();
 
                 if (i == 0 && prev_term_num >= lm_order - 1) {
-                    prefix_score = prev_hypo->get_heuristic_score(id);
+                    prefix_score = prev_lm_state->get_score();
                 } else {
                     float ngram_score = 0.0;
                     float full_score = 0.0;
@@ -91,9 +91,10 @@ float language_model_feature_function(const hypothesis* hypo, unsigned int id)
     full += full_score;
     score += prev_score;
     score -= old_prefix_score;
-    hypothesis* h = const_cast<hypothesis*>(hypo);
-    h->set_heuristic_score(id, prefix_score);
-    h->calculate_prefix_suffix(id, lm_order);
+    lm_state* state = new lm_state(hypo, id);
+    state->calculate_prefix_suffix(lm_order);
+    state->set_score(prefix_score);
+    lm_feature->add_state(state);
     score += prefix_score;
 
     return score;

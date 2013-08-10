@@ -1,42 +1,51 @@
-/* hypothesis_state.cpp */
+/* lm_state.cpp */
 #include <rule.h>
 #include <symbol.h>
+#include <lm_state.h>
 #include <utility.h>
 #include <hypothesis.h>
 
-hypothesis_state::hypothesis_state(const hypothesis* hypo, unsigned int id)
+lm_state::lm_state(const hypothesis* hypo, unsigned int id)
 {
+    score = 0.0f;
     this->id = id;
-    heuristic_score = 0.0f;
     state_hypothesis = hypo;
+    context = nullptr;
 }
 
-hypothesis_state::~hypothesis_state()
+lm_state::~lm_state()
 {
     /* do nothing */
 }
 
-float hypothesis_state::get_heuristic_score() const
+float lm_state::get_score() const
 {
-    return heuristic_score;
+    return score;
 }
 
-const std::vector<const std::string*>* hypothesis_state::get_prefix() const
+const std::vector<const std::string*>* lm_state::get_prefix() const
 {
     return &prefix;
 }
 
-const std::vector<const std::string*>* hypothesis_state::get_suffix() const
+const std::vector<const std::string*>* lm_state::get_suffix() const
 {
     return &suffix;
 }
 
-void hypothesis_state::set_heuristic_score(float score)
+void lm_state::set_score(float score)
 {
-    heuristic_score = score;
+    this->score = score;
 }
 
-int hypothesis_state::compare(const hypothesis_state* state) const
+int lm_state::compare(const state* lmstate) const
+{
+    const lm_state* s = static_cast<const lm_state*>(lmstate);
+
+    return compare(s);
+}
+
+int lm_state::compare(const lm_state* state) const
 {
     int result;
 
@@ -50,7 +59,7 @@ int hypothesis_state::compare(const hypothesis_state* state) const
     return result;
 }
 
-void hypothesis_state::calculate_prefix_suffix(unsigned int order)
+void lm_state::calculate_prefix_suffix(unsigned int order)
 {
     const hypothesis* h = state_hypothesis;
     const rule* target_rule = h->get_rule();
@@ -71,8 +80,10 @@ void hypothesis_state::calculate_prefix_suffix(unsigned int order)
             ngram.push_back(sym->get_name());
         else {
             hypothesis* hypo = h->get_previous_hypothesis(nonterm_indx++);
-            auto hypo_prefix = hypo->get_prefix(id);
-            auto hypo_suffix = hypo->get_suffix(id);
+            const feature* fea = hypo->get_feature(id);
+            lm_state* lmstate = static_cast<lm_state*>(fea->get_state());
+            auto hypo_prefix = lmstate->get_prefix();
+            auto hypo_suffix = lmstate->get_suffix();
             unsigned int hypo_prefix_size = hypo_prefix->size();
             unsigned int hypo_suffix_size = hypo_suffix->size();
             unsigned int hypo_nonterm_num = hypo->get_terminal_number();

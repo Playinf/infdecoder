@@ -13,6 +13,7 @@
 void moses_format_loader(void* args);
 /* defined in moses_oov_rule.cpp */
 rule* create_unknow_word_rule(const symbol* sym);
+rule* create_null_word_rule(const symbol* sym);
 /* defined in rule_heuristic.cpp */
 float hpb_rule_heuristic_function(const rule* r);
 /* defined in moses_rule_heuristic.cpp */
@@ -33,12 +34,14 @@ static void load_rule_from_file(const char* filename, rule_tree* table)
 void load_moses_model()
 {
     unsigned int id;
-    unsigned int rule_limit;
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
     parameter* param = config->get_parameter();
 
-    config->set_unknow_word_handler(create_unknow_word_rule);
+    if (param->get_integer_parameter("drop_unknow_word"))
+        config->set_unknow_word_handler(create_null_word_rule);
+    else
+        config->set_unknow_word_handler(create_unknow_word_rule);
 
     /* language models */
     unsigned int lm_num = param->get_integer_parameter("language_model_number");
@@ -104,6 +107,18 @@ void load_moses_model()
     system_model->set_feature_function(id, unknow_word_feature_function);
     system_model->push_weight(1.0f);
     tm_unknow->add_feature(id);
+}
+
+void load_model_from_file()
+{
+    configuration* config = configuration::get_instance();
+    model* system_model = config->get_model();
+    parameter* param = config->get_parameter();
+    unsigned int lm_num;
+    unsigned int tm_num;
+
+    lm_num = param->get_integer_parameter("language_model_number");
+    tm_num = param->get_integer_parameter("translation_model_number");
 
     /* load language models */
     for (unsigned int i = 0; i < lm_num; i++) {
@@ -122,7 +137,7 @@ void load_moses_model()
     }
 
     /* load translation models */
-    rule_limit = param->get_integer_parameter("rule_limit");
+    unsigned int rule_limit = param->get_integer_parameter("rule_limit");
 
     for (unsigned int i = 0; i < tm_num; i++) {
         translation_model* tm = system_model->get_translation_model(i);
