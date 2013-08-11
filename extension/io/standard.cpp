@@ -18,6 +18,7 @@
 #include <translation_model.h>
 
 rule* create_unknow_word_rule(const symbol* sym);
+void hypothesis_track(const hypothesis* hypo, std::string& out);
 
 void output_hypothesis(const hypothesis* h, std::vector<const std::string*>& s)
 {
@@ -112,16 +113,19 @@ void translate()
     unsigned int id = 0;
     std::ifstream file;
     std::ofstream nbest_file;
+    std::ofstream verbose_file;
     std::istream* stream;
     configuration* config = configuration::get_instance();
     parameter* param = config->get_parameter();
     std::string input_file_name = param->get_string_parameter("input_file");
     std::string nbest_name = param->get_string_parameter("output_nbest_file");
+    std::string verbose_name = param->get_string_parameter("verbose_file");
     unsigned int thread_number = param->get_integer_parameter("thread_number");
     task_manager manager(thread_number);
 
     file.open(input_file_name);
     nbest_file.open(nbest_name);
+    verbose_file.open(verbose_name);
 
     manager.set_limit(thread_number);
 
@@ -132,7 +136,14 @@ void translate()
 
     output_buffer translation_buffer(&std::cout);
     output_buffer nbest_buffer(&nbest_file);
+    output_buffer verbose_buffer(&verbose_file);
     output_buffer* nbest_buffer_ptr;
+    output_buffer* verbose_buffer_ptr;
+
+    if (verbose_file.fail())
+        verbose_buffer_ptr = nullptr;
+    else
+        verbose_buffer_ptr = &verbose_buffer;
 
     if (nbest_file.fail())
         nbest_buffer_ptr = nullptr;
@@ -161,9 +172,11 @@ void translate()
         t->set_id(id++);
         t->set_input(line);
         t->set_nbest_buffer(nbest_buffer_ptr);
+        t->set_verbose_buffer(verbose_buffer_ptr);
         t->set_translation_buffer(&translation_buffer);
         t->set_handler(output_hypothesis);
         t->set_handler(output_nbest);
+        t->set_verbose_handler(hypothesis_track);
         manager.add_task(t);
     }
 

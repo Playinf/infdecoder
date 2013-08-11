@@ -31,15 +31,19 @@ public:
     void set_id(unsigned int id);
     void set_input(const std::string& sentence);
     void set_nbest_buffer(output_buffer* buffer);
+    void set_verbose_buffer(output_buffer* buffer);
     void set_translation_buffer(output_buffer *buffer);
     void set_handler(nbest_handler handler);
     void set_handler(hypothesis_handler handler);
+    void set_verbose_handler(hypothesis_handler handler);
 private:
     unsigned int id;
     std::string input;
     output_buffer* nbest_buffer;
+    output_buffer* verbose_buffer;
     output_buffer* translation_buffer;
     hypothesis_handler hypothesis_output_handler;
+    hypothesis_handler hypothesis_track_handler;
     nbest_handler nbest_output_handler;
 };
 

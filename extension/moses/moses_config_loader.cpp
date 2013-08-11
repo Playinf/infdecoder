@@ -175,6 +175,13 @@ static void translate_moses_ini(param_map& setting)
         param->add_parameter("nbest_number", num);
     }
 
+    /* verbose file */
+    std::vector<std::string>& verbose_vec = setting["verbose-file"];
+
+    if (verbose_vec.size() > 0) {
+        param->add_parameter("verbose_file", verbose_vec[0]);
+    }
+
     /* input file */
     std::vector<std::string>& input_vec = setting["input-file"];
 

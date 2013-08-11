@@ -40,6 +40,15 @@ void task::run()
     hypothesis_output_handler(best_hypo, hypo_output);
     translation_buffer->write(hypo_output, id);
 
+    if (verbose_buffer != nullptr) {
+        std::string hypo_track;
+        std::stringstream string_stream;
+        hypothesis_track_handler(best_hypo, hypo_track);
+        string_stream << "#" << id << "#" << std::endl;
+        string_stream << hypo_track;
+        verbose_buffer->write(string_stream.str(), id);
+    }
+
     if (nbest_buffer == nullptr)
         return;
 
@@ -71,10 +80,17 @@ void task::set_input(const std::string& sentence)
 {
     input = sentence;
 }
+
 void task::set_nbest_buffer(output_buffer* buffer)
 {
     nbest_buffer = buffer;
 }
+
+void task::set_verbose_buffer(output_buffer* buffer)
+{
+    verbose_buffer = buffer;
+}
+
 void task::set_translation_buffer(output_buffer *buffer)
 {
     translation_buffer = buffer;
@@ -88,4 +104,9 @@ void task::set_handler(nbest_handler handler)
 void task::set_handler(hypothesis_handler handler)
 {
     hypothesis_output_handler = handler;
+}
+
+void task::set_verbose_handler(hypothesis_handler handler)
+{
+    hypothesis_track_handler = handler;
 }
