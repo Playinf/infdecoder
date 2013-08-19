@@ -9,8 +9,8 @@
 #include <parser.h>
 #include <symbol.h>
 #include <utility.h>
-#include <verbose.h>
 #include <rule_tree.h>
+#include <alignment.h>
 
 inline float floor_score(float score)
 {
@@ -48,7 +48,7 @@ inline void parser_nonterminal_map(const std::string& str, std::string& src,
 }
 
 static void parse_rule_score(const std::string& str,
-    std::vector<double>& feature)
+    std::vector<float>& feature)
 {
     std::vector<std::string> feature_str;
     unsigned int size;
@@ -57,11 +57,11 @@ static void parse_rule_score(const std::string& str,
     size = feature_str.size();
 
     for (unsigned int i = 0; i < size; i++)
-        feature.push_back(std::stod(feature_str[i]));
+        feature.push_back(std::stof(feature_str[i]));
 }
 
 static void parse_alignment(std::string& str,
-    std::vector<std::pair<int, int>>& align)
+    std::vector<std::pair<unsigned int, unsigned int>>& align)
 {
     std::vector<std::string> align_str;
 
@@ -83,8 +83,8 @@ static void parse_alignment(std::string& str,
 }
 
 static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
-    std::vector<std::string>& tgt, std::vector<double>& prob,
-    std::vector<std::pair<int, int>>& align)
+    std::vector<std::string>& tgt, std::vector<float>& prob,
+    std::vector<std::pair<unsigned int, unsigned int>>& align)
 {
     std::string src_lhs;
     std::string tgt_lhs;
@@ -164,10 +164,12 @@ static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
     target_rule->set_score(score_vec);
 
     unsigned int align_size = align.size();
+    alignment rule_align(align_size, nonterminal_number);
 
     /* insert alignments */
     for (unsigned int i = 0; i < align_size; i++) {
-        std::pair<int, int>& p = align[i];
+        auto& p = align[i];
+        rule_align.add_alignment(p.first, p.second);
 
         if (!src_nonterm_map[p.first])
             continue;
@@ -175,15 +177,18 @@ static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
         unsigned int src_idx = src_nonterm_map[p.first] - 1;
         unsigned int tgt_idx = tgt_nonterm_map[p.second] - 1;
 
-        target_rule->add_align(src_idx, tgt_idx);
+        rule_align.add_nonterminal_map(src_idx, tgt_idx);
     }
 
+    alignment_table* align_table = alignment_table::get_instance();
+    const alignment* align_ptr = align_table->search_alignment(rule_align);
+    target_rule->set_alignment(align_ptr);
     rule_table.insert_rule(p, target_rule);
 }
 
 static void analyze_moses_rule(std::vector<std::string>& src,
-    std::vector<std::string>& tgt, std::vector<double>& prob,
-    std::vector<std::pair<int, int>>& align)
+    std::vector<std::string>& tgt, std::vector<float>& prob,
+    std::vector<std::pair<unsigned int, unsigned int>>& align)
 {
     std::string src_lhs;
     std::string tgt_lhs;
@@ -261,7 +266,7 @@ static void analyze_moses_rule(std::vector<std::string>& src,
     std::cout << " ||| ";
 
     for (unsigned int i = 0; i < align.size(); i++) {
-        std::pair<int, int>& p = align[i];
+        auto& p = align[i];
         std::cout << src[p.first] << "-" << tgt[p.second] << " ";
     }
 
@@ -275,8 +280,8 @@ static void moses_rule_table_loader(std::ifstream& file, rule_tree& table,
     std::vector<std::string> vec;
     std::vector<std::string> source_rule;
     std::vector<std::string> target_rule;
-    std::vector<double> rule_score;
-    std::vector<std::pair<int, int>> align_info;
+    std::vector<float> rule_score;
+    std::vector<std::pair<unsigned int, unsigned int>> align_info;
     int line_count = 0;
 
     while (std::getline(file, line)) {

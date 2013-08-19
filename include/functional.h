@@ -13,6 +13,7 @@ class cube;
 class rule;
 class symbol;
 class rt_node;
+class alignment;
 class cube_item;
 class hypothesis;
 class trellis_detour;
@@ -63,6 +64,14 @@ struct hypothesis_compare {
 
 struct trellis_detour_less {
     bool operator()(const trellis_detour* d1, const trellis_detour* d2) const;
+};
+
+struct alignment_hash {
+    std::size_t operator()(const alignment& a) const;
+};
+
+struct alignment_equal {
+    bool operator()(const alignment& a1, const alignment& a2) const;
 };
 
 #endif /* __FUNCTIONAL_H__ */

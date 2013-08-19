@@ -143,6 +143,16 @@ static void translate_moses_ini(param_map& setting)
         str_vec.clear();
     }
 
+    /* span limit */
+    std::vector<std::string>& span_lim = setting["max-chart-span"];
+    unsigned int span_lim_size = span_lim.size();
+
+    for (unsigned int i = 0; i < span_lim_size; i++) {
+        unsigned int lim = std::stoi(span_lim[i]);
+        std::string param_name = "span_limit_" + std::to_string(i);
+        param->add_parameter(param_name, lim);
+    }
+
     /* rule limit */
     std::vector<std::string>& rule_limit_vec = setting["ttable-limit"];
 
@@ -290,9 +300,6 @@ static void translate_moses_ini(param_map& setting)
             param->add_parameter("drop_unknow_word", 1u);
         }
     }
-
-    if (setting.find("tense-dict") != setting.end())
-        param->add_parameter("tense_dict", setting["tense-dict"][0]);
 
     param->add_parameter("feature_number", lm_num + tm_fea_num + 1);
 }

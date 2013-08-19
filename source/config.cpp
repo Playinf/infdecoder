@@ -38,11 +38,6 @@ unsigned int configuration::get_pop_limit() const
     return pop_limit;
 }
 
-unsigned int configuration::get_span_limit() const
-{
-    return span_limit;
-}
-
 unsigned int configuration::get_nbest_number() const
 {
     return nbest_number;
@@ -101,7 +96,6 @@ void configuration::load_parameter()
 {
     beam_size = parameter_set->get_integer_parameter("beam_size");
     pop_limit = parameter_set->get_integer_parameter("pop_limit");
-    span_limit = parameter_set->get_integer_parameter("span_limit");
     distinct_nbest = parameter_set->get_integer_parameter("distinct_nbest");
     nbest_number = parameter_set->get_integer_parameter("nbest_number");
     thread_number = parameter_set->get_integer_parameter("thread_number");

@@ -91,6 +91,6 @@ rt_node* rule_tree::find_child(const rt_node* parent, const symbol* src,
 void rule_tree::insert_rule(rt_node* node, rule* r)
 {
     rule_num += 1;
-    r->set_rule_tree_id(id);
+    r->set_id(id);
     node->insert_rule(r);
 }

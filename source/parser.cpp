@@ -9,6 +9,8 @@
 #include <parser.h>
 #include <feature.h>
 #include <trellis.h>
+#include <parameter.h>
+#include <rule_tree.h>
 #include <chart_cell.h>
 #include <functional.h>
 #include <hypothesis.h>
@@ -83,18 +85,18 @@ parser::parser(std::vector<rule_tree*>* tree_vec)
     applicable_translation_option_set = nullptr;
 
     configuration* config = configuration::get_instance();
-    unsigned int limit = config->get_span_limit();
+    parameter* param = config->get_parameter();
     unsigned int size = tree_vec->size();
 
     for (unsigned int i = 0; i < size; i++) {
         rule_tree* tree = tree_vector->at(i);
+        unsigned int id = tree->get_id();
+        std::string param_name = "span_limit_" + std::to_string(id);
+        unsigned int limit = param->get_integer_parameter(param_name);
         rule_finder* finder = new rule_finder(tree);
         finder->set_span_limit(limit);
         rule_lookup_manager.push_back(finder);
     }
-
-    rule_lookup_manager[0]->set_span_limit(1);
-    rule_lookup_manager[size - 1]->set_span_limit(0);
 }
 
 parser::~parser()

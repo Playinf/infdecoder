@@ -2,6 +2,7 @@
 #include <functional>
 #include <rule.h>
 #include <utility.h>
+#include <alignment.h>
 #include <cube_item.h>
 #include <hypothesis.h>
 #include <translation_option.h>
@@ -181,7 +182,8 @@ void cube_item::generate_hypothesis()
         for (unsigned int i = 0; i < size; i++) {
             hypothesis_dimension& dim = hypothesis_position->at(i);
             hypothesis* h = const_cast<hypothesis*>(dim.get_hypothesis());
-            unsigned int index = r->get_nonterminal_map(i);
+            const alignment* align = r->get_alignment();
+            unsigned int index = align->get_nonterminal_map(i);
 
             hypo->set_previous_hypothesis(index, h);
         }

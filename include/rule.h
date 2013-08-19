@@ -13,6 +13,7 @@
 #include <vector>
 
 class symbol;
+class alignment;
 class language_model;
 
 class rule {
@@ -32,22 +33,22 @@ public:
     size_type get_terminal_number() const;
     const symbol* get_start_symbol(int index) const;
     const std::vector<const symbol*>& get_target_rule_body() const;
+    const alignment* get_alignment() const;
     unsigned int get_nonterminal_number() const;
-    unsigned int get_nonterminal_map(unsigned int src) const;
 
+    void set_id(unsigned int id);
     void add_symbol(const symbol* sym);
     void set_heuristic_score(float score);
     void set_score(std::vector<float>& vec);
-    void add_align(unsigned int src, unsigned int tgt);
-    void set_rule_tree_id(unsigned int id);
+    void set_alignment(const alignment* align);
     void set_start_symbol(const symbol* src, const symbol* tgt);
 private:
     float* score;
+    unsigned int id;
     float heuristic_score;
     const symbol* start_symbol[2];
     std::vector<const symbol*> target_rule_body;
-    unsigned int id;
-    unsigned int* nonterminal_map;
+    const alignment* symbol_alignment;
     unsigned int target_terminal_number;
 };
 

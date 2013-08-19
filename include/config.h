@@ -27,7 +27,6 @@ public:
     model* get_model() const;
     bool enable_distinct_nbest() const;
     unsigned int get_pop_limit() const;
-    unsigned int get_span_limit() const;
     unsigned int get_nbest_number() const;
     unsigned int get_thread_number() const;
     unsigned int get_feature_number() const;
@@ -51,7 +50,6 @@ private:
     parameter* parameter_set;
     unsigned int beam_size;
     unsigned int pop_limit;
-    unsigned int span_limit;
     unsigned int distinct_nbest;
     unsigned int nbest_number;
     unsigned int thread_number;

@@ -3,6 +3,7 @@
 #include <rule.h>
 #include <symbol.h>
 #include <trellis.h>
+#include <alignment.h>
 #include <cube_item.h>
 #include <rule_tree.h>
 #include <functional.h>
@@ -92,4 +93,14 @@ bool trellis_detour_less::operator()(const trellis_detour* d1,
     const trellis_detour* d2) const
 {
     return d1->get_total_score() < d2->get_total_score();
+}
+
+std::size_t alignment_hash::operator()(const alignment& align) const
+{
+    return align.hash();
+}
+
+bool alignment_equal::operator()(const alignment& a1, const alignment& a2) const
+{
+    return a1.compare(a2);
 }

@@ -2,7 +2,7 @@
 #include <vector>
 #include <rule.h>
 #include <symbol.h>
-#include <language_model.h>
+#include <alignment.h>
 
 rule::rule(size_type size)
 {
@@ -12,14 +12,13 @@ rule::rule(size_type size)
     start_symbol[0] = nullptr;
     start_symbol[1] = nullptr;
     target_terminal_number = 0;
-    nonterminal_map = nullptr;
+    symbol_alignment = nullptr;
     target_rule_body.reserve(size);
 }
 
 rule::~rule()
 {
     delete[] score;
-    delete[] nonterminal_map;
 }
 
 unsigned int rule::get_id() const
@@ -52,14 +51,19 @@ const std::vector<const symbol*>& rule::get_target_rule_body() const
     return target_rule_body;
 }
 
+const alignment* rule::get_alignment() const
+{
+    return symbol_alignment;
+}
+
 unsigned int rule::get_nonterminal_number() const
 {
     return target_rule_body.size() - target_terminal_number;
 }
 
-unsigned int rule::get_nonterminal_map(unsigned int src) const
+void rule::set_id(unsigned int id)
 {
-    return nonterminal_map[src];
+    this->id = id;
 }
 
 void rule::add_symbol(const symbol* sym)
@@ -88,19 +92,9 @@ void rule::set_score(std::vector<float>& vec)
         score[i] = vec[i];
 }
 
-void rule::add_align(unsigned int src, unsigned int tgt)
+void rule::set_alignment(const alignment* align)
 {
-    unsigned int nonterm_num = target_rule_body.size() - target_terminal_number;
-
-    if (nonterminal_map == nullptr)
-        nonterminal_map = new unsigned int[nonterm_num];
-
-    nonterminal_map[src] = tgt;
-}
-
-void rule::set_rule_tree_id(unsigned int id)
-{
-    this->id = id;
+    symbol_alignment = align;
 }
 
 void rule::set_start_symbol(const symbol* src, const symbol* tgt)
