@@ -19,31 +19,6 @@ chart_cell::~chart_cell()
     }
 }
 
-void chart_cell::add_hypothesis(hypothesis* hypo)
-{
-    const symbol* source_start_symbol = hypo->get_start_symbol(0);
-    const symbol* target_start_symbol = hypo->get_start_symbol(1);
-    auto result = nonterminal_beam_set.find(target_start_symbol);
-    configuration* config = configuration::get_instance();
-    beam* nonterminal_beam;
-
-    if (result == nonterminal_beam_set.end()) {
-        const std::string& sym_name = *target_start_symbol->get_name();
-        unsigned int beam_size = config->get_beam_size(sym_name);
-        float beam_threshold = config->get_beam_threshold(sym_name);
-
-        nonterminal_beam = new beam(beam_size, beam_threshold);
-        nonterminal_beam_set[target_start_symbol] = nonterminal_beam;
-    } else {
-        nonterminal_beam = result->second;
-    }
-
-    nonterminal_beam->insert_hypothesis(hypo);
-
-    source_start_symbol_set.insert(source_start_symbol);
-    target_start_symbol_set.insert(target_start_symbol);
-}
-
 const chart_cell::symbol_set& chart_cell::get_source_start_symbol_set() const
 {
     return source_start_symbol_set;
@@ -88,6 +63,38 @@ chart_cell::hypothesis_list* chart_cell::get_hypothesis_list(const symbol* lhs)
     return nonterminal_beam->get_sorted_hypothesis_list();
 }
 
+void chart_cell::sort()
+{
+    for (auto& b : nonterminal_beam_set) {
+        b.second->sort();
+    }
+}
+
+void chart_cell::add_hypothesis(hypothesis* hypo)
+{
+    const symbol* source_start_symbol = hypo->get_start_symbol(0);
+    const symbol* target_start_symbol = hypo->get_start_symbol(1);
+    auto result = nonterminal_beam_set.find(target_start_symbol);
+    configuration* config = configuration::get_instance();
+    beam* nonterminal_beam;
+
+    if (result == nonterminal_beam_set.end()) {
+        const std::string& sym_name = *target_start_symbol->get_name();
+        unsigned int beam_size = config->get_beam_size(sym_name);
+        float beam_threshold = config->get_beam_threshold(sym_name);
+
+        nonterminal_beam = new beam(beam_size, beam_threshold);
+        nonterminal_beam_set[target_start_symbol] = nonterminal_beam;
+    } else {
+        nonterminal_beam = result->second;
+    }
+
+    nonterminal_beam->insert_hypothesis(hypo);
+
+    source_start_symbol_set.insert(source_start_symbol);
+    target_start_symbol_set.insert(target_start_symbol);
+}
+
 void chart_cell::decode(translation_option_set* s, unsigned int limit)
 {
     unsigned int size = s->size();
@@ -106,12 +113,5 @@ void chart_cell::decode(translation_option_set* s, unsigned int limit)
 
         hypothesis* hypo = const_cast<hypothesis*>(queue.pop());
         add_hypothesis(hypo);
-    }
-}
-
-void chart_cell::sort()
-{
-    for (auto& b : nonterminal_beam_set) {
-        b.second->sort();
     }
 }

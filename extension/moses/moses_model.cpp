@@ -150,7 +150,7 @@ void load_model_from_file()
         std::cerr << "loading rule tree from " << tm_file << std::endl;
         std::cerr << "progress:" << std::endl;
         load_rule_from_file(tm_file.c_str(), tree);
-        std::cerr << " complete" << std::endl;
+        std::cerr << "complete" << std::endl;
         std::cerr << "sorting and pruning rule table";
         tree->set_heuristic_function(moses_rule_heuristic_function);
         tree->sort_and_prune(rule_limit);

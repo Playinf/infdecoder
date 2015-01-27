@@ -86,6 +86,7 @@ cube_item::cube_item(translation_option* option)
 {
     unsigned int num = option->get_rule_nonterminal_number();
     generated_hypothesis = nullptr;
+    this->option = option;
 
     if (num) {
         hypothesis_position = new std::vector<hypothesis_dimension>;
@@ -106,6 +107,7 @@ cube_item::cube_item(const cube_item& item, unsigned int dim_index)
 {
     const unsigned int rule_dim = 0;
 
+    option = item.option;
     generated_hypothesis = nullptr;
 
     if (item.hypothesis_position != nullptr) {
@@ -192,6 +194,7 @@ void cube_item::generate_hypothesis()
     hypo->evaluate_score();
     generated_hypothesis = hypo;
     score = hypo->get_total_score();
+    hypo->set_partial_rule(option->get_rule());
 }
 
 bool cube_item::has_more_rules() const

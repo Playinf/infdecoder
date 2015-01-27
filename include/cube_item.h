@@ -37,7 +37,7 @@ public:
     hypothesis_dimension(std::vector<hypothesis*>* hypo, unsigned int num);
     ~hypothesis_dimension();
 
-    hypothesis_dimension& operator=(const hypothesis_dimension& h) = delete;
+    //hypothesis_dimension& operator=(const hypothesis_dimension& h) = delete;
 
     unsigned int get_position() const;
     const hypothesis* get_hypothesis() const;
@@ -68,6 +68,7 @@ public:
     unsigned int hash() const;
 private:
     float score;
+    translation_option* option;
     rule_dimension rule_position;
     std::vector<hypothesis_dimension>* hypothesis_position;
     hypothesis* generated_hypothesis;

@@ -12,6 +12,8 @@ translation_option::translation_option(size_type size)
         hypothesis_vector->resize(size);
     } else
         hypothesis_vector = nullptr;
+
+    source_rule = nullptr;
     rule_vector = nullptr;
 }
 
@@ -19,6 +21,11 @@ translation_option::~translation_option()
 {
     if (hypothesis_vector != nullptr)
         delete hypothesis_vector;
+}
+
+const partial_rule* translation_option::get_rule() const
+{
+    return source_rule;
 }
 
 const symbol* translation_option::get_start_symbol() const
@@ -50,6 +57,11 @@ std::vector<hypothesis*>* translation_option::get_hypothesis_vector(size_type i)
 translation_option::size_type translation_option::size() const
 {
     return rule_vector->size();
+}
+
+void translation_option::set_rule(partial_rule* r)
+{
+    source_rule = r;
 }
 
 void translation_option::set_rule_vector(const vector_type* vec)

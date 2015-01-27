@@ -62,6 +62,7 @@ void translation_option_set::add_complete_rule(partial_rule* rule)
         p = p->get_parent();
     }
 
+    option->set_rule(rule);
     option->set_rule_vector(&rule_vec);
     applicable_rule_set.push_back(option);
 }

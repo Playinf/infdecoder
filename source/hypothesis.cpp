@@ -61,6 +61,11 @@ unsigned int hypothesis::get_feature_number() const
     return log_linear_model.size();
 }
 
+const partial_rule* hypothesis::get_partial_rule() const
+{
+    return source_rule;
+}
+
 const feature* hypothesis::get_feature(unsigned int index) const
 {
     return &log_linear_model[index];
@@ -153,6 +158,11 @@ int hypothesis::compare(const hypothesis* hypo) const
     }
 
     return 0;
+}
+
+void hypothesis::set_partial_rule(const partial_rule *rule)
+{
+    source_rule = rule;
 }
 
 void hypothesis::set_previous_hypothesis(unsigned int index, hypothesis* h)

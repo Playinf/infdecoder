@@ -38,6 +38,62 @@ static void output_hypothesis(const hypothesis* hypo, std::string& out)
     out = string_stream.str();
 }
 
+static void formatted_hypothesis(const hypothesis* hypo, std::string& out)
+{
+    std::stringstream string_stream;
+    const rule* target_rule = hypo->get_rule();
+    auto& rule_body = target_rule->get_target_rule_body();
+    unsigned int size = rule_body.size();
+    unsigned int nonterminal_index = 0;
+
+    string_stream << "( ";
+    for (unsigned int i = 0; i < size; ++i) {
+        const symbol* sym = rule_body[i];
+
+        if (sym->is_terminal())
+            string_stream << *sym->get_name();
+        else {
+            std::string str_rep;
+            hypothesis *h = hypo->get_previous_hypothesis(nonterminal_index);
+            ++nonterminal_index;
+            formatted_hypothesis(h, str_rep);
+            string_stream << str_rep;
+        }
+
+        if (i != size - 1)
+            string_stream << " ";
+    }
+    string_stream << " )";
+
+    out = string_stream.str();
+}
+
+static void hypothesis_backtrack(const hypothesis* hypo, std::string& out)
+{
+    std::stringstream string_stream;
+    std::string str_rep;
+    const partial_rule* source_rule = hypo->get_partial_rule();
+
+    string_stream << "HYPOTHESIS: ";
+    to_string(hypo, str_rep);
+    string_stream << str_rep << std::endl;
+    string_stream << "RULE: ";
+    to_string(source_rule, str_rep);
+    string_stream << str_rep << " ||| ";
+    to_string(hypo->get_rule(), str_rep);
+    string_stream << str_rep << std::endl;
+
+    unsigned int size = hypo->get_previous_hypothesis_number();
+
+    for (unsigned int i = 0; i < size; i++) {
+        const hypothesis* h = hypo->get_previous_hypothesis(i);
+        hypothesis_backtrack(h, str_rep);
+        string_stream << str_rep;
+    }
+
+    out = string_stream.str();
+}
+
 static void output_partial_rule(const partial_rule* r, std::string& out)
 {
     std::stringstream string_stream;
@@ -49,7 +105,7 @@ static void output_partial_rule(const partial_rule* r, std::string& out)
     if (parent_rule != nullptr) {
         std::string str_rep;
         output_partial_rule(parent_rule, str_rep);
-        string_stream << str_rep;
+        string_stream << str_rep << " ";
     }
 
     if (src_sym != nullptr)
@@ -57,7 +113,7 @@ static void output_partial_rule(const partial_rule* r, std::string& out)
 
     if (tgt_sym != nullptr) {
         auto& span = r->get_span();
-        string_stream<< "-" << *tgt_sym->get_name();
+        string_stream << "-" << *tgt_sym->get_name();
         string_stream << "[" << span.first << ", ";
         string_stream << span.second << "]";
     }
@@ -305,20 +361,10 @@ void hypothesis_track(const hypothesis* hypo, std::string& out)
     std::stringstream string_stream;
     std::string str_rep;
 
-    string_stream << "HYPOTHESIS: ";
-    to_string(hypo, str_rep);
+    formatted_hypothesis(hypo, str_rep);
     string_stream << str_rep << std::endl;
-    string_stream << "RULE: ";
-    to_string(hypo->get_rule(), str_rep);
+    hypothesis_backtrack(hypo, str_rep);
     string_stream << str_rep << std::endl;
-
-    unsigned int size = hypo->get_previous_hypothesis_number();
-
-    for (unsigned int i = 0; i < size; i++) {
-        const hypothesis* h = hypo->get_previous_hypothesis(i);
-        hypothesis_track(h, str_rep);
-        string_stream << str_rep;
-    }
 
     out = string_stream.str();
 }

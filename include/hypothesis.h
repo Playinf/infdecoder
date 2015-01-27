@@ -17,6 +17,7 @@
 class rule;
 class symbol;
 class feature;
+class partial_rule;
 
 class hypothesis {
 public:
@@ -32,6 +33,7 @@ public:
     float get_total_score() const;
     unsigned int get_terminal_number() const;
     unsigned int get_feature_number() const;
+    const partial_rule* get_partial_rule() const;
     const feature* get_feature(unsigned int index) const;
     const symbol* get_start_symbol(unsigned int index) const;
     hypothesis* get_recombined_hypothesis() const;
@@ -42,11 +44,13 @@ public:
     void evaluate_score();
     void recombine(hypothesis* hypo);
     int compare(const hypothesis* hypo) const;
+    void set_partial_rule(const partial_rule *rule);
     void set_previous_hypothesis(unsigned int index, hypothesis* h);
 private:
     float score;
     const rule* target_rule;
     unsigned int terminal_number;
+    const partial_rule* source_rule;
     hypothesis* recombined_hypothesis;
     std::vector<feature> log_linear_model;
     std::vector<hypothesis*>* hypothesis_vector;
