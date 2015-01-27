@@ -57,7 +57,7 @@ static void parse_rule_score(const std::string& str,
     size = feature_str.size();
 
     for (unsigned int i = 0; i < size; i++)
-        feature.push_back(std::stof(feature_str[i]));
+        feature.push_back(std::stod(feature_str[i]));
 }
 
 static void parse_alignment(std::string& str,

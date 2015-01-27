@@ -147,7 +147,8 @@ void load_model_from_file()
 
         tm_file_param += "_file";
         auto& tm_file = param->get_string_parameter(tm_file_param);
-        std::cerr << "loading rule tree from" << tm_file;
+        std::cerr << "loading rule tree from " << tm_file << std::endl;
+        std::cerr << "progress:" << std::endl;
         load_rule_from_file(tm_file.c_str(), tree);
         std::cerr << " complete" << std::endl;
         std::cerr << "sorting and pruning rule table";

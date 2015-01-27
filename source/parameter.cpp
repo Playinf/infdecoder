@@ -138,7 +138,7 @@ void parameter::insert_array_parameter(const std::string& name,
         if (epos == std::string::npos)
             epos = size - 1;
 
-        val = std::stof(value.substr(spos, epos - spos));
+        val = std::stod(value.substr(spos, epos - spos));
         std::string param_name;
         param_name = name + "_" + std::to_string(count++);
         real_parameter_map[param_name] = val;
@@ -174,7 +174,7 @@ void parameter::load(const char* filename)
             integer_parameter_map[pname] = std::stoi(pvalue);
             break;
         case REAL:
-            real_parameter_map[pname] = std::stof(pvalue);
+            real_parameter_map[pname] = std::stod(pvalue);
             break;
         case ARRAY:
             insert_array_parameter(pname, pvalue);

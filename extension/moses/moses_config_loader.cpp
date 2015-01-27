@@ -209,7 +209,7 @@ static void translate_moses_ini(param_map& setting)
     }
 
     if (beam_threshold_vec.size() > 0) {
-        float threshold = std::stof(beam_threshold_vec[0]);
+        float threshold = std::stod(beam_threshold_vec[0]);
         threshold = std::log(threshold);
         param->add_parameter("beam_threshold", threshold);
     }
@@ -261,7 +261,8 @@ static void translate_moses_ini(param_map& setting)
 
     for (unsigned int i = 0; i < lm_weight_num; i++) {
         std::string weight_str = "weight_" + std::to_string(feature_id);
-        param->add_parameter(weight_str, std::stof(lm_weight[i]));
+        float weight_val = std::stod(lm_weight[i]);
+        param->add_parameter(weight_str, weight_val);
         feature_id++;
     }
 
@@ -277,7 +278,8 @@ static void translate_moses_ini(param_map& setting)
 
     for (unsigned int i = 0; i < tm_weight_num; i++) {
         std::string weight_str = "weight_" + std::to_string(feature_id);
-        param->add_parameter(weight_str, std::stof(tm_weight[i]));
+        float weight_val = std::stod(tm_weight[i]);
+        param->add_parameter(weight_str, weight_val);
         feature_id++;
     }
 
@@ -290,7 +292,7 @@ static void translate_moses_ini(param_map& setting)
         std::exit(-1);
     }
 
-    param->add_parameter(weight_str, std::stof(w_weight[0]));
+    param->add_parameter(weight_str, (float) std::stod(w_weight[0]));
 
     if (setting.find("show-weights") != setting.end())
         param->add_parameter("show_weights", 1u);

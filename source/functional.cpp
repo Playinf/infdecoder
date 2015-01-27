@@ -102,5 +102,5 @@ std::size_t alignment_hash::operator()(const alignment& align) const
 
 bool alignment_equal::operator()(const alignment& a1, const alignment& a2) const
 {
-    return a1.compare(a2);
+    return a1.compare(a2) == 0;
 }
