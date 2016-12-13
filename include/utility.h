@@ -15,6 +15,8 @@
 std::size_t string_hash(const char* str);
 std::size_t data_hash(const char* data, size_t len);
 std::size_t hash_combine(std::size_t v1, std::size_t v2);
+void string_join(std::vector<std::string>& vec, const std::string& sep,
+    std::string& out);
 void string_split(const std::string& s, const std::string& sep,
     std::vector<std::string>& vec);
 int string_vector_compare(const std::vector<const std::string*>* s1,

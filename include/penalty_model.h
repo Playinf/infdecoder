@@ -14,8 +14,8 @@ public:
     word_penalty_model();
     ~word_penalty_model();
 
-    word_penalty_model(const word_penalty_model& m) = delete;
-    word_penalty_model& operator=(const word_penalty_model& m) = delete;
+    word_penalty_model(const word_penalty_model&) = delete;
+    word_penalty_model& operator=(const word_penalty_model&) = delete;
 
     float get_penalty() const;
     unsigned int get_id() const;

@@ -113,7 +113,7 @@ rt_node::size_type rt_node::sort(heuristic_function func, unsigned int limit)
     if (size == 1)
         return size;
 
-    /* using partial_sort instead of sort */
+    // using partial_sort instead of sort
     std::partial_sort(begin, mid, end, rule_less());
 
     if (size <= limit)

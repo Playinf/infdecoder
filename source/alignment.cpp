@@ -9,12 +9,16 @@
 alignment::alignment(unsigned int size, unsigned int num)
 {
     alignment_vector.reserve(size);
-    nonterminal_map.resize(num);
+    index_map[0].resize(num);
+    index_map[1].resize(num);
+    nonterminal_map[0].resize(num);
+    nonterminal_map[1].resize(num);
+    nonterminal_number = num;
 }
 
 alignment::~alignment()
 {
-    /* do nothing */
+    // do nothing
 }
 
 const std::vector<alignment::align_type>& alignment::get_alignment() const
@@ -24,53 +28,74 @@ const std::vector<alignment::align_type>& alignment::get_alignment() const
 
 unsigned int alignment::get_nonterminal_map(unsigned int position) const
 {
-    return nonterminal_map[position];
+    return nonterminal_map[0][position];
 }
 
-unsigned int alignment::get_source_position(unsigned int position) const
+unsigned int alignment::get_nonterminal_map(unsigned int pos, unsigned int dir)
+    const
 {
-    unsigned int size = alignment_vector.size();
-    const unsigned int not_found = static_cast<unsigned int>(-1);
-
-    for (unsigned int i = 0; i < size; i++) {
-        auto& p = alignment_vector[i];
-
-        if (p.second == position)
-            return p.first;
-    }
-
-    return not_found;
+    return nonterminal_map[dir][pos];
 }
 
-unsigned int alignment::get_target_position(unsigned int position) const
+unsigned int alignment::get_source_nonterminal_index(unsigned int pos) const
 {
-    unsigned int size = alignment_vector.size();
-    const unsigned int not_found = static_cast<unsigned int>(-1);
+    for (unsigned int i = 0; i < nonterminal_number; i++) {
+        unsigned int position = index_map[0][i];
 
-    for (unsigned int i = 0; i < size; i++) {
-        auto& p = alignment_vector[i];
-
-        if (p.first == position)
-            return p.second;
+        if (position == pos)
+            return i;
     }
 
-    return not_found;
+    return static_cast<unsigned int>(-1);
+}
+
+unsigned int alignment::get_target_nonterminal_index(unsigned int pos) const
+{
+    for (unsigned int i = 0; i < nonterminal_number; i++) {
+        unsigned int position = index_map[1][i];
+
+        if (position == pos)
+            return i;
+    }
+
+    return static_cast<unsigned int>(-1);
+}
+
+unsigned int alignment::get_source_nonterminal_position(unsigned int idx) const
+{
+    if (idx >= nonterminal_number)
+        return static_cast<unsigned int>(-1);
+
+    return index_map[0][idx];
+}
+
+unsigned int alignment::get_target_nonterminal_position(unsigned int idx) const
+{
+    if (idx >= nonterminal_number)
+        return static_cast<unsigned int>(-1);
+
+    return index_map[1][idx];
 }
 
 std::size_t alignment::hash() const
 {
-    unsigned int s1 = alignment_vector.size();
-    unsigned int s2 = nonterminal_map.size();
     std::size_t hash_code = 0;
 
-    for (unsigned int i = 0; i < s1; i++) {
-        auto& p = alignment_vector[i];
-        hash_code = hash_combine(hash_code, p.first);
-        hash_code = hash_combine(hash_code, p.second);
+    for (auto& val : alignment_vector) {
+        hash_code = hash_combine(hash_code, val.first);
+        hash_code = hash_combine(hash_code, val.second);
     }
 
-    for (unsigned int i = 0; i < s2; i++) {
-        unsigned int val = nonterminal_map[i];
+    // only need source side nonterminal order
+    for (auto& val : nonterminal_map[0]) {
+        hash_code = hash_combine(hash_code, val);
+    }
+
+    for (auto& val : index_map[0]) {
+        hash_code = hash_combine(hash_code, val);
+    }
+
+    for (auto& val : index_map[1]) {
         hash_code = hash_combine(hash_code, val);
     }
 
@@ -79,25 +104,12 @@ std::size_t alignment::hash() const
 
 int alignment::compare(const alignment& a) const
 {
-    auto& nonterm_map = a.nonterminal_map;
     auto& align_vec = a.alignment_vector;
-    unsigned int size1 = nonterminal_map.size();
-    unsigned int size2 = nonterm_map.size();
-
-    unsigned int size;
+    unsigned int size1 = nonterminal_number;
+    unsigned int size2 = a.nonterminal_number;
 
     if (size1 != size2)
         return size1 - size2;
-
-    size = size1;
-
-    for (unsigned int i = 0; i < size; i++) {
-        unsigned int index1 = nonterminal_map[i];
-        unsigned int index2 = nonterm_map[i];
-
-        if (index1 != index2)
-            return index1 - index2;
-    }
 
     size1 = alignment_vector.size();
     size2 = align_vec.size();
@@ -105,8 +117,9 @@ int alignment::compare(const alignment& a) const
     if (size1  != size2)
         return size1 - size2;
 
-    size = size1;
+    unsigned size = size1;
 
+    // compare alignment
     for (unsigned int i = 0; i < size; i++) {
         auto& p1 = alignment_vector[i];
         auto& p2 = align_vec[i];
@@ -116,6 +129,33 @@ int alignment::compare(const alignment& a) const
 
         if (p1.second != p2.second)
             return p1.second - p2.second;
+    }
+
+    // compare nonterminal order, only need source side
+    for (unsigned int i = 0; i < nonterminal_number; i++) {
+        unsigned int pos1 = nonterminal_map[0][i];
+        unsigned int pos2 = a.nonterminal_map[0][i];
+
+        if (pos1 != pos2)
+            return pos1 - pos2;
+    }
+
+    // compare index map
+    for (unsigned int i = 0; i < nonterminal_number; i++) {
+        unsigned int pos1 = index_map[0][i];
+        unsigned int pos2 = a.index_map[0][i];
+
+        if (pos1 != pos2)
+            return pos1 - pos2;
+    }
+
+    // compare index map
+    for (unsigned int i = 0; i < nonterminal_number; i++) {
+        unsigned int pos1 = index_map[1][i];
+        unsigned int pos2 = a.index_map[1][i];
+
+        if (pos1 != pos2)
+            return pos1 - pos2;
     }
 
     return 0;
@@ -128,5 +168,11 @@ void alignment::add_alignment(unsigned int source, unsigned int target)
 
 void alignment::add_nonterminal_map(unsigned int source, unsigned int target)
 {
-    nonterminal_map[source] = target;
+    nonterminal_map[0][source] = target;
+    nonterminal_map[1][target] = source;
 }
+
+ void alignment::add_index_map(unsigned int p, unsigned int i, unsigned int d)
+ {
+     index_map[d][i] = p;
+ }

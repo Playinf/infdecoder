@@ -13,11 +13,10 @@
 
 class lm_state : public state {
 public:
-    typedef unsigned int size_type;
     lm_state(const hypothesis* hypo, unsigned int id);
     ~lm_state();
 
-    lm_state& operator=(const lm_state& s) = delete;
+    lm_state& operator=(const lm_state&) = delete;
 
     float get_score() const;
     const std::vector<const std::string*>* get_prefix() const;

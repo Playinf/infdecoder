@@ -5,23 +5,16 @@
 translation_model::translation_model()
 {
     feature_number = 0;
-    rule_table = nullptr;
 }
 
 translation_model::~translation_model()
 {
-    if (rule_table != nullptr)
-        delete rule_table;
+    // do nothing
 }
 
 unsigned int translation_model::get_id() const
 {
     return id;
-}
-
-rule_tree* translation_model::get_rule_tree() const
-{
-    return rule_table;
 }
 
 unsigned int translation_model::get_feature_number() const
@@ -57,7 +50,25 @@ void translation_model::add_feature(unsigned int id)
     feature_number++;
 }
 
-void translation_model::add_rule_tree(rule_tree* tree)
+/* rule_translation_model */
+
+rule_translation_model::rule_translation_model()
+{
+    rule_table = nullptr;
+}
+
+rule_translation_model::~rule_translation_model()
+{
+    if (rule_table != nullptr)
+        delete rule_table;
+}
+
+rule_tree* rule_translation_model::get_rule_tree() const
+{
+    return rule_table;
+}
+
+void rule_translation_model::add_rule_tree(rule_tree* tree)
 {
     rule_table = tree;
 }

@@ -15,7 +15,7 @@ lm_state::lm_state(const hypothesis* hypo, unsigned int id)
 
 lm_state::~lm_state()
 {
-    /* do nothing */
+    // do nothing
 }
 
 float lm_state::get_score() const
@@ -72,7 +72,7 @@ void lm_state::calculate_prefix_suffix(unsigned int order)
 
     ngram.reserve(2 * terminal_number);
 
-    /* calculate prefix and suffix */
+    // calculate prefix and suffix
     for (unsigned int i = 0; i < rule_body_size; ++i) {
         const symbol* sym = rule_body[i];
 

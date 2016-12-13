@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include <symbol.h>
 
-/* static symbol table instance */
+// static symbol table instance
 symbol_table symbol_table::instance;
 
 symbol::symbol()
@@ -31,7 +31,7 @@ symbol::symbol(const std::string& name, symbol_type type)
 
 symbol::~symbol()
 {
-    /* do nothing */
+    // do nothing
 }
 
 const std::string* symbol::get_name() const
@@ -65,12 +65,12 @@ bool symbol::operator==(const symbol& sym) const
 
 symbol_table::symbol_table()
 {
-    /* do nothing */
+    // do nothing
 }
 
 symbol_table::~symbol_table()
 {
-    /* do nothing */
+    // do nothing
 }
 
 unsigned int symbol_table::size() const
@@ -93,7 +93,7 @@ const symbol* symbol_table::search_symbol(const std::string& s, bool terminal)
     if (iter != symbol_set.end())
         return &(*iter);
 
-    /* not in the symbol set */
+    // not in the symbol set
     mutex.lock();
     auto r1 = string_set.insert(s);
     symbol tmp(*r1.first, terminal);

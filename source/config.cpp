@@ -8,7 +8,7 @@
 #include <utility.h>
 #include <parameter.h>
 
-/* instance variable */
+// instance variable
 configuration configuration::instance;
 
 configuration::configuration()
@@ -124,12 +124,12 @@ parameter* configuration::get_parameter() const
     return parameter_set;
 }
 
-unknow_word_handler configuration::get_unknow_word_handler() const
+unknown_word_handler configuration::get_unknown_word_handler() const
 {
     return handler;
 }
 
-void configuration::set_unknow_word_handler(unknow_word_handler handler)
+void configuration::set_unknown_word_handler(unknown_word_handler handler)
 {
     this->handler = handler;
 }

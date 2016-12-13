@@ -14,7 +14,7 @@ class symbol;
 class hypothesis;
 class trellis_path;
 
-typedef rule* (*unknow_word_handler)(const symbol* word);
+typedef rule* (*unknown_word_handler)(const symbol* word);
 typedef void (*hypothesis_handler)(const hypothesis* hypo, std::string& out);
 typedef void (*nbest_handler)(const trellis_path* path, std::string& out);
 

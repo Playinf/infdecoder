@@ -1,4 +1,5 @@
 /* utility.cpp */
+#include <sstream>
 #include <utility.h>
 
 std::size_t sring_hash(const char* str)
@@ -9,7 +10,7 @@ std::size_t sring_hash(const char* str)
 
     while (*name) {
         h = (h << 4) + *name++;
-        if (g = (h &0xf0000000))
+        if ((g = (h & 0xf0000000)))
             h ^= g >> 24;
         h &= ~g;
     }
@@ -35,6 +36,25 @@ std::size_t hash_combine(std::size_t v1, std::size_t v2)
     val ^= v2 + 0x9e3779b9 + (v1 << 6) + (v1 >> 2);
 
     return val;
+}
+
+void string_join(std::vector<std::string>& vec, const std::string& sep,
+    std::string& out)
+{
+    unsigned int size = vec.size();
+
+    if (size == 0)
+        return;
+
+    std::stringstream sstream;
+
+    sstream << vec[0];
+
+    for (unsigned int i = 1; i < size; i++) {
+        sstream << sep << vec[i];
+    }
+
+    out = sstream.str();
 }
 
 void string_split(const std::string& s, const std::string& sep,

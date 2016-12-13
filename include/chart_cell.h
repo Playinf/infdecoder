@@ -12,7 +12,6 @@
 #include <map>
 #include <set>
 #include <vector>
-#include <utility>
 
 class beam;
 class symbol;
@@ -25,6 +24,9 @@ public:
     typedef std::vector<hypothesis*> hypothesis_list;
     chart_cell();
     ~chart_cell();
+
+    chart_cell(const chart_cell&) = delete;
+    chart_cell& operator=(const chart_cell&) = delete;
 
     const symbol_set& get_source_start_symbol_set() const;
     const symbol_set& get_target_start_symbol_set() const;

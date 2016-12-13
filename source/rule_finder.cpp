@@ -38,10 +38,10 @@ void rule_finder::initialize(input_type* input, chart* table)
     partial_rule_table = new std::vector<partial_rule_set*>(size);
 
     for (unsigned int i = 0; i < size; i++) {
-        partial_rule* inital_rule = new partial_rule(root, nullptr, 0);
+        partial_rule* initial_rule = new partial_rule(root, nullptr, 0);
         partial_rule_set* rules = new partial_rule_set(size - i + 1);
 
-        rules->insert_partial_rule(inital_rule);
+        rules->insert_partial_rule(initial_rule);
         (*partial_rule_table)[i] = rules;
     }
 }
@@ -72,15 +72,13 @@ void rule_finder::find(size_type start, size_type end,
         unsigned int len = end - start + 1;
         const rt_node* node = r->get_node();
 
-        /* already covered */
+        // already covered
         if (rule_start > end)
             continue;
 
-        /*
-         * expand rules
-         */
+        // expand rules
 
-        /* match a terminal symbol */
+        // match a terminal symbol
         if (rule_start == end) {
             const symbol* sym = input->at(end);
             rt_node* child = tree->find_child(node, sym);
@@ -92,7 +90,7 @@ void rule_finder::find(size_type start, size_type end,
             }
         }
 
-        /* we do not allow match unary non-lexical rules here */
+        // we do not allow match unary non-lexical rules here
         if (rule_start == start && end > start)
             rule_end = end - 1;
         else
@@ -100,7 +98,7 @@ void rule_finder::find(size_type start, size_type end,
 
         len = rule_end - start + 1;
 
-        /* match a nonterminal symbol */
+        // match a nonterminal symbol
         chart_cell* cell = table->get_cell(rule_start, rule_end);
         auto& src_set = cell->get_source_start_symbol_set();
         auto& tgt_set = cell->get_target_start_symbol_set();
@@ -112,7 +110,6 @@ void rule_finder::find(size_type start, size_type end,
                 if (child != nullptr) {
                     auto hypothesis_list = cell->get_hypothesis_list(tgt_sym);
                     partial_rule* new_rule = new partial_rule(child, r, len);
-                    new_rule->set_span(rule_start, rule_end);
                     new_rule->set_hypothesis_list(hypothesis_list);
                     rule_set->insert_partial_rule(new_rule);
                 }
@@ -120,7 +117,7 @@ void rule_finder::find(size_type start, size_type end,
         }
     }
 
-    /* insert all applicable rules into ouput parameter */
+    // insert all applicable rules into output parameter
     unsigned int position = end - start + 1;
     auto& applicable_rule_list = *rule_set->get_partial_rule_list(position);
     size_type list_size = applicable_rule_list.size();
@@ -132,7 +129,6 @@ void rule_finder::find(size_type start, size_type end,
         if (applicable_rules == nullptr)
             continue;
 
-        //print_partial_rule(r);
         set.add_complete_rule(r);
     }
 }

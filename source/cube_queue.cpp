@@ -4,6 +4,7 @@
 
 cube_queue::cube_queue()
 {
+    // do nothing
 }
 
 cube_queue::~cube_queue()

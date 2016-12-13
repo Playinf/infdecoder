@@ -20,7 +20,7 @@ public:
     rule_dimension(std::vector<const rule*>* rules, unsigned int pos);
     ~rule_dimension();
 
-    rule_dimension& operator=(const rule_dimension& r) = delete;
+    rule_dimension& operator=(const rule_dimension&) = delete;
 
     const rule* get_rule() const;
     unsigned int get_position() const;
@@ -37,7 +37,7 @@ public:
     hypothesis_dimension(std::vector<hypothesis*>* hypo, unsigned int num);
     ~hypothesis_dimension();
 
-    //hypothesis_dimension& operator=(const hypothesis_dimension& h) = delete;
+    //hypothesis_dimension& operator=(const hypothesis_dimension&) = delete;
 
     unsigned int get_position() const;
     const hypothesis* get_hypothesis() const;

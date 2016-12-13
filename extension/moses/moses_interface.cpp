@@ -8,12 +8,12 @@
 #include <parameter.h>
 #include <translation_model.h>
 
-/* defined in moses_model.cpp */
+// defined in moses_model.cpp
 void load_moses_model();
 void load_model_from_file();
-/* defined in moses_config_loader.cpp */
+// defined in moses_config_loader.cpp
 void load_moses_options(int argc, char** argv);
-/* defined in standard.cpp */
+// defined in standard.cpp
 void translate();
 void singel_thread_translate();
 

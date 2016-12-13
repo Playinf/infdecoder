@@ -4,7 +4,7 @@
 #include <trellis.h>
 #include <hypothesis.h>
 
-/* trellis_node */
+// trellis_node
 trellis_node::trellis_node(const hypothesis* hypo)
 {
     this->hypo = hypo;
@@ -100,7 +100,7 @@ void trellis_node::create_children()
 
     children.reserve(size);
 
-    /* recursively create child and push into vector */
+    // recursively create child and push into vector
     for (size_t i = 0; i < size; i++) {
         const hypothesis* h = hypo->get_previous_hypothesis(i);
         trellis_node* node = new trellis_node(h);
@@ -124,7 +124,7 @@ void trellis_node::create_children(const trellis_node* root,
     }
 }
 
-/* trellis_path */
+// trellis_path
 trellis_path::trellis_path(const hypothesis* hypo)
 {
     unsigned int feature_num = hypo->get_feature_number();
@@ -195,7 +195,7 @@ void trellis_path::output(std::vector<const std::string*>* sentence) const
     final_node->output(sentence);
 }
 
-/* trellis_detour */
+// trellis_detour
 trellis_detour::trellis_detour(std::shared_ptr<const trellis_path> base_path,
         const trellis_node* substituted, const hypothesis* replacement)
 {
@@ -210,7 +210,7 @@ trellis_detour::trellis_detour(std::shared_ptr<const trellis_path> base_path,
 
 trellis_detour::~trellis_detour()
 {
-    /* do nothing */
+    // do nothing
 }
 
 const trellis_path* trellis_detour::get_base_path() const

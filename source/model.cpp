@@ -3,6 +3,7 @@
 #include <exception>
 #include <model.h>
 #include <rule_tree.h>
+#include <penalty_model.h>
 #include <language_model.h>
 #include <translation_model.h>
 
@@ -15,9 +16,9 @@ model::~model()
 {
     unsigned int lm_num = language_model_vector.size();
     unsigned int tm_num = translation_model_vector.size();
+    unsigned int wm_num = word_penalty_model_vector.size();
 
-    /* release memory */
-
+    // release memory
     for (unsigned int i = 0; i < lm_num; i++) {
         language_model* lm = language_model_vector[i];
         delete lm;
@@ -26,6 +27,11 @@ model::~model()
     for (unsigned int i = 0; i < tm_num; i++) {
         translation_model* tm = translation_model_vector[i];
         delete tm;
+    }
+
+    for (unsigned int i = 0; i < wm_num; i++) {
+        word_penalty_model* wm = word_penalty_model_vector[i];
+        delete wm;
     }
 }
 
@@ -159,16 +165,16 @@ void model::set_feature_function(unsigned int id, feature_function func)
         throw std::exception();
 }
 
-unsigned int model::add_feature(const std::string& name, const std::string& des)
+unsigned int model::add_feature(const std::string& n, const std::string& des)
 {
-    auto result = feature_id_map.find(name);
+    auto result = feature_id_map.find(n);
 
     if (result != feature_id_map.end())
         return result->second;
 
-    feature_name_map.push_back(name);
+    feature_name_map.push_back(n);
     feature_description_map.push_back(des);
-    feature_id_map[name] = feature_number;
+    feature_id_map[n] = feature_number;
 
     return feature_number++;
 }

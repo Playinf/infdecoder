@@ -15,6 +15,7 @@
 class lexer;
 class parser;
 class hypothesis;
+class information;
 class trellis_path;
 
 class decoder {
@@ -23,14 +24,15 @@ public:
     decoder();
     ~decoder();
 
-    decoder(const decoder& d) = delete;
-    decoder& operator=(const decoder& d) = delete;
+    decoder(const decoder&) = delete;
+    decoder& operator=(const decoder&) = delete;
 
     hypothesis* get_best_hypothesis() const;
     void get_nbest_list(path_vector& vec) const;
 
     void process(const std::string& sentence);
 private:
+    information* info;
     lexer* lexical_analyzer;
     parser* syntax_analyzer;
 };

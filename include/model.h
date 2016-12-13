@@ -43,7 +43,7 @@ public:
     void push_weight(float weight);
     void push_weight(std::vector<float>& weight);
     void add_language_model(language_model* lm);
-    void add_translation_model(translation_model* lm);
+    void add_translation_model(translation_model* tm);
     void add_word_penalty_model(word_penalty_model* w);
     void set_feature_source(unsigned int id, language_model* lm);
     void set_feature_source(unsigned int id, translation_model* tm);

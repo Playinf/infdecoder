@@ -1,6 +1,6 @@
 /* partial_rule.cpp */
-#include <symbol.h>
 #include <rule.h>
+#include <symbol.h>
 #include <rule_tree.h>
 #include <hypothesis.h>
 #include <partial_rule.h>
@@ -24,7 +24,7 @@ partial_rule::partial_rule(const rt_node* node, partial_rule* parent,
 
 partial_rule::~partial_rule()
 {
-    /* do nothing */
+    // do nothing
 }
 
 unsigned int partial_rule::get_length() const
@@ -56,23 +56,12 @@ std::vector<hypothesis*>* partial_rule::get_hypothesis_list() const
     return nonterminal_hypothesis_list;
 }
 
-const std::pair<unsigned int, unsigned int>& partial_rule::get_span() const
-{
-    return span;
-}
-
 bool partial_rule::is_expandable() const
 {
     if (node)
         return !node->is_leaf();
 
     return false;
-}
-
-void partial_rule::set_span(unsigned int begin, unsigned int end)
-{
-    span.first = begin;
-    span.second = end;
 }
 
 void partial_rule::set_hypothesis_list(std::vector<hypothesis*>* hlist)
@@ -82,7 +71,7 @@ void partial_rule::set_hypothesis_list(std::vector<hypothesis*>* hlist)
 
 partial_rule_set::partial_rule_set(size_type size) : partial_rules(size)
 {
-    /* do nothing */
+    // do nothing
 }
 
 partial_rule_set::~partial_rule_set()

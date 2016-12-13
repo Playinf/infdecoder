@@ -10,16 +10,19 @@
 #include <trellis.h>
 #include <utility.h>
 #include <rule_tree.h>
+#include <information.h>
 #include <translation_model.h>
 
 decoder::decoder()
 {
+    info = nullptr;
     lexical_analyzer = nullptr;
     syntax_analyzer = nullptr;
 }
 
 decoder::~decoder()
 {
+    delete info;
     delete lexical_analyzer;
     delete syntax_analyzer;
 }
@@ -44,11 +47,11 @@ void decoder::process(const std::string& sentence)
     std::vector<rule_tree*> tree_vec;
     configuration* config = configuration::get_instance();
     model* system_model = config->get_model();
-    unknow_word_handler handler;
+    unknown_word_handler handler;
     unsigned int tm_number = system_model->get_translation_model_number();
 
     string_split(sentence, seperator, word_seq);
-    handler = config->get_unknow_word_handler();
+    handler = config->get_unknown_word_handler();
 
     lexical_analyzer = new lexer();
     lexical_analyzer->set_input(word_seq);
@@ -60,10 +63,19 @@ void decoder::process(const std::string& sentence)
 
     for (unsigned int i = 0; i < tm_number - 1; i++) {
         translation_model* tm = system_model->get_translation_model(i);
-        rule_tree* tree = tm->get_rule_tree();
+        rule_translation_model* rtm;
+
+        rtm = static_cast<rule_translation_model*>(tm);
+
+        if (rtm == nullptr)
+            continue;
+
+        rule_tree* tree = rtm->get_rule_tree();
         tree_vec.push_back(tree);
     }
 
+    info = new information();
+    info->set_sentence(&lexical_analyzer->get_output());
     syntax_analyzer = new parser(&tree_vec);
-    syntax_analyzer->parse(lexical_analyzer->get_output());
+    syntax_analyzer->parse(info);
 }

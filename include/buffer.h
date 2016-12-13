@@ -19,8 +19,8 @@ public:
     output_buffer(std::ostream* stream);
     ~output_buffer();
 
-    output_buffer(const output_buffer& buffer) = delete;
-    output_buffer& operator=(const output_buffer& buffer) = delete;
+    output_buffer(const output_buffer&) = delete;
+    output_buffer& operator=(const output_buffer&) = delete;
 
     void write(const std::string& str, unsigned int id);
 private:

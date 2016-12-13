@@ -30,7 +30,8 @@ public:
     rt_node(const symbol* src, const symbol* tgt);
     ~rt_node();
 
-    rt_node& operator=(const rt_node& n) = delete;
+    rt_node& operator=(const rt_node&) = delete;
+
     bool operator==(const rt_node& node) const;
 
     bool is_leaf() const;

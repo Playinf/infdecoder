@@ -1,5 +1,6 @@
 /* chart_cell.cpp */
 #include <string>
+#include <utility>
 #include <beam.h>
 #include <cube.h>
 #include <config.h>
@@ -10,6 +11,7 @@
 
 chart_cell::chart_cell()
 {
+    // do nothing
 }
 
 chart_cell::~chart_cell()

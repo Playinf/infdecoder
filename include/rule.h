@@ -24,8 +24,8 @@ public:
     rule(size_type size);
     ~rule();
 
-    rule(const rule& r) = delete;
-    rule& operator=(const rule& r) = delete;
+    rule(const rule&) = delete;
+    rule& operator=(const rule&) = delete;
 
     unsigned int get_id() const;
     float get_heuristic_score() const;

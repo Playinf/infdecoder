@@ -14,10 +14,12 @@
 
 task::task()
 {
+    // do nothing
 }
 
 task::~task()
 {
+    // do nothing
 }
 
 unsigned int task::get_id() const

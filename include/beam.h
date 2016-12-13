@@ -24,8 +24,8 @@ public:
     beam(size_type histogram, float threshold);
     ~beam();
 
-    beam(const beam& b) = delete;
-    beam& operator=(const beam& b) = delete;
+    beam(const beam&) = delete;
+    beam& operator=(const beam&) = delete;
 
     std::vector<hypothesis*>* get_sorted_hypothesis_list();
 

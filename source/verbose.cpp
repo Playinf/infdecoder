@@ -4,6 +4,8 @@
 #include <iostream>
 #include <beam.h>
 #include <rule.h>
+#include <model.h>
+#include <config.h>
 #include <symbol.h>
 #include <verbose.h>
 #include <cube_item.h>
@@ -11,6 +13,7 @@
 #include <chart_cell.h>
 #include <hypothesis.h>
 #include <partial_rule.h>
+#include <translation_model.h>
 #include <translation_option.h>
 
 static void output_hypothesis(const hypothesis* hypo, std::string& out)
@@ -112,10 +115,7 @@ static void output_partial_rule(const partial_rule* r, std::string& out)
         string_stream << *src_sym->get_name();
 
     if (tgt_sym != nullptr) {
-        auto& span = r->get_span();
         string_stream << "-" << *tgt_sym->get_name();
-        string_stream << "[" << span.first << ", ";
-        string_stream << span.second << "]";
     }
 
     out = string_stream.str();
@@ -149,6 +149,12 @@ void to_string(const rule* r, std::string& out)
     float score = r->get_heuristic_score();
     std::string str_rep;
 
+    configuration* config = configuration::get_instance();
+    model* system_model = config->get_model();
+    unsigned int tm_id = r->get_id();
+    unsigned int tm_num = system_model->get_translation_model_number();
+    translation_model* tm = system_model->get_translation_model(tm_id);
+
     to_string(lhs, str_rep);
     string_stream << str_rep << " -> ";
 
@@ -158,7 +164,20 @@ void to_string(const rule* r, std::string& out)
         string_stream << str_rep << " ";
     }
 
-    string_stream << " ||| " << score;
+    string_stream << " ||| ";
+
+    if (tm_id != tm_num - 1) {
+        size = tm->get_feature_number();
+
+        for (unsigned int i = 0; i < size; i++) {
+            string_stream << r->get_score(i) << " ";
+        }
+
+        string_stream << " ||| " << score;
+    } else {
+        // oov rule
+        string_stream << " ||| -100";
+    }
 
     out = string_stream.str();
 }

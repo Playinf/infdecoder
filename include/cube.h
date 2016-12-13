@@ -26,8 +26,8 @@ public:
     cube(translation_option* option);
     ~cube();
 
-    cube(const cube& c) = delete;
-    cube& operator=(const cube& c) = delete;
+    cube(const cube&) = delete;
+    cube& operator=(const cube&) = delete;
 
     float get_best_score() const;
 
@@ -51,8 +51,8 @@ public:
     cube_queue();
     ~cube_queue();
 
-    cube_queue(const cube_queue& q) = delete;
-    cube_queue& operator=(const cube_queue& q) = delete;
+    cube_queue(const cube_queue&) = delete;
+    cube_queue& operator=(const cube_queue&) = delete;
 
     bool empty() const;
     size_type size() const;

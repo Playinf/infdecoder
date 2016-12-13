@@ -3,17 +3,17 @@
 #include <alignment.h>
 #include <shared_mutex.h>
 
-/* global object */
+// global object
 alignment_table alignment_table::instance;
 
 alignment_table::alignment_table()
 {
-    /* do nothing */
+    // do nothing
 }
 
 alignment_table::~alignment_table()
 {
-    /* do nothing */
+    // do nothing
 }
 
 alignment_table* alignment_table::get_instance()

@@ -34,7 +34,7 @@ inline void parse_nonterminal(const std::string& str, std::string& lhs)
     lhs = str.substr(1, str.size() - 2);
 }
 
-inline void parser_nonterminal_map(const std::string& str, std::string& src,
+inline void parse_nonterminal_map(const std::string& str, std::string& src,
     std::string& tgt)
 {
     std::string::size_type pos = str.find(']');
@@ -69,7 +69,7 @@ static void parse_alignment(std::string& str,
 
     unsigned int size = align_str.size();
 
-    /* no alignment specified */
+    // no alignment specified
     if (!size)
         return;
 
@@ -107,7 +107,7 @@ static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
     parse_nonterminal(tgt_lhs_str, tgt_lhs);
     tgt_lhs_symbol = table->search_symbol(tgt_lhs, false);
 
-    /* insert source side rule */
+    // insert source side rule
     for (unsigned int i = 0; i < src_size - 1; i++) {
         std::string& token = src[i];
         std::string src_nonterminal;
@@ -116,7 +116,7 @@ static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
         if (is_nonterminal(token)) {
             const symbol* s1;
             const symbol* s2;
-            parser_nonterminal_map(token, src_nonterminal, tgt_nonterminal);
+            parse_nonterminal_map(token, src_nonterminal, tgt_nonterminal);
             s1 = table->search_symbol(src_nonterminal, false);
             s2 = table->search_symbol(tgt_nonterminal, false);
             p = rule_table.insert_node(p, s1, s2);
@@ -132,7 +132,7 @@ static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
     target_rule->set_start_symbol(src_lhs_symbol, tgt_lhs_symbol);
     nonterminal_number = 0;
 
-    /* create target side rule */
+    // create target side rule
     for (unsigned int i = 0; i < tgt_size - 1; i++) {
         std::string& token = tgt[i];
         std::string src_nonterminal;
@@ -140,7 +140,7 @@ static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
 
         if (is_nonterminal(token)) {
             const symbol* s2;
-            parser_nonterminal_map(token, src_nonterminal, tgt_nonterminal);
+            parse_nonterminal_map(token, src_nonterminal, tgt_nonterminal);
             s2 = table->search_symbol(tgt_nonterminal, false);
             target_rule->add_symbol(s2);
             tgt_nonterm_map.push_back(++nonterminal_number);
@@ -151,12 +151,12 @@ static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
         }
     }
 
-    /* insert scores */
+    // insert scores
     std::vector<float> score_vec;
     unsigned int prob_size = prob.size();
 
     for (unsigned int i = 0; i < prob_size; i++) {
-        /* convert to log probability */
+        // convert to log probability
         float score = std::log(prob[i]);
         score_vec.push_back(floor_score(score));
     }
@@ -166,11 +166,12 @@ static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
     unsigned int align_size = align.size();
     alignment rule_align(align_size, nonterminal_number);
 
-    /* insert alignments */
+    // insert alignments
     for (unsigned int i = 0; i < align_size; i++) {
         auto& p = align[i];
         rule_align.add_alignment(p.first, p.second);
 
+        // not a nonterminal
         if (!src_nonterm_map[p.first])
             continue;
 
@@ -178,6 +179,8 @@ static void insert_rule(rule_tree& rule_table, std::vector<std::string>& src,
         unsigned int tgt_idx = tgt_nonterm_map[p.second] - 1;
 
         rule_align.add_nonterminal_map(src_idx, tgt_idx);
+        rule_align.add_index_map(p.first, src_idx, direction::source);
+        rule_align.add_index_map(p.second, tgt_idx, direction::target);
     }
 
     alignment_table* align_table = alignment_table::get_instance();
@@ -214,7 +217,7 @@ static void analyze_moses_rule(std::vector<std::string>& src,
         if (is_nonterminal(token)) {
             const symbol* s1;
             const symbol* s2;
-            parser_nonterminal_map(token, src_nonterminal, tgt_nonterminal);
+            parse_nonterminal_map(token, src_nonterminal, tgt_nonterminal);
             s1 = table->search_symbol(src_nonterminal);
             s2 = table->search_symbol(tgt_nonterminal);
             std::cout << *s1->get_name();
@@ -243,7 +246,7 @@ static void analyze_moses_rule(std::vector<std::string>& src,
         if (is_nonterminal(token)) {
             const symbol* s1;
             const symbol* s2;
-            parser_nonterminal_map(token, src_nonterminal, tgt_nonterminal);
+            parse_nonterminal_map(token, src_nonterminal, tgt_nonterminal);
             s1 = table->search_symbol(src_nonterminal);
             s2 = table->search_symbol(tgt_nonterminal);
             std::cout << *s1->get_name();

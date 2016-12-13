@@ -14,6 +14,7 @@
 #include <chart_cell.h>
 #include <functional.h>
 #include <hypothesis.h>
+#include <information.h>
 #include <rule_finder.h>
 #include <translation_option.h>
 
@@ -79,8 +80,8 @@ static void lazy_next(std::shared_ptr<const trellis_path> basepath,
 
 parser::parser(std::vector<rule_tree*>* tree_vec)
 {
-    input = nullptr;
     table = nullptr;
+    input = nullptr;
     tree_vector = tree_vec;
     applicable_translation_option_set = nullptr;
 
@@ -111,7 +112,8 @@ parser::~parser()
 
 void parser::parser_initialize()
 {
-    unsigned int size = input->size();
+    auto* sentence = input->get_sentence();
+    unsigned int size = sentence->size();
     unsigned int n = rule_lookup_manager.size();
 
     clear();
@@ -120,7 +122,7 @@ void parser::parser_initialize()
 
     for (unsigned int i = 0; i < n; i++) {
         rule_finder* finder = rule_lookup_manager[i];
-        finder->initialize(input, table);
+        finder->initialize(sentence, table);
     }
 }
 
@@ -138,7 +140,8 @@ hypothesis* parser::get_best_hypothesis() const
 
 void parser::get_all_hypothesis(std::vector<hypothesis*>& hypo_vec) const
 {
-    chart_cell* cell = table->get_cell(0, input->size() - 1);
+    auto sentence = input->get_sentence();
+    chart_cell* cell = table->get_cell(0, sentence->size() - 1);
 
     cell->get_all_hypothesis(&hypo_vec);
 }
@@ -156,11 +159,12 @@ void parser::get_nbest(unsigned int num, path_vector* path_list) const
     if (num == 0)
         return;
 
-    chart_cell* cell = table->get_cell(0, input->size() - 1);
+    auto sentence = input->get_sentence();
+    chart_cell* cell = table->get_cell(0, sentence->size() - 1);
     cell->get_all_hypothesis(&hypothesis_list);
     unsigned int size = hypothesis_list.size();
 
-    /* no hypothesis */
+    // no hypothesis
     if (size == 0)
         return;
 
@@ -211,15 +215,37 @@ void parser::get_nbest(unsigned int num, path_vector* path_list) const
     }
 }
 
-void parser::parse(input_type& input)
+void parser::clear()
+{
+    unsigned int size = rule_lookup_manager.size();
+
+    for (unsigned int i = 0; i < size; i++) {
+        rule_finder* finder = rule_lookup_manager[i];
+        finder->clear();
+    }
+
+    if (table) {
+        delete table;
+        table = nullptr;
+    }
+
+    if (applicable_translation_option_set) {
+        delete applicable_translation_option_set;
+        applicable_translation_option_set = nullptr;
+    }
+}
+//#include <iostream>
+//#include <verbose.h>
+void parser::parse(information* input)
 {
     chart_cell* cell;
-    size_type n = input.size();
+    auto* sentence = input->get_sentence();
+    size_type n = sentence->size();
     size_type size = rule_lookup_manager.size();
     configuration* config = configuration::get_instance();
     unsigned int pop_limit = config->get_pop_limit();
 
-    this->input = &input;
+    this->input = input;
     parser_initialize();
 
     for (size_type len = 1; len <= n; len++) {
@@ -241,28 +267,13 @@ void parser::parse(input_type& input)
 
             }
 
+            //std::cout << "[" << i << ", " << j << "]" << std::endl;
+            //print_translation_option_set(applicable_translation_option_set);
+            applicable_translation_option_set->set_span(i, j);
+            applicable_translation_option_set->set_information(input);
             cell->decode(applicable_translation_option_set, pop_limit);
             cell->sort();
+            //print_chart_cell(cell);
         }
-    }
-}
-
-void parser::clear()
-{
-    unsigned int size = rule_lookup_manager.size();
-
-    for (unsigned int i = 0; i < size; i++) {
-        rule_finder* finder = rule_lookup_manager[i];
-        finder->clear();
-    }
-
-    if (table) {
-        delete table;
-        table = nullptr;
-    }
-
-    if (applicable_translation_option_set) {
-        delete applicable_translation_option_set;
-        applicable_translation_option_set = nullptr;
     }
 }

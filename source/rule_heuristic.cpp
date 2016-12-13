@@ -6,6 +6,7 @@
 #include <rule_tree.h>
 #include <language_model.h>
 #include <translation_model.h>
+#include <ngram_language_model.h>
 
 float hpb_rule_heuristic_function(const rule* r)
 {
@@ -16,6 +17,7 @@ float hpb_rule_heuristic_function(const rule* r)
     const float penalty = -1.0f;
     unsigned int tm_id = r->get_id();
     language_model* lm = system_model->get_language_model(0);
+    ngram_language_model* nlm = static_cast<ngram_language_model*>(lm);
     translation_model* tm = system_model->get_translation_model(tm_id);
     float lm_weight = system_model->get_weight(lm->get_feature_id());
     unsigned int id = system_model->get_feature_id("word penalty");
@@ -29,7 +31,7 @@ float hpb_rule_heuristic_function(const rule* r)
         if (sym->is_nonterminal())
             continue;
 
-        score += lm->word_probability(*sym->get_name());
+        score += nlm->probability(*sym->get_name());
     }
 
     size = tm->get_feature_number();

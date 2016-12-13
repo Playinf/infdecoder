@@ -1,5 +1,7 @@
 /* chart.cpp */
+#include <vector>
 #include <chart.h>
+#include <symbol.h>
 #include <chart_cell.h>
 
 chart::chart(size_type len)
@@ -7,8 +9,9 @@ chart::chart(size_type len)
     size = len;
     table = new chart_cell*[size];
 
-    for (size_type i = 0; i < size; i++)
+    for (size_type i = 0; i < size; i++) {
         table[i] = new chart_cell[size - i];
+    }
 }
 
 chart::~chart()

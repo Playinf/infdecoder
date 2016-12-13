@@ -4,7 +4,9 @@
 #include <state.h>
 #include <config.h>
 #include <symbol.h>
+#include <chart_cell.h>
 #include <hypothesis.h>
+#include <information.h>
 
 hypothesis::hypothesis(const rule* r)
 {
@@ -14,6 +16,7 @@ hypothesis::hypothesis(const rule* r)
     unsigned int nonterm_number = r->get_nonterminal_number();
 
     score = 0.0f;
+    input = nullptr;
     target_rule = r;
     terminal_number = r->get_terminal_number();
     hypothesis_vector = nullptr;
@@ -34,7 +37,7 @@ hypothesis::~hypothesis()
     if (hypothesis_vector != nullptr)
         delete hypothesis_vector;
 
-    /* recursively delete recombined hypothesis */
+    // recursively delete recombined hypothesis
     if (recombined_hypothesis != nullptr) {
         hypothesis* h = recombined_hypothesis;
         delete h;
@@ -49,6 +52,11 @@ const rule* hypothesis::get_rule() const
 float hypothesis::get_total_score() const
 {
     return score;
+}
+
+information* hypothesis::get_input() const
+{
+    return input;
 }
 
 unsigned int hypothesis::get_terminal_number() const
@@ -100,6 +108,11 @@ hypothesis* hypothesis::get_previous_hypothesis(unsigned int index) const
         return nullptr;
 
     return hypothesis_vector->at(index);
+}
+
+const std::pair<unsigned int, unsigned int>& hypothesis::get_span() const
+{
+    return span;
 }
 
 void hypothesis::evaluate_score()
@@ -160,9 +173,20 @@ int hypothesis::compare(const hypothesis* hypo) const
     return 0;
 }
 
+void hypothesis::set_input(information* input)
+{
+    this->input = input;
+}
+
 void hypothesis::set_partial_rule(const partial_rule *rule)
 {
     source_rule = rule;
+}
+
+void hypothesis::set_span(unsigned int start, unsigned int end)
+{
+    span.first = start;
+    span.second = end;
 }
 
 void hypothesis::set_previous_hypothesis(unsigned int index, hypothesis* h)

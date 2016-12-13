@@ -22,8 +22,8 @@ public:
     task();
     ~task();
 
-    task(const task& t) = delete;
-    task& operator=(const task& t) = delete;
+    task(const task&) = delete;
+    task& operator=(const task&) = delete;
 
     unsigned int get_id() const;
 
@@ -52,8 +52,8 @@ public:
     explicit task_manager(unsigned int thread_number);
     ~task_manager();
 
-    task_manager(const task_manager& manager) = delete;
-    task_manager& operator=(const task_manager& manager) = delete;
+    task_manager(const task_manager&) = delete;
+    task_manager& operator=(const task_manager&) = delete;
 
     bool get_stop_flag() const;
     unsigned int get_task_number() const;

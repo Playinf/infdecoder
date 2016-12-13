@@ -12,7 +12,7 @@ output_buffer::output_buffer(std::ostream* stream)
 
 output_buffer::~output_buffer()
 {
-    /* do nothing */
+    // do nothing
 }
 
 void output_buffer::write(const std::string& str, unsigned int id)

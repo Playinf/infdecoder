@@ -8,7 +8,7 @@ word_penalty_model::word_penalty_model()
 
 word_penalty_model::~word_penalty_model()
 {
-    /* do nothing */
+    // do nothing
 }
 
 float word_penalty_model::get_penalty() const

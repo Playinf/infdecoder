@@ -58,7 +58,7 @@ void lexer::process()
     sentence.push_back(eos);
 }
 
-void lexer::set_handler(unknow_word_handler handler)
+void lexer::set_handler(unknown_word_handler handler)
 {
     this->handler = handler;
 }

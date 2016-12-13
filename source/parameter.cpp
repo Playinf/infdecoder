@@ -6,23 +6,23 @@
 #include <utility.h>
 #include <parameter.h>
 
-/* beam search */
-/* moses −11.512925465 */
+// beam search
+// moses −11.512925465
 static const float DEFAULT_BEAM_THRESHOLD = -10000.0;
 static const unsigned int DEFAULT_BEAM_SIZE = 200;
-/* cube pruning */
+// cube pruning
 static const unsigned int DEFAULT_POP_LIMIT = 1000;
-/* parsing */
+// parsing
 static const unsigned int DEFAULT_SPAN_LIMIT = 20;
-/* model */
+// model
 static const unsigned int DEFAULT_FEATURE_NUMBER = 8;
-/* decoder */
+// decoder
 static const unsigned int DEFAULT_DISTINCT_NBEST = 0;
 static const unsigned int DEFAULT_NBEST_NUMBER = 1;
 static const unsigned int DEFAULT_THREAD_NUMBER = 1;
 
-enum parameter_type {
-    STRING, INTEGER, REAL, ARRAY
+enum class parameter_type {
+    string, integer, real, array
 };
 
 static parameter_type parse_parameter_type(const std::string& value)
@@ -31,15 +31,15 @@ static parameter_type parse_parameter_type(const std::string& value)
     char last = value[value.size() - 1];
 
     if (first == '\"' && last == '\"')
-        return STRING;
+        return parameter_type::string;
 
     if (first == '{' && last == '}')
-        return ARRAY;
+        return parameter_type::array;
 
     if (value.find('.') != value.npos)
-        return REAL;
+        return parameter_type::real;
 
-    return INTEGER;
+    return parameter_type::integer;
 }
 
 static void parse_parameter(const std::string& line, std::string& param,
@@ -61,7 +61,7 @@ parameter::parameter()
 
 parameter::~parameter()
 {
-    /* do nothing */
+    // do nothing
 }
 
 float parameter::get_real_parameter(const std::string& param) const
@@ -164,19 +164,19 @@ void parameter::load(const char* filename)
         std::string::size_type len;
 
         switch (type) {
-        case STRING:
+        case parameter_type::string:
             start = 1;
             end = pvalue.size() - 2;
             len = end - start + 1;
             string_parameter_map[pname] = pvalue.substr(start, len);
             break;
-        case INTEGER:
+        case parameter_type::integer:
             integer_parameter_map[pname] = std::stoi(pvalue);
             break;
-        case REAL:
+        case parameter_type::real:
             real_parameter_map[pname] = std::stod(pvalue);
             break;
-        case ARRAY:
+        case parameter_type::array:
             insert_array_parameter(pname, pvalue);
             break;
         default:

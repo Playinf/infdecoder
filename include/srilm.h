@@ -11,27 +11,37 @@
 
 #include <string>
 #include <vector>
+#include <ngram_language_model.h>
+
+#define override ;
 
 class Ngram;
 class Vocab;
 
-class srilm {
+class srilm : public ngram_language_model {
 public:
     srilm();
     srilm(unsigned int order);
     ~srilm();
 
-    srilm(const srilm& lm) = delete;
-    srilm& operator=(const srilm& lm) = delete;
+    srilm(const srilm&) = delete;
+    srilm& operator=(const srilm&) = delete;
 
-    void load(const char* filename);
-    void set_order(unsigned int order);
-    float sentence_probability(std::vector<std::string>& sentence);
-    float word_probability(std::vector<std::string>& context, void **state);
-    float word_probability(std::string* word, std::string** context, int len);
+    unsigned int get_order() const override;
+
+    void set_order(unsigned int n) override;
+    void load(const char* filename) override;
+    float probability(const std::string& word) override;
+    float probability(std::vector<const std::string*>& ngram) override;
+    void probability(const input_type& in, float& fs, float& ns) override;
 private:
+    float sentence_prob(std::vector<std::string>& sentence);
+    float word_prob(std::vector<std::string>& context, void** state);
+    float word_prob(std::string* word, std::string** ctx, int len);
+
     Ngram* lm;
     Vocab* vocab;
+    unsigned int order;
 };
 
 #endif /* __SRILM_H__ */

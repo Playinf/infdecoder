@@ -18,7 +18,7 @@ beam::beam(size_type histogram, float threshold)
 
 beam::~beam()
 {
-    /* delete all hypothesis in the beam */
+    // delete all hypothesis in the beam
     auto begin = hypothesis_set.begin();
     auto end = hypothesis_set.end();
     auto iter = begin;
@@ -125,7 +125,7 @@ void beam::insert_hypothesis(hypothesis* hypo)
         auto result = hypothesis_set.insert(hypo);
 
         if (result.second) {
-            /* inserted */
+            // inserted
 
             if (total_score > max_score)
                 max_score = total_score;
@@ -133,7 +133,7 @@ void beam::insert_hypothesis(hypothesis* hypo)
             if (size + 1 >= 2 * beam_size)
                 prune();
         } else {
-            /* recombining hypothesis */
+            // recombining hypothesis
             hypothesis* h = *result.first;
             float s1 = h->get_total_score();
             float s2 = total_score;

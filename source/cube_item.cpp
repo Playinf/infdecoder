@@ -1,4 +1,5 @@
 /* cube_item.cpp */
+#include <utility>
 #include <functional>
 #include <rule.h>
 #include <utility.h>
@@ -16,7 +17,7 @@ rule_dimension::rule_dimension(std::vector<const rule*>* rules,
 
 rule_dimension::~rule_dimension()
 {
-    /* do nothing */
+    // do nothing
 }
 
 const rule* rule_dimension::get_rule() const
@@ -53,7 +54,7 @@ hypothesis_dimension::hypothesis_dimension(std::vector<hypothesis*>* hypo,
 
 hypothesis_dimension::~hypothesis_dimension()
 {
-    /* do nothing */
+    // do nothing
 }
 
 unsigned int hypothesis_dimension::get_position() const
@@ -93,7 +94,7 @@ cube_item::cube_item(translation_option* option)
         hypothesis_position->reserve(num);
 
         for (unsigned int i = 0; i < num; i++) {
-            auto hypo_vec = option->get_hypothesis_vector(i);
+            auto hypo_vec = option->get_hypothesis_list(i);
             hypothesis_dimension dim(hypo_vec, 0);
             hypothesis_position->push_back(dim);
         }
@@ -176,6 +177,7 @@ unsigned int cube_item::get_hypothesis_position(unsigned int dim) const
 void cube_item::generate_hypothesis()
 {
     const rule* r = rule_position.get_rule();
+    std::pair<unsigned int, unsigned int> span;
     hypothesis* hypo = new hypothesis(const_cast<rule*>(r));
 
     if (hypothesis_position != nullptr) {
@@ -191,10 +193,14 @@ void cube_item::generate_hypothesis()
         }
     }
 
+    span = option->get_span();
+
+    hypo->set_span(span.first, span.second);
+    hypo->set_input(option->get_input());
+    hypo->set_partial_rule(option->get_rule());
     hypo->evaluate_score();
     generated_hypothesis = hypo;
     score = hypo->get_total_score();
-    hypo->set_partial_rule(option->get_rule());
 }
 
 bool cube_item::has_more_rules() const

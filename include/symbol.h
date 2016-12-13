@@ -27,8 +27,8 @@ public:
     symbol(const std::string& name, symbol_type type);
     ~symbol();
 
-    symbol& operator=(const symbol& sym) = delete;
-    bool operator==(const symbol& sym) const;
+    symbol& operator=(const symbol&) = delete;
+    bool operator==(const symbol&) const;
 
     const std::string* get_name() const;
     symbol_type get_type() const;

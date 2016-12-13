@@ -14,8 +14,8 @@ public:
     state() {} ;
     virtual ~state() {};
 
-    state(const state& s) = delete;
-    state& operator=(const state& s) = delete;
+    state(const state&) = delete;
+    state& operator=(const state&) = delete;
 
     virtual int compare(const state* s) const = 0;
 };

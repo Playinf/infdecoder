@@ -24,8 +24,8 @@ void shared_mutex::lock()
 bool shared_mutex::try_lock()
 {
     std::unique_lock<std::mutex> lk(mut_);
-    if (state_ == 0)
-    {
+
+    if (state_ == 0) {
         state_ = write_entered_;
         return true;
     }
@@ -53,13 +53,14 @@ bool shared_mutex::try_lock_shared()
 {
     std::unique_lock<std::mutex> lk(mut_);
     unsigned int num_readers = state_ & n_readers_;
-    if (!(state_ & write_entered_) && num_readers != n_readers_)
-    {
+
+    if (!(state_ & write_entered_) && num_readers != n_readers_) {
         ++num_readers;
         state_ &= ~n_readers_;
         state_ |= num_readers;
         return true;
     }
+
     return false;
 }
 
@@ -69,13 +70,11 @@ void shared_mutex::unlock_shared()
     unsigned int num_readers = (state_ & n_readers_) - 1;
     state_ &= ~n_readers_;
     state_ |= num_readers;
-    if (state_ & write_entered_)
-    {
+
+    if (state_ & write_entered_) {
         if (num_readers == 0)
             gate2_.notify_one();
-    }
-    else
-    {
+    } else {
         if (num_readers == n_readers_ - 1)
             gate1_.notify_one();
     }

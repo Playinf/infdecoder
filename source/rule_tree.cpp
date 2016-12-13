@@ -14,7 +14,7 @@ rule_tree::rule_tree()
 
 rule_tree::~rule_tree()
 {
-    /* do nothing */
+    // do nothing
 }
 
 rule_tree::size_type rule_tree::get_rule_number() const

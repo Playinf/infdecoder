@@ -14,6 +14,7 @@
 #include <utility>
 
 class rule;
+class symbol;
 class rule_tree;
 class hypothesis;
 
@@ -25,23 +26,20 @@ public:
     partial_rule(const rt_node* n, partial_rule* parent, size_type len);
     ~partial_rule();
 
-    partial_rule(const partial_rule& p) = delete;
-    partial_rule& operator=(const partial_rule& p) = delete;
+    partial_rule(const partial_rule&) = delete;
+    partial_rule& operator=(const partial_rule&) = delete;
 
     unsigned int get_length() const;
     const rt_node* get_node() const;
     const partial_rule* get_parent() const;
     const std::vector<const rule*>* get_rule() const;
     std::vector<hypothesis*>* get_hypothesis_list() const;
-    const std::pair<unsigned int, unsigned int>& get_span() const;
 
     bool is_expandable() const;
-    void set_span(unsigned int begin, unsigned int end);
     void set_hypothesis_list(std::vector<hypothesis*>* hlist);
 private:
     const rt_node* node;
     const partial_rule* parent;
-    std::pair<unsigned int, unsigned int> span;
     std::vector<hypothesis*>* nonterminal_hypothesis_list;
     unsigned int length;
 };
@@ -55,8 +53,8 @@ public:
     partial_rule_set(size_type size);
     ~partial_rule_set();
 
-    partial_rule_set(const partial_rule_set& p) = delete;
-    partial_rule_set& operator=(const partial_rule_set& p) = delete;
+    partial_rule_set(const partial_rule_set&) = delete;
+    partial_rule_set& operator=(const partial_rule_set&) = delete;
 
     const list_type* get_partial_rule_list(unsigned int end_pos) const;
     const list_type* get_expandable_rule_list() const;

@@ -11,8 +11,10 @@
 
 class hypothesis;
 
-typedef float (*feature_function)(const hypothesis* h, unsigned int id);
+typedef float (*feature_function)(const hypothesis*, unsigned int);
 
+float joint_model_feature_function(const hypothesis* h, unsigned int id);
+float lexical_model_feature_function(const hypothesis* h, unsigned int id);
 float language_model_feature_function(const hypothesis* h, unsigned int id);
 float translation_model_feature_function(const hypothesis* h, unsigned int id);
 float word_penalty_feature_function(const hypothesis* h, unsigned int id);

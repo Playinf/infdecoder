@@ -9,13 +9,14 @@ TESTDIR = ./test
 EXTDIR = ./extension
 EXTIODIR = $(EXTDIR)/io
 EXTMOSESDIR = $(EXTDIR)/moses
-SRIDIR = /home/playinf/Applications/srilm
+SRIDIR = #SRILM-PATH#
+NNJMDIR = #NNJM-PATH#
 
 CXX = g++
-CFLAGS = -Wall -O3 -I $(INCDIR) -std=c++0x
-LIBS = $(LIBDIR)/libsrilm.a $(LIBDIR)/liboolm.a $(LIBDIR)/libdstruct.a \
-       $(LIBDIR)/libmisc.a
-LDFLAGS = $(LIBS)
+CFLAGS = -Wall -O3 -I $(INCDIR) -I $(SRIDIR) -I $(NNJMDIR) -std=c++0x
+LIBS =  $(LIBDIR)/liboolm.a $(LIBDIR)/libdstruct.a $(LIBDIR)/libmisc.a \
+	$(LIBDIR)/libnnjm.a
+LDFLAGS = $(LIBS) -lgomp -lpthread
 
 SRC = $(wildcard $(SRCDIR)/*.cpp)
 SRC += $(wildcard $(EXTIODIR)/*.cpp)
@@ -45,4 +46,3 @@ lib:
 clean:
 	-rm -f $(SRCDIR)/*.o $(EXTIODIR)/*.o $(EXTMOSESDIR)/*.o
 	-rm -f -r $(BINDIR)
-

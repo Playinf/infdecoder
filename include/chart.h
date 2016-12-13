@@ -9,7 +9,11 @@
 #ifndef __CHART_H__
 #define __CHART_H__
 
+#include <vector>
+
+class symbol;
 class chart_cell;
+class information;
 
 class chart {
 public:
@@ -18,8 +22,8 @@ public:
     chart(size_type len);
     ~chart();
 
-    chart(const chart& c) = delete;
-    chart& operator=(const chart& c) = delete;
+    chart(const chart&) = delete;
+    chart& operator=(const chart&) = delete;
 
     chart_cell* get_cell(size_type start_pos, size_type end_pos) const;
 private:

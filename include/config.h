@@ -21,8 +21,8 @@ public:
     typedef void (*loader)(const char* filename);
     ~configuration();
 
-    configuration(const configuration& conf) = delete;
-    configuration& operator=(const configuration& conf) = delete;
+    configuration(const configuration&) = delete;
+    configuration& operator=(const configuration&) = delete;
 
     model* get_model() const;
     bool enable_distinct_nbest() const;
@@ -34,13 +34,13 @@ public:
     float get_beam_threshold(const std::string& nonterminal) const;
     unsigned int get_beam_size(const std::string& nonterminal) const;
     parameter* get_parameter() const;
-    unknow_word_handler get_unknow_word_handler() const;
+    unknown_word_handler get_unknown_word_handler() const;
 
     void load_weight();
     void load_parameter();
     void load_parameter_file(const char* filename);
     void load_parameter_file(const char* filename, loader param_loader);
-    void set_unknow_word_handler(unknow_word_handler handler);
+    void set_unknown_word_handler(unknown_word_handler handler);
 
     static configuration* get_instance();
 private:
@@ -58,7 +58,7 @@ private:
     std::vector<float> weight_vector;
     std::string rule_table_path;
     std::string special_rule_table_path;
-    unknow_word_handler handler;
+    unknown_word_handler handler;
 
     static configuration instance;
 };

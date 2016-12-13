@@ -8,6 +8,7 @@
 #include <rule_tree.h>
 #include <language_model.h>
 #include <translation_model.h>
+#include <ngram_language_model.h>
 
 inline float untransform_lm_score(float score)
 {
@@ -39,8 +40,15 @@ float moses_rule_heuristic_function(const rule* r)
 
     for (unsigned int i = 0; i < lm_number; i++) {
         language_model* lm = system_model->get_language_model(i);
+        ngram_language_model* ngram_lm;
+
+        ngram_lm = dynamic_cast<ngram_language_model*>(lm);
+
+        if (ngram_lm == nullptr)
+            continue;
+
         float lm_weight = system_model->get_weight(lm->get_feature_id());
-        unsigned int lm_order = lm->get_order();
+        unsigned int lm_order = ngram_lm->get_order();
         std::vector<const std::string*> ngram;
         unsigned int ngram_len = 0;
         float full_score = 0.0f;
@@ -61,7 +69,7 @@ float moses_rule_heuristic_function(const rule* r)
                     ngram[lm_order - 1] = str;
                 }
                 float f = 0.0f;
-                f = lm->word_probability(ngram);
+                f = ngram_lm->probability(ngram);
                 full_score += f;
             }
         }

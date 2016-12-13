@@ -29,8 +29,8 @@ void print_version()
     std::cout << "please contact playinf@stu.xmu.edu.cn" << std::endl;
 }
 
-/* moses extensions */
-void moses_translate(int argc, char** argv);
+// moses extensions
+void moses_translate(int, char**);
 
 int main(int argc, char** argv)
 {

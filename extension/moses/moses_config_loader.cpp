@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <model.h>
 #include <config.h>
 #include <symbol.h>
@@ -23,7 +24,10 @@ static bool is_option(const char* str)
         return false;
 
     if (len > 1) {
-        unsigned int val = opt_str.substr(1, 1).find_first_not_of("0123456789");
+        unsigned int val;
+
+        val = opt_str.substr(1, 1).find_first_not_of("0123456789");
+
         if (val == 0)
             return true;
     }
@@ -62,7 +66,7 @@ static void load_moses_ini(const char* filename, param_map& setting)
     while (std::getline(file, line)) {
         std::string::size_type pos = line.find_first_of('#');
 
-        /* remove comments */
+        // remove comments
         if (pos != std::string::npos)
             line = line.substr(0, pos);
 
@@ -90,7 +94,7 @@ static void translate_moses_ini(param_map& setting)
     parameter* param = config->get_parameter();
     std::vector<std::string> str_vec;
 
-    /* language models */
+    // language models
     std::vector<std::string>& lm_vec = setting["lmodel-file"];
     unsigned int lm_num = lm_vec.size();
 
@@ -104,19 +108,59 @@ static void translate_moses_ini(param_map& setting)
     for (unsigned int i = 0; i < lm_num; i++) {
         std::string& lm_str = lm_vec[i];
         std::string lm_file = "language_model_";
-        std::string lm_order = "language_model_";
-        unsigned int order;
+        std::string lm_impl = "language_model_";
+        unsigned int impl_id;
 
         string_split(lm_str, " ", str_vec);
-        order = std::stoi(str_vec[2]);
+        impl_id = std::stoi(str_vec[0]);
+        lm_impl += std::to_string(i) + "_implementation";
         lm_file += std::to_string(i) + "_file";
-        lm_order += std::to_string(i) + "_order";
-        param->add_parameter(lm_order, order);
+
         param->add_parameter(lm_file, str_vec[3]);
+        param->add_parameter(lm_impl, impl_id);
+
+        // for srilm and nnlm
+        if (impl_id == 0 || impl_id == 1 || impl_id == 2 || impl_id == 3 ||
+            impl_id == 10 || impl_id == 11 || impl_id == 12 || impl_id == 13) {
+            std::string lm_order = "language_model_";
+            unsigned int order;
+
+            lm_order += std::to_string(i) + "_order";
+            order = std::stoi(str_vec[2]);
+            param->add_parameter(lm_order, order);
+        }
+
+        // for nnjm
+        if (impl_id == 14 || impl_id ==15 || impl_id == 16 || impl_id == 17 ||
+            impl_id == 4 || impl_id == 5) {
+            std::string sctx_str = "joint_model_";
+            std::string tctx_str = "joint_model_";
+            unsigned int src_context;
+            unsigned int tgt_context;
+
+            sctx_str += std::to_string(i) + "_source_context";
+            tctx_str += std::to_string(i) + "_target_context";
+
+            src_context = std::stoi(str_vec[1]);
+            tgt_context = std::stoi(str_vec[2]);
+            param->add_parameter(sctx_str, src_context);
+            param->add_parameter(tctx_str, tgt_context);
+        }
+
+        // for nnltm
+        if (impl_id == 20 || impl_id == 21 || impl_id == 22) {
+            std::string win_str = "lexical_model_";
+            unsigned int win_size;
+
+            win_str += std::to_string(i) + "_window_size";
+            win_size = std::stoi(str_vec[2]);
+            param->add_parameter(win_str, win_size);
+        }
+
         str_vec.clear();
     }
 
-    /* translation models */
+    // translation models
     std::vector<std::string>& table_vec = setting["ttable-file"];
     unsigned int tm_num = table_vec.size();
     unsigned int tm_fea_num = 0;
@@ -143,7 +187,7 @@ static void translate_moses_ini(param_map& setting)
         str_vec.clear();
     }
 
-    /* span limit */
+    // span limit
     std::vector<std::string>& span_lim = setting["max-chart-span"];
     unsigned int span_lim_size = span_lim.size();
 
@@ -153,7 +197,7 @@ static void translate_moses_ini(param_map& setting)
         param->add_parameter(param_name, lim);
     }
 
-    /* rule limit */
+    // rule limit
     std::vector<std::string>& rule_limit_vec = setting["ttable-limit"];
 
     if (rule_limit_vec.size() > 0) {
@@ -161,7 +205,7 @@ static void translate_moses_ini(param_map& setting)
         param->add_parameter("rule_limit", limit);
     }
 
-    /* thread number */
+    // thread number
     std::vector<std::string>& threads_vec = setting["threads"];
 
     if (threads_vec.size() > 0) {
@@ -169,7 +213,7 @@ static void translate_moses_ini(param_map& setting)
         param->add_parameter("thread_number", num);
     }
 
-    /* nbest */
+    // nbest
     std::vector<std::string>& dnbest_vec = setting["distinct-nbest"];
 
     if (dnbest_vec.size() > 0) {
@@ -185,21 +229,21 @@ static void translate_moses_ini(param_map& setting)
         param->add_parameter("nbest_number", num);
     }
 
-    /* verbose file */
+    // verbose file
     std::vector<std::string>& verbose_vec = setting["verbose-file"];
 
     if (verbose_vec.size() > 0) {
         param->add_parameter("verbose_file", verbose_vec[0]);
     }
 
-    /* input file */
+    // input file
     std::vector<std::string>& input_vec = setting["input-file"];
 
     if (input_vec.size() > 0) {
         param->add_parameter("input_file", input_vec[0]);
     }
 
-    /* beam search */
+    // beam search
     std::vector<std::string>& beam_size_vec = setting["stack"];
     std::vector<std::string>& beam_threshold_vec = setting["beam-threshold"];
 
@@ -214,7 +258,7 @@ static void translate_moses_ini(param_map& setting)
         param->add_parameter("beam_threshold", threshold);
     }
 
-    /* cube pruning */
+    // cube pruning
     std::vector<std::string>& pop_lim_vec = setting["cube-pruning-pop-limit"];
 
     if (pop_lim_vec.size() > 0) {
@@ -222,7 +266,7 @@ static void translate_moses_ini(param_map& setting)
         param->add_parameter("pop_limit", pop_limit);
     }
 
-    /* weight */
+    // weight
     unsigned int feature_id = 0;
     std::vector<std::string>& lm_weight1 = setting["weight-l"];
     std::vector<std::string>& lm_weight2 = setting["lm"];
@@ -249,7 +293,7 @@ static void translate_moses_ini(param_map& setting)
     else
         w_weight_ptr = &w_weight1;
 
-    /* language model weights */
+    // language model weights
     std::vector<std::string>& lm_weight = *lm_weight_ptr;
     unsigned int lm_weight_num = lm_weight.size();
 
@@ -266,7 +310,7 @@ static void translate_moses_ini(param_map& setting)
         feature_id++;
     }
 
-    /* translation model weights*/
+    // translation model weights
     std::vector<std::string>& tm_weight = *tm_weight_ptr;
     unsigned int tm_weight_num = tm_weight.size();
 
@@ -283,7 +327,7 @@ static void translate_moses_ini(param_map& setting)
         feature_id++;
     }
 
-    /* word penalty weight */
+    // word penalty weight
     std::vector<std::string>& w_weight = *w_weight_ptr;
     std::string weight_str = "weight_" + std::to_string(feature_id);
 
@@ -297,9 +341,9 @@ static void translate_moses_ini(param_map& setting)
     if (setting.find("show-weights") != setting.end())
         param->add_parameter("show_weights", 1u);
 
-    if (setting.find("drop-unknow") != setting.end()) {
-        if (setting["drop-unknow"][0] == "true") {
-            param->add_parameter("drop_unknow_word", 1u);
+    if (setting.find("drop-unknown") != setting.end()) {
+        if (setting["drop-unknown"][0] == "true") {
+            param->add_parameter("drop_unknown_word", 1u);
         }
     }
 
@@ -330,7 +374,7 @@ void load_moses_options(int argc, char** argv)
             pmap[param];
 
             while (start_pos < argc && !is_option(argv[start_pos])) {
-                if (pmap[param].size() > index)
+                if (static_cast<int>(pmap[param].size()) > index)
                     pmap[param][index] = argv[start_pos];
                 else
                     pmap[param].push_back(argv[start_pos]);
